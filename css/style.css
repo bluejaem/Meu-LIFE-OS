@@ -1,0 +1,273 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    background:#0f1117;
+
+    color:white;
+
+    font-family:Arial,Helvetica,sans-serif;
+
+}
+
+.app{
+
+    display:flex;
+
+    min-height:100vh;
+
+}
+
+.sidebar{
+
+    width:260px;
+
+    background:#161b22;
+
+    border-right:1px solid #2b313b;
+
+    padding:25px;
+
+}
+
+.logo{
+
+    margin-bottom:40px;
+
+}
+
+.logo h2{
+
+    font-size:30px;
+
+}
+
+.logo span{
+
+    color:#00d4aa;
+
+}
+
+nav{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+}
+
+nav a{
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    transition:.2s;
+
+}
+
+nav a:hover{
+
+    background:#00d4aa;
+
+    color:black;
+
+}
+
+.conteudo{
+
+    flex:1;
+
+    padding:40px;
+
+}
+nav a{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+    color:#d8d8d8;
+
+    text-decoration:none;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    transition:0.25s;
+
+    font-size:15px;
+
+}
+
+nav a:hover{
+
+    background:#1f2937;
+
+    color:#00d4aa;
+
+}
+
+nav a i{
+
+    width:22px;
+
+    text-align:center;
+
+    font-size:18px;
+
+}
+
+.ativo{
+
+    background:#00d4aa;
+
+    color:#111 !important;
+
+    font-weight:600;
+
+}
+/* ===== TOPO ===== */
+
+.topo{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:35px;
+
+}
+
+.topo h1{
+
+    font-size:34px;
+
+}
+
+.topo p{
+
+    color:#8b949e;
+
+    margin-top:8px;
+
+}
+
+.perfil{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+
+}
+
+.perfil img{
+
+    border-radius:50%;
+
+}
+
+.perfil span{
+
+    font-weight:600;
+
+}
+
+/* ===== CARDS ===== */
+
+.cards{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:20px;
+
+    margin-bottom:35px;
+
+}
+
+.card{
+
+    background:#161b22;
+
+    border:1px solid #30363d;
+
+    border-radius:18px;
+
+    padding:25px;
+
+}
+
+.card h3{
+
+    color:#8b949e;
+
+    margin-bottom:12px;
+
+    font-size:15px;
+
+}
+
+.card h2{
+
+    font-size:34px;
+
+}
+
+/* ===== PAINEL ===== */
+
+.painel{
+
+    display:grid;
+
+    grid-template-columns:2fr 1fr;
+
+    gap:25px;
+
+}
+
+.calendario{
+
+    background:#161b22;
+
+    border-radius:18px;
+
+    min-height:500px;
+
+    padding:25px;
+
+    border:1px solid #30363d;
+
+}
+
+.tarefas{
+
+    background:#161b22;
+
+    border-radius:18px;
+
+    min-height:500px;
+
+    padding:25px;
+
+    border:1px solid #30363d;
+
+}
