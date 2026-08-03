@@ -25,51 +25,64 @@
                 </button>
             </div>
             <nav class="menu" aria-label="Menu principal">
-                <button class="menu-link active" data-page="dashboardPage">
+                <button class="menu-link active" data-page="dashboardPage" title="Painel principal">
                     <i class="fa-solid fa-house"></i>
                     <span>Dashboard</span>
                 </button>
-                <button class="menu-link" data-page="calendarPage">
+                <button class="menu-link" data-page="routinePage" title="Minha rotina">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>Rotina</span>
+                </button>
+                <button class="menu-link" data-page="calendarPage" title="Agenda e eventos">
                     <i class="fa-solid fa-calendar-week"></i>
                     <span>Calendário</span>
                 </button>
-                <button class="menu-link" data-page="tasksPage">
+                <button class="menu-link" data-page="tasksPage" title="Gerenciar tarefas">
                     <i class="fa-solid fa-list-check"></i>
                     <span>Tarefas</span>
                 </button>
-                <button class="menu-link" data-page="faculdadesPage">
+                <button class="menu-link" data-page="faculdadesPage" title="Faculdade e disciplinas">
                     <i class="fa-solid fa-graduation-cap"></i>
                     <span>Faculdades</span>
                 </button>
-                <button class="menu-link" data-page="projetosPage">
+                <button class="menu-link" data-page="projetosPage" title="Projetos Kanban">
                     <i class="fa-solid fa-diagram-project"></i>
                     <span>Projetos</span>
                 </button>
-                <button class="menu-link" data-page="livrosPage">
+                <button class="menu-link" data-page="livrosPage" title="Minha biblioteca">
                     <i class="fa-solid fa-book"></i>
                     <span>Livros</span>
                 </button>
-                <button class="menu-link" data-page="certificacoesPage">
+                <button class="menu-link" data-page="certificacoesPage" title="Certificados e cursos">
                     <i class="fa-solid fa-certificate"></i>
                     <span>Certificações</span>
                 </button>
-                <button class="menu-link" data-page="metasPage">
+                <button class="menu-link" data-page="metasPage" title="Metas e objetivos">
                     <i class="fa-solid fa-bullseye"></i>
                     <span>Metas</span>
                 </button>
-                <button class="menu-link" data-page="diarioPage">
+                <button class="menu-link" data-page="diarioPage" title="Diário pessoal">
                     <i class="fa-solid fa-note-sticky"></i>
                     <span>Diário</span>
                 </button>
-                <button class="menu-link" data-page="pomodoroPage">
+                <button class="menu-link" data-page="pomodoroPage" title="Temporizador Pomodoro">
                     <i class="fa-solid fa-stopwatch"></i>
                     <span>Pomodoro</span>
                 </button>
-                <button class="menu-link" data-page="configuracoesPage">
+                <button class="menu-link" data-page="configuracoesPage" title="Configurações">
                     <i class="fa-solid fa-gear"></i>
                     <span>Configurações</span>
                 </button>
             </nav>
+            <div class="sidebar-quick">
+                <div class="sidebar-title">Seu resumo</div>
+                <div class="sidebar-stats">
+                    <div class="sidebar-stat"><span>Tarefas</span><strong id="sideTaskCount">0</strong></div>
+                    <div class="sidebar-stat"><span>Eventos</span><strong id="sideEventCount">0</strong></div>
+                    <div class="sidebar-stat"><span>Metas</span><strong id="sideGoalCount">0</strong></div>
+                    <div class="sidebar-stat"><span>Projetos</span><strong id="sideProjectCount">0</strong></div>
+                </div>
+            </div>
         </aside>
 
         <main class="conteudo">
@@ -131,7 +144,15 @@
                         </article>
                     </div>
 
-                    <div class="grid-3">
+                    <div class="grid-4">
+                        <article class="card small-card routine-card">
+                            <h3>Minha Rotina</h3>
+                            <div class="routine-summary" id="dashboardRoutineSummary">
+                                <p class="muted">Seu bloco de rotina diária já está preparado e aparece nesta visualização.</p>
+                                <strong id="dashboardRoutineCount">0 ações</strong>
+                                <span id="dashboardRoutinePreview">Segunda a sexta configurada.</span>
+                            </div>
+                        </article>
                         <article class="card small-card">
                             <h3>Últimos eventos</h3>
                             <ul class="summary-list" id="dashboardRecentEvents"></ul>
@@ -142,9 +163,55 @@
                         </article>
                         <article class="card small-card stats-card">
                             <h3>Estatísticas gerais</h3>
-                            <div class="stat-row"><span>Tarefas ativas</span><strong id="statOpenTasks">0</strong></div>
+                            <div class="stat-row"><span>Tarefas</span><strong id="statOpenTasks">0</strong></div>
                             <div class="stat-row"><span>Eventos</span><strong id="statEvents">0</strong></div>
-                            <div class="stat-row"><span>Projetos ativos</span><strong id="statProjects">0</strong></div>
+                            <div class="stat-row"><span>Projetos</span><strong id="statProjects">0</strong></div>
+                        </article>
+                    </div>
+                </section>
+
+                <section id="routinePage" class="page">
+                    <div class="page-header-row">
+                        <div>
+                            <h2>Minha rotina</h2>
+                            <p>Rotina diária já configurada com o seu fluxo de foco.</p>
+                        </div>
+                    </div>
+                    <div class="grid-2 routine-shell">
+                        <article class="card routine-card">
+                            <div class="card-header">
+                                <h3>Segunda a Sexta</h3>
+                                <span class="tag blue">Estrutura fixa</span>
+                            </div>
+                            <ul class="routine-list" id="weekdayRoutine"></ul>
+                        </article>
+                        <article class="card routine-card">
+                            <div class="card-header">
+                                <h3>Fim de semana</h3>
+                                <span class="tag purple">Personalize</span>
+                            </div>
+                            <div class="routine-weekend">
+                                <div class="routine-day">
+                                    <h4>Sábado</h4>
+                                    <ul class="routine-list" id="saturdayRoutine"></ul>
+                                    <label class="editor-label">
+                                        Editar sábado
+                                        <textarea id="saturdayEditor" rows="4" placeholder="Use uma linha por atividade"></textarea>
+                                    </label>
+                                </div>
+                                <div class="routine-day">
+                                    <h4>Domingo</h4>
+                                    <ul class="routine-list" id="sundayRoutine"></ul>
+                                    <label class="editor-label">
+                                        Editar domingo
+                                        <textarea id="sundayEditor" rows="4" placeholder="Use uma linha por atividade"></textarea>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-actions routine-actions">
+                                <button class="btn-secondary" id="resetWeekendRoutine">Redefinir fim de semana</button>
+                                <button class="btn-primary" id="saveWeekendRoutine">Salvar rotina</button>
+                            </div>
                         </article>
                     </div>
                 </section>

@@ -6,6 +6,7 @@ import { initTasks } from './tasks.js';
 import { initFaculdades } from './faculdades.js';
 import { initBooks } from './livros.js';
 import { initGoals } from './metas.js';
+import { initRoutine } from './routine.js';
 import { initDiary } from './diario.js';
 import { initPomodoro } from './pomodoro.js';
 
@@ -27,6 +28,7 @@ const init = () => {
     components.faculdades = initFaculdades(data, syncData);
     components.books = initBooks(data, syncData);
     components.goals = initGoals(data, syncData);
+    components.routine = initRoutine(data, syncData);
     components.diary = initDiary(data, syncData);
     components.pomodoro = initPomodoro(data, syncData);
     components.dashboard.refresh();

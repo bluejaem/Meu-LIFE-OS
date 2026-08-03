@@ -49,7 +49,7 @@ export const initCalendar = (data, onChange) => {
                     eventItem.addEventListener('dragstart', (eventDrag) => {
                         eventDrag.dataTransfer.setData('text/plain', event.id);
                     });
-                    row.appendChild(eventItem);
+                    cell.appendChild(eventItem);
                 });
                 cell.addEventListener('dragover', (dragEvent) => dragEvent.preventDefault());
                 cell.addEventListener('drop', (dropEvent) => {

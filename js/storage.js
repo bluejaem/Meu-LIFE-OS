@@ -15,16 +15,12 @@ export const defaultData = {
     },
     events: [],
     tasks: [],
-    faculties: [
-        {
-            id: 'eng',
-            name: 'Engenharia da Computação',
-            disciplines: [
-                {id:'eng1', name:'Programação Avançada', grade: 8.8, attendance: 92},
-                {id:'eng2', name:'Circuitos Digitais', grade: 7.4, attendance: 88}
-            ]
-        }
-    ],
+    faculties: [],
+    routine: {
+        weekdays: [],
+        saturday: [],
+        sunday: []
+    },
     books: [],
     goals: [],
     certifications: [],
@@ -35,11 +31,7 @@ export const defaultData = {
         running: false,
         remainingSeconds: 1500
     },
-    kanban: [
-        { id: 'card1', title: 'Planejar roteiro', status: 'backlog', description: 'Definir etapas iniciais do projeto.' },
-        { id: 'card2', title: 'Criar protótipo', status: 'doing', description: 'Protótipo visual do dashboard.' },
-        { id: 'card3', title: 'Revisar deploy', status: 'done', description: 'Testar deployment local e ajustes.' }
-    ]
+    kanban: []
 };
 
 export const loadStorage = () => {
