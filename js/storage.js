@@ -17,7 +17,20 @@ export const defaultData = {
     tasks: [],
     faculties: [],
     routine: {
-        weekdays: [],
+        weekdays: [
+            { id: 'r1', time: '06:30', title: 'Acordar' },
+            { id: 'r2', time: '06:30–07:00', title: 'Higiene' },
+            { id: 'r3', time: '07:00–08:20', title: 'Ônibus • Estudo leve' },
+            { id: 'r4', time: '08:30–12:00', title: 'Trabalho' },
+            { id: 'r5', time: '12:00–13:00', title: 'Almoço • Leitura técnica' },
+            { id: 'r6', time: '13:00–18:30', title: 'Trabalho' },
+            { id: 'r7', time: '18:30–20:00', title: 'Ônibus • Vídeos • Podcasts • Leitura' },
+            { id: 'r8', time: '20:00–20:40', title: 'Banho' },
+            { id: 'r9', time: '20:40–21:40', title: 'Estudo profundo' },
+            { id: 'r10', time: '21:40–22:10', title: 'Exercícios' },
+            { id: 'r11', time: '22:10–22:30', title: 'Planejamento' },
+            { id: 'r12', time: '22:30', title: 'Dormir' }
+        ],
         saturday: [],
         sunday: []
     },

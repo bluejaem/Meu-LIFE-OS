@@ -1,5 +1,42 @@
 import { createChartBars } from './utils.js';
+const dayOrder = { SEG: 1, TER: 2, QUA: 3, QUI: 4, SEX: 5, SAB: 6, DOM: 7 };
+const dayNames = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
+const parseTimeToMinutes = (time) => {
+    const match = time?.match(/(\d{2}):(\d{2})/);
+    return match ? Number(match[1]) * 60 + Number(match[2]) : 0;
+};
+const getRelativeEventValue = (event) => {
+    const now = new Date();
+    const currentDay = dayNames[now.getDay()];
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const eventMinutes = parseTimeToMinutes(event.time || '00:00');
+    let dayOffset = dayOrder[event.day] - dayOrder[currentDay];
+    if (dayOffset < 0) dayOffset += 7;
+    if (dayOffset === 0 && eventMinutes <= currentMinutes) dayOffset = 7;
+    return dayOffset * 1440 + eventMinutes;
+};
+const getNextEvent = (events, filter = () => true) => {
+    return events
+        .filter(filter)
+        .sort((a, b) => getRelativeEventValue(a) - getRelativeEventValue(b))[0];
+};
+const getSoonestTask = (tasks) => {
+    const today = new Date().toISOString().slice(0, 10);
+    return tasks
+        .filter((task) => task.dueDate && task.dueDate >= today)
+        .sort((a, b) => a.dueDate.localeCompare(b.dueDate) || a.createdAt - b.createdAt)[0];
+};
+const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bom dia, João';
+    if (hour < 18) return 'Boa tarde, João';
+    return 'Boa noite, João';
+};
+const formatEventSummary = (event) => `${event.title} • ${event.day} ${event.time}`;
+const isExamEvent = (event) => /prova|exame|teste|avaliação|avaliac/i.test(event.title || '') || event.category === 'faculdade' && /prova|exame|teste/i.test(event.title || '');
+const isClassEvent = (event) => event.category === 'faculdade' || /aula|seminário|palestra|laboratório/i.test(event.title || '');
 export const refreshDashboard = (data) => {
+    document.getElementById('dashboardGreeting').textContent = getGreeting();
     document.getElementById('todayHours').textContent = `${data.hours.today} h`;
     document.getElementById('weeklyHours').textContent = `${data.hours.week} h`;
     document.getElementById('monthlyHours').textContent = `${data.hours.month} h`;
@@ -7,6 +44,18 @@ export const refreshDashboard = (data) => {
     document.getElementById('dailyGoalLabel').textContent = `${data.hours.dailyGoal}h`;
     document.getElementById('weeklyGoalLabel').textContent = `${data.hours.weeklyGoal}h`;
     document.getElementById('monthlyGoalLabel').textContent = `${data.hours.monthlyGoal}h`;
+    const nextEvent = getNextEvent(data.events);
+    const nextTask = getSoonestTask(data.tasks);
+    const nextActivityLabel = nextEvent ? formatEventSummary(nextEvent) : nextTask ? `Tarefa: ${nextTask.title} até ${nextTask.dueDate}` : 'Sem atividade agendada';
+    document.getElementById('nextActivity').textContent = nextActivityLabel;
+    const nextExam = getNextEvent(data.events, isExamEvent);
+    document.getElementById('nextExam').textContent = nextExam ? formatEventSummary(nextExam) : 'Nenhuma prova cadastrada';
+    const nextClass = getNextEvent(data.events, isClassEvent);
+    document.getElementById('nextClass').textContent = nextClass ? formatEventSummary(nextClass) : 'Sem aula marcada';
+
+    const remaining = data.hours.dailyGoal - data.hours.today;
+    document.getElementById('remainingGoal').textContent = remaining <= 0 ? 'Meta diária alcançada' : `Faltam ${remaining}h para a meta`; 
+
     const recentEvents = document.getElementById('dashboardRecentEvents');
     const recentTasks = document.getElementById('dashboardRecentTasks');
     recentEvents.innerHTML = '';

@@ -25,62 +25,74 @@
                 </button>
             </div>
             <nav class="menu" aria-label="Menu principal">
-                <button class="menu-link active" data-page="dashboardPage" title="Painel principal">
+                <button class="menu-link active" data-page="dashboardPage" title="Painel principal" data-tooltip="Dashboard">
                     <i class="fa-solid fa-house"></i>
                     <span>Dashboard</span>
                 </button>
-                <button class="menu-link" data-page="routinePage" title="Minha rotina">
+                <button class="menu-link" data-page="routinePage" title="Minha rotina" data-tooltip="Minha rotina">
                     <i class="fa-solid fa-calendar-check"></i>
                     <span>Rotina</span>
                 </button>
-                <button class="menu-link" data-page="calendarPage" title="Agenda e eventos">
+                <button class="menu-link" data-page="calendarPage" title="Agenda e eventos" data-tooltip="Agenda e eventos">
                     <i class="fa-solid fa-calendar-week"></i>
                     <span>Calendário</span>
                 </button>
-                <button class="menu-link" data-page="tasksPage" title="Gerenciar tarefas">
+                <button class="menu-link" data-page="tasksPage" title="Gerenciar tarefas" data-tooltip="Gerenciar tarefas">
                     <i class="fa-solid fa-list-check"></i>
                     <span>Tarefas</span>
                 </button>
-                <button class="menu-link" data-page="faculdadesPage" title="Faculdade e disciplinas">
+                <button class="menu-link" data-page="faculdadesPage" title="Faculdade e disciplinas" data-tooltip="Faculdade e disciplinas">
                     <i class="fa-solid fa-graduation-cap"></i>
                     <span>Faculdades</span>
                 </button>
-                <button class="menu-link" data-page="projetosPage" title="Projetos Kanban">
+                <button class="menu-link" data-page="projetosPage" title="Projetos Kanban" data-tooltip="Projetos Kanban">
                     <i class="fa-solid fa-diagram-project"></i>
                     <span>Projetos</span>
                 </button>
-                <button class="menu-link" data-page="livrosPage" title="Minha biblioteca">
+                <button class="menu-link" data-page="livrosPage" title="Minha biblioteca" data-tooltip="Minha biblioteca">
                     <i class="fa-solid fa-book"></i>
                     <span>Livros</span>
                 </button>
-                <button class="menu-link" data-page="certificacoesPage" title="Certificados e cursos">
+                <button class="menu-link" data-page="certificacoesPage" title="Certificados e cursos" data-tooltip="Certificados e cursos">
                     <i class="fa-solid fa-certificate"></i>
                     <span>Certificações</span>
                 </button>
-                <button class="menu-link" data-page="metasPage" title="Metas e objetivos">
+                <button class="menu-link" data-page="metasPage" title="Metas e objetivos" data-tooltip="Metas e objetivos">
                     <i class="fa-solid fa-bullseye"></i>
                     <span>Metas</span>
                 </button>
-                <button class="menu-link" data-page="diarioPage" title="Diário pessoal">
+                <button class="menu-link" data-page="diarioPage" title="Diário pessoal" data-tooltip="Diário pessoal">
                     <i class="fa-solid fa-note-sticky"></i>
                     <span>Diário</span>
                 </button>
-                <button class="menu-link" data-page="pomodoroPage" title="Temporizador Pomodoro">
+                <button class="menu-link" data-page="pomodoroPage" title="Temporizador Pomodoro" data-tooltip="Temporizador Pomodoro">
                     <i class="fa-solid fa-stopwatch"></i>
                     <span>Pomodoro</span>
                 </button>
-                <button class="menu-link" data-page="configuracoesPage" title="Configurações">
+                <button class="menu-link" data-page="configuracoesPage" title="Configurações" data-tooltip="Configurações">
                     <i class="fa-solid fa-gear"></i>
                     <span>Configurações</span>
                 </button>
             </nav>
             <div class="sidebar-quick">
-                <div class="sidebar-title">Seu resumo</div>
+                <div class="sidebar-status">
+                    <div>
+                        <span class="status-chip online"></span>
+                        <strong>Foco ativo</strong>
+                    </div>
+                    <span class="status-label">Bom dia, João</span>
+                </div>
+                <div class="sidebar-title">Resumo rápido</div>
                 <div class="sidebar-stats">
                     <div class="sidebar-stat"><span>Tarefas</span><strong id="sideTaskCount">0</strong></div>
                     <div class="sidebar-stat"><span>Eventos</span><strong id="sideEventCount">0</strong></div>
                     <div class="sidebar-stat"><span>Metas</span><strong id="sideGoalCount">0</strong></div>
                     <div class="sidebar-stat"><span>Projetos</span><strong id="sideProjectCount">0</strong></div>
+                </div>
+                <div class="sidebar-actions">
+                    <button class="btn-icon" title="Nova tarefa"><i class="fa-solid fa-plus"></i></button>
+                    <button class="btn-icon" title="Novo evento"><i class="fa-solid fa-calendar-days"></i></button>
+                    <button class="btn-icon" title="Nova nota"><i class="fa-solid fa-sticky-note"></i></button>
                 </div>
             </div>
         </aside>
@@ -104,6 +116,36 @@
 
             <div class="page-shell">
                 <section id="dashboardPage" class="page active">
+                    <article class="card dashboard-hero-card">
+                        <div>
+                            <p class="eyebrow">Painel inteligente</p>
+                            <h2 id="dashboardGreeting">Bom dia, João</h2>
+                            <p class="hero-copy">Organize seu fluxo de estudos, prazos e foco em uma plataforma que entende sua rotina acadêmica.</p>
+                        </div>
+                        <div class="hero-stats">
+                            <div><strong id="heroTodayHours">0h</strong><span>Hoje</span></div>
+                            <div><strong id="heroWeeklyHours">0h</strong><span>Semana</span></div>
+                            <div><strong id="heroMonthlyHours">0h</strong><span>Mês</span></div>
+                        </div>
+                    </article>
+                    <div class="grid-4 dashboard-insights">
+                        <article class="card insight-card">
+                            <h3>Próxima atividade</h3>
+                            <p class="insight-value" id="nextActivity">Nenhuma atividade agendada</p>
+                        </article>
+                        <article class="card insight-card">
+                            <h3>Próxima prova</h3>
+                            <p class="insight-value" id="nextExam">Nenhuma prova cadastrada</p>
+                        </article>
+                        <article class="card insight-card">
+                            <h3>Próxima aula</h3>
+                            <p class="insight-value" id="nextClass">Sem aula marcada</p>
+                        </article>
+                        <article class="card insight-card">
+                            <h3>Meta diária</h3>
+                            <p class="insight-value" id="remainingGoal">Faltam 4h</p>
+                        </article>
+                    </div>
                     <div class="grid-4">
                         <article class="card metric-card">
                             <span class="metric-label">Horas estudadas hoje</span>
