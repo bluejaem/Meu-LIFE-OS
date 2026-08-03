@@ -4,149 +4,622 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Planner TI Life OS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-
-    <div class="app">
-
-    <aside class="sidebar">
-
-        <div class="logo">
-
-            <h2>Planner TI</h2>
-
-            <span>#FocoNosEstudos</span>
-
-        </div>
-
-        <nav>
-
-        <a class="ativo" href="#">
-        <i class="fa-solid fa-house"></i>
-        <span>Dashboard</span>
-        </a>
-
-        <a href="#">
-        <i class="fa-solid fa-calendar-day"></i>
-        <span>Agenda Diária</span>
-        </a>
-
-        <a href="#">
-        <i class="fa-solid fa-calendar-week"></i>
-        <span>Calendário</span>
-        </a>
-
-        <a href="#">
-        <i class="fa-solid fa-graduation-cap"></i>
-        <span>Faculdades</span>
-        </a>
-
-        <a href="#">
-        <i class="fa-solid fa-code"></i>
-        <span>Projetos</span>
-        </a>
-
-        <a href="#">
-        <i class="fa-solid fa-book"></i>
-        <span>Livros</span>
-        </a>
-
-        <a href="#">
-        <i class="fa-solid fa-certificate"></i>
-        <span>Certificações</span>
-        </a>
-
-        <a href="#">
-        <i class="fa-solid fa-bullseye"></i>
-        <span>Metas</span>
-        </a>
-
-        <a href="#">
-        <i class="fa-solid fa-note-sticky"></i>
-        <span>Diário</span>
-        </a>
-
-        <a href="#">
-        <i class="fa-solid fa-gear"></i>
-        <span>Configurações</span>
-        </a>
-
-    </nav>
-
-    </aside>
-
-    <main class="conteudo">
-
-        <header class="topo">
-
-            <div>
-
-                <h1>Dashboard</h1>
-
-                <p>Bem-vindo ao Planner TI Life OS</p>
-
+    <div class="app" data-theme="light">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-top">
+                <div class="logo-block">
+                    <div class="logo-icon">PT</div>
+                    <div>
+                        <h2>Planner TI</h2>
+                        <span>#FocoNosEstudos</span>
+                    </div>
+                </div>
+                <button class="btn-icon sidebar-toggle" id="sidebarToggle" aria-label="Alternar menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
             </div>
+            <nav class="menu" aria-label="Menu principal">
+                <button class="menu-link active" data-page="dashboardPage">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="menu-link" data-page="calendarPage">
+                    <i class="fa-solid fa-calendar-week"></i>
+                    <span>Calendário</span>
+                </button>
+                <button class="menu-link" data-page="tasksPage">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Tarefas</span>
+                </button>
+                <button class="menu-link" data-page="faculdadesPage">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>Faculdades</span>
+                </button>
+                <button class="menu-link" data-page="projetosPage">
+                    <i class="fa-solid fa-diagram-project"></i>
+                    <span>Projetos</span>
+                </button>
+                <button class="menu-link" data-page="livrosPage">
+                    <i class="fa-solid fa-book"></i>
+                    <span>Livros</span>
+                </button>
+                <button class="menu-link" data-page="certificacoesPage">
+                    <i class="fa-solid fa-certificate"></i>
+                    <span>Certificações</span>
+                </button>
+                <button class="menu-link" data-page="metasPage">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <span>Metas</span>
+                </button>
+                <button class="menu-link" data-page="diarioPage">
+                    <i class="fa-solid fa-note-sticky"></i>
+                    <span>Diário</span>
+                </button>
+                <button class="menu-link" data-page="pomodoroPage">
+                    <i class="fa-solid fa-stopwatch"></i>
+                    <span>Pomodoro</span>
+                </button>
+                <button class="menu-link" data-page="configuracoesPage">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Configurações</span>
+                </button>
+            </nav>
+        </aside>
 
-            <div class="perfil">
+        <main class="conteudo">
+            <header class="topo">
+                <div>
+                    <h1 id="pageTitle">Dashboard</h1>
+                    <p id="topMessage">Bem-vindo ao Planner TI Life OS</p>
+                </div>
+                <div class="topo-actions">
+                    <button class="btn-icon" id="themeToggle" aria-label="Alternar tema">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <div class="perfil">
+                        <img src="https://placehold.co/45x45?text=JG" alt="Perfil">
+                        <span>João Guilherme</span>
+                    </div>
+                </div>
+            </header>
 
-                <img src="https://placehold.co/45x45" alt="Perfil">
+            <div class="page-shell">
+                <section id="dashboardPage" class="page active">
+                    <div class="grid-4">
+                        <article class="card metric-card">
+                            <span class="metric-label">Horas estudadas hoje</span>
+                            <strong id="todayHours">0 h</strong>
+                            <small>Meta diária: <span id="dailyGoalLabel">4h</span></small>
+                        </article>
+                        <article class="card metric-card">
+                            <span class="metric-label">Horas semanais</span>
+                            <strong id="weeklyHours">0 h</strong>
+                            <small>Meta semanal: <span id="weeklyGoalLabel">20h</span></small>
+                        </article>
+                        <article class="card metric-card">
+                            <span class="metric-label">Horas mensais</span>
+                            <strong id="monthlyHours">0 h</strong>
+                            <small>Meta mensal: <span id="monthlyGoalLabel">80h</span></small>
+                        </article>
+                        <article class="card metric-card">
+                            <span class="metric-label">Sequência</span>
+                            <strong id="streakDays">0 dias</strong>
+                            <small>Consecutivos ativos</small>
+                        </article>
+                    </div>
 
-                <span>João Guilherme</span>
+                    <div class="grid-2">
+                        <article class="card chart-card">
+                            <div class="card-header">
+                                <h2>Gráfico semanal</h2>
+                                <span class="tag blue">Últimos 7 dias</span>
+                            </div>
+                            <div class="bar-chart" id="weeklyChart"></div>
+                        </article>
+                        <article class="card chart-card">
+                            <div class="card-header">
+                                <h2>Gráfico mensal</h2>
+                                <span class="tag purple">Este mês</span>
+                            </div>
+                            <div class="bar-chart" id="monthlyChart"></div>
+                        </article>
+                    </div>
 
+                    <div class="grid-3">
+                        <article class="card small-card">
+                            <h3>Últimos eventos</h3>
+                            <ul class="summary-list" id="dashboardRecentEvents"></ul>
+                        </article>
+                        <article class="card small-card">
+                            <h3>Últimas tarefas</h3>
+                            <ul class="summary-list" id="dashboardRecentTasks"></ul>
+                        </article>
+                        <article class="card small-card stats-card">
+                            <h3>Estatísticas gerais</h3>
+                            <div class="stat-row"><span>Tarefas ativas</span><strong id="statOpenTasks">0</strong></div>
+                            <div class="stat-row"><span>Eventos</span><strong id="statEvents">0</strong></div>
+                            <div class="stat-row"><span>Projetos ativos</span><strong id="statProjects">0</strong></div>
+                        </article>
+                    </div>
+                </section>
+
+                <section id="calendarPage" class="page">
+                    <div class="page-header-row">
+                        <div>
+                            <h2>Calendário profissional</h2>
+                            <p>Gerencie horários, altere eventos e visualize a semana.</p>
+                        </div>
+                        <button class="btn-primary" id="newEventButton"><i class="fa-solid fa-plus"></i> Novo evento</button>
+                    </div>
+                    <div class="calendar-shell">
+                        <div class="calendar-panel">
+                            <div class="calendar-toolbar">
+                                <div class="calendar-legend">
+                                    <span class="legend-item"><span class="legend-color blue"></span>Estudo</span>
+                                    <span class="legend-item"><span class="legend-color green"></span>Trabalho</span>
+                                    <span class="legend-item"><span class="legend-color orange"></span>Faculdade</span>
+                                    <span class="legend-item"><span class="legend-color purple"></span>Projeto</span>
+                                    <span class="legend-item"><span class="legend-color gray"></span>Pessoal</span>
+                                </div>
+                                <div class="calendar-actions">
+                                    <button class="btn-secondary" id="todayWeekButton">Semana Atual</button>
+                                </div>
+                            </div>
+                            <div class="calendar-grid" id="calendarGrid"></div>
+                        </div>
+                        <aside class="side-panel">
+                            <div class="panel-card">
+                                <h3>Eventos da semana</h3>
+                                <ul class="event-list" id="eventList"></ul>
+                            </div>
+                            <div class="panel-card">
+                                <h3>Detalhes do evento</h3>
+                                <form id="eventForm" class="form-stack">
+                                    <input type="hidden" id="eventId">
+                                    <label>
+                                        Título
+                                        <input type="text" id="eventTitle" placeholder="Ex: Estudar JS" required>
+                                    </label>
+                                    <label>
+                                        Categoria
+                                        <select id="eventCategory">
+                                            <option value="estudo">Estudo</option>
+                                            <option value="trabalho">Trabalho</option>
+                                            <option value="faculdade">Faculdade</option>
+                                            <option value="projeto">Projeto</option>
+                                            <option value="pessoal">Pessoal</option>
+                                        </select>
+                                    </label>
+                                    <label>
+                                        Dia
+                                        <select id="eventDay">
+                                            <option value="SEG">Segunda</option>
+                                            <option value="TER">Terça</option>
+                                            <option value="QUA">Quarta</option>
+                                            <option value="QUI">Quinta</option>
+                                            <option value="SEX">Sexta</option>
+                                            <option value="SAB">Sábado</option>
+                                            <option value="DOM">Domingo</option>
+                                        </select>
+                                    </label>
+                                    <label>
+                                        Horário
+                                        <input type="time" id="eventTime" value="07:00" required>
+                                    </label>
+                                    <label>
+                                        Duração
+                                        <select id="eventDuration">
+                                            <option value="30">30 min</option>
+                                            <option value="60">1h</option>
+                                            <option value="90">1h 30</option>
+                                            <option value="120">2h</option>
+                                        </select>
+                                    </label>
+                                    <textarea id="eventNotes" placeholder="Notas adicionais"></textarea>
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn-primary">Salvar evento</button>
+                                        <button type="button" class="btn-secondary" id="clearEventForm">Limpar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </aside>
+                    </div>
+                </section>
+
+                <section id="tasksPage" class="page">
+                    <div class="page-header-row">
+                        <div>
+                            <h2>Gerenciador de tarefas</h2>
+                            <p>Controle prazos, prioridades e checklist em um único painel.</p>
+                        </div>
+                    </div>
+                    <div class="grid-3">
+                        <article class="card task-summary">
+                            <h3>Adicionar tarefa</h3>
+                            <form id="taskForm" class="form-stack">
+                                <label>
+                                    Título
+                                    <input type="text" id="taskTitle" placeholder="Nome da tarefa" required>
+                                </label>
+                                <label>
+                                    Categoria
+                                    <select id="taskCategory">
+                                        <option value="estudo">Estudo</option>
+                                        <option value="trabalho">Trabalho</option>
+                                        <option value="projeto">Projeto</option>
+                                        <option value="pessoal">Pessoal</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Prioridade
+                                    <select id="taskPriority">
+                                        <option value="alta">Alta</option>
+                                        <option value="media" selected>Média</option>
+                                        <option value="baixa">Baixa</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Data limite
+                                    <input type="date" id="taskDueDate">
+                                </label>
+                                <label class="subtask-field">
+                                    Subtarefa
+                                    <div class="subtask-input-row">
+                                        <input type="text" id="subtaskText" placeholder="Adicionar subtarefa">
+                                        <button type="button" class="btn-secondary" id="addSubtaskButton">Adicionar</button>
+                                    </div>
+                                </label>
+                                <div id="subtaskPreview" class="subtask-preview"></div>
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">Criar tarefa</button>
+                                    <button type="button" class="btn-secondary" id="resetTaskForm">Limpar</button>
+                                </div>
+                            </form>
+                        </article>
+                        <article class="card task-summary">
+                            <h3>Filtrar & ordenar</h3>
+                            <div class="form-stack">
+                                <label>
+                                    Buscar
+                                    <input type="search" id="taskSearch" placeholder="Pesquisar tarefa">
+                                </label>
+                                <label>
+                                    Status
+                                    <select id="taskStatusFilter">
+                                        <option value="all">Todas</option>
+                                        <option value="active">Ativas</option>
+                                        <option value="completed">Concluídas</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Categoria
+                                    <select id="taskCategoryFilter">
+                                        <option value="all">Todas</option>
+                                        <option value="estudo">Estudo</option>
+                                        <option value="trabalho">Trabalho</option>
+                                        <option value="projeto">Projeto</option>
+                                        <option value="pessoal">Pessoal</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Ordenar por
+                                    <select id="taskSort">
+                                        <option value="createdAt">Criadas</option>
+                                        <option value="dueDate">Prazo</option>
+                                        <option value="priority">Prioridade</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </article>
+                        <article class="card task-summary tasks-progress-card">
+                            <h3>Resumo rápido</h3>
+                            <div class="stat-row"><span>Tarefas totais</span><strong id="taskCountTotal">0</strong></div>
+                            <div class="stat-row"><span>Concluídas</span><strong id="taskCountCompleted">0</strong></div>
+                            <div class="progress-bar"><span id="taskProgressBar"></span></div>
+                        </article>
+                    </div>
+                    <article class="card full-card">
+                        <div class="card-header">
+                            <h3>Lista de tarefas</h3>
+                            <span id="taskSummaryText">Nenhuma tarefa encontrada.</span>
+                        </div>
+                        <ul class="task-list" id="taskList"></ul>
+                    </article>
+                </section>
+
+                <section id="faculdadesPage" class="page">
+                    <div class="page-header-row">
+                        <div>
+                            <h2>Faculdades</h2>
+                            <p>Acompanhe disciplinas, notas, frequência e progresso por curso.</p>
+                        </div>
+                    </div>
+                    <div class="grid-3" id="facultyCards"></div>
+                </section>
+
+                <section id="projetosPage" class="page">
+                    <div class="page-header-row">
+                        <div>
+                            <h2>Projetos Kanban</h2>
+                            <p>Organize tarefas de projeto em backlog, fazendo e concluído.</p>
+                        </div>
+                        <button class="btn-primary" id="newProjectCardButton"><i class="fa-solid fa-plus"></i> Novo cartão</button>
+                    </div>
+                    <div class="kanban-board">
+                        <div class="kanban-column" data-status="backlog">
+                            <h3>Backlog</h3>
+                            <div class="column-cards" id="backlogColumn"></div>
+                        </div>
+                        <div class="kanban-column" data-status="doing">
+                            <h3>Fazendo</h3>
+                            <div class="column-cards" id="doingColumn"></div>
+                        </div>
+                        <div class="kanban-column" data-status="done">
+                            <h3>Concluído</h3>
+                            <div class="column-cards" id="doneColumn"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="livrosPage" class="page">
+                    <div class="page-header-row">
+                        <div>
+                            <h2>Biblioteca</h2>
+                            <p>Gerencie seus livros, progresso e status de leitura.</p>
+                        </div>
+                    </div>
+                    <article class="card grid-2">
+                        <div class="form-stack">
+                            <label>
+                                Título
+                                <input type="text" id="bookTitle" placeholder="Nome do livro" required>
+                            </label>
+                            <label>
+                                Autor
+                                <input type="text" id="bookAuthor" placeholder="Autor">
+                            </label>
+                            <label>
+                                Categoria
+                                <input type="text" id="bookCategory" placeholder="Categoria">
+                            </label>
+                            <label>
+                                Total de páginas
+                                <input type="number" id="bookPages" min="1" placeholder="Total de páginas">
+                            </label>
+                            <label>
+                                Páginas lidas
+                                <input type="number" id="bookReadPages" min="0" placeholder="Lidas">
+                            </label>
+                            <label>
+                                Status
+                                <select id="bookStatus">
+                                    <option value="Lendo">Lendo</option>
+                                    <option value="Planejado">Planejado</option>
+                                    <option value="Concluído">Concluído</option>
+                                </select>
+                            </label>
+                            <div class="form-actions">
+                                <button class="btn-primary" id="addBookButton">Cadastrar livro</button>
+                                <button class="btn-secondary" id="resetBookForm">Limpar</button>
+                            </div>
+                        </div>
+                        <div class="panel-card">
+                            <h3>Resumo de leitura</h3>
+                            <div class="stat-row"><span>Livros</span><strong id="bookCount">0</strong></div>
+                            <div class="stat-row"><span>Concluídos</span><strong id="bookCompletedCount">0</strong></div>
+                            <div class="progress-bar"><span id="bookProgressBar"></span></div>
+                        </div>
+                    </article>
+                    <article class="card full-card">
+                        <h3>Minha estante</h3>
+                        <ul class="item-list" id="bookList"></ul>
+                    </article>
+                </section>
+
+                <section id="certificacoesPage" class="page">
+                    <div class="page-header-row">
+                        <div>
+                            <h2>Certificações</h2>
+                            <p>Registre cursos, progresso e links de certificação.</p>
+                        </div>
+                    </div>
+                    <article class="card grid-2">
+                        <div class="form-stack">
+                            <label>
+                                Curso
+                                <input type="text" id="certTitle" placeholder="Nome do curso" required>
+                            </label>
+                            <label>
+                                Carga horária
+                                <input type="text" id="certHours" placeholder="Ex: 40h">
+                            </label>
+                            <label>
+                                Data
+                                <input type="date" id="certDate">
+                            </label>
+                            <label>
+                                Status
+                                <select id="certStatus">
+                                    <option value="Em andamento">Em andamento</option>
+                                    <option value="Concluído">Concluído</option>
+                                    <option value="Planejado">Planejado</option>
+                                </select>
+                            </label>
+                            <label>
+                                Link
+                                <input type="url" id="certLink" placeholder="https://...">
+                            </label>
+                            <div class="form-actions">
+                                <button class="btn-primary" id="addCertButton">Adicionar</button>
+                                <button class="btn-secondary" id="resetCertForm">Limpar</button>
+                            </div>
+                        </div>
+                        <div class="panel-card">
+                            <h3>Progresso</h3>
+                            <div class="stat-row"><span>Certificados</span><strong id="certCount">0</strong></div>
+                            <div class="stat-row"><span>Completos</span><strong id="certCompletedCount">0</strong></div>
+                        </div>
+                    </article>
+                    <article class="card full-card">
+                        <ul class="item-list" id="certList"></ul>
+                    </article>
+                </section>
+
+                <section id="metasPage" class="page">
+                    <div class="page-header-row">
+                        <div>
+                            <h2>Metas</h2>
+                            <p>Defina metas de curto, médio e longo prazo com progresso.</p>
+                        </div>
+                    </div>
+                    <article class="card grid-3">
+                        <label>
+                            Meta
+                            <input type="text" id="goalTitle" placeholder="Título da meta" required>
+                        </label>
+                        <label>
+                            Tipo
+                            <select id="goalCategory">
+                                <option value="Curto prazo">Curto prazo</option>
+                                <option value="Médio prazo">Médio prazo</option>
+                                <option value="Longo prazo">Longo prazo</option>
+                                <option value="Diária">Meta diária</option>
+                                <option value="Semanal">Meta semanal</option>
+                                <option value="Mensal">Meta mensal</option>
+                                <option value="Anual">Meta anual</option>
+                            </select>
+                        </label>
+                        <label>
+                            Progresso
+                            <input type="number" id="goalProgress" min="0" max="100" value="0">
+                        </label>
+                        <label>
+                            Data alvo
+                            <input type="date" id="goalDueDate">
+                        </label>
+                        <div class="form-actions">
+                            <button class="btn-primary" id="addGoalButton">Salvar meta</button>
+                            <button class="btn-secondary" id="resetGoalForm">Limpar</button>
+                        </div>
+                    </article>
+                    <article class="card full-card">
+                        <div class="card-header">
+                            <h3>Minhas metas</h3>
+                        </div>
+                        <ul class="item-list" id="goalList"></ul>
+                    </article>
+                </section>
+
+                <section id="diarioPage" class="page">
+                    <div class="page-header-row">
+                        <div>
+                            <h2>Diário</h2>
+                            <p>Registre pensamentos, humor e consultas rápidas.</p>
+                        </div>
+                    </div>
+                    <article class="card grid-3">
+                        <label>
+                            Entrada
+                            <textarea id="diaryText" rows="4" placeholder="Escreva sua reflexão"></textarea>
+                        </label>
+                        <label>
+                            Humor
+                            <select id="diaryMood">
+                                <option value="😊">Feliz</option>
+                                <option value="😌">Calmo</option>
+                                <option value="🤓">Focado</option>
+                                <option value="😓">Estressado</option>
+                                <option value="😴">Cansado</option>
+                            </select>
+                        </label>
+                        <label>
+                            Data
+                            <input type="date" id="diaryDate" value="">
+                        </label>
+                        <div class="form-actions">
+                            <button class="btn-primary" id="addDiaryButton">Salvar entrada</button>
+                            <button class="btn-secondary" id="resetDiaryForm">Limpar</button>
+                        </div>
+                    </article>
+                    <article class="card full-card">
+                        <div class="card-header">
+                            <h3>Entradas</h3>
+                            <input type="search" id="diarySearch" placeholder="Pesquisar no diário">
+                        </div>
+                        <ul class="item-list" id="diaryList"></ul>
+                    </article>
+                </section>
+
+                <section id="pomodoroPage" class="page">
+                    <div class="page-header-row">
+                        <div>
+                            <h2>Pomodoro</h2>
+                            <p>Temporizador com presets, personalizado e controle de sessões.</p>
+                        </div>
+                    </div>
+                    <article class="card timer-card">
+                        <div class="timer-display">
+                            <span id="pomodoroTimer">25:00</span>
+                            <p id="pomodoroStatus">Pronto para iniciar</p>
+                        </div>
+                        <div class="timer-controls">
+                            <button class="btn-secondary" data-time="25">25 min</button>
+                            <button class="btn-secondary" data-time="5">5 min</button>
+                            <button class="btn-secondary" data-time="15">15 min</button>
+                            <button class="btn-secondary" id="customTimerButton">Personalizado</button>
+                        </div>
+                        <div class="timer-actions">
+                            <button class="btn-primary" id="startPomodoro">Iniciar</button>
+                            <button class="btn-secondary" id="pausePomodoro">Pausar</button>
+                            <button class="btn-secondary" id="resetPomodoro">Resetar</button>
+                        </div>
+                        <div class="timer-progress-bar"><span id="pomodoroProgress"></span></div>
+                        <div class="stat-row"><span>Sessões concluídas</span><strong id="pomodoroSessions">0</strong></div>
+                    </article>
+                </section>
+
+                <section id="configuracoesPage" class="page">
+                    <div class="page-header-row">
+                        <div>
+                            <h2>Configurações</h2>
+                            <p>Personalize tema, cor principal, exporte ou importe seus dados.</p>
+                        </div>
+                    </div>
+                    <article class="card grid-2">
+                        <label>
+                            Tema
+                            <select id="settingsTheme">
+                                <option value="light">Claro</option>
+                                <option value="dark">Escuro</option>
+                            </select>
+                        </label>
+                        <label>
+                            Cor principal
+                            <input type="color" id="settingsAccent" value="#2563eb">
+                        </label>
+                        <label>
+                            Exportar dados
+                            <button class="btn-primary" id="exportDataButton">Exportar JSON</button>
+                        </label>
+                        <label>
+                            Importar dados
+                            <input type="file" id="importDataInput" accept="application/json">
+                        </label>
+                        <div class="form-actions">
+                            <button class="btn-danger" id="resetDataButton">Resetar sistema</button>
+                        </div>
+                    </article>
+                </section>
             </div>
-
-    </header>
-
-    <section class="cards">
-
-        <div class="card">
-            <h3>Horas Estudadas</h3>
-            <h2>0 h</h2>
-        </div>
-
-        <div class="card">
-            <h3>Sequência</h3>
-            <h2>0 dias</h2>
-        </div>
-
-        <div class="card">
-            <h3>Projetos</h3>
-            <h2>0</h2>
-        </div>
-
-        <div class="card">
-            <h3>Meta Semanal</h3>
-            <h2>0%</h2>
-        </div>
-
-    </section>
-
-    <section class="painel">
-
-            <div class="calendario">
-
-                <h2>Calendário Semanal</h2>
-
-            </div>
-
-            <div class="tarefas">
-
-                <h2>Próximas tarefas</h2>
-
-            </div>
-
-        </section>
-
-    </main>
-
-</div>
-
-<script src="js/app.js"></script>
+        </main>
+    </div>
+    <script type="module" src="js/main.js"></script>
 </body>
 
 </html>
