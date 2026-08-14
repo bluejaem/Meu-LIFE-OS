@@ -39,6 +39,75 @@
     --glass: rgba(15, 23, 42, 0.72);
 }
 
+/* Dark theme card refinements to match reference images */
+.app[data-theme="dark"] .card {
+    background: rgba(18,20,25,0.88);
+    border: 1px solid rgba(255,255,255,0.03);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    padding: 22px;
+}
+
+.app[data-theme="dark"] .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.04);
+    box-shadow: 0 18px 48px rgba(0,0,0,0.6);
+}
+
+/* Bigger rounded containers like hero and large panels */
+.app[data-theme="dark"] .dashboard-hero-card,
+.app[data-theme="dark"] .full-card,
+.app[data-theme="dark"] .task-summary,
+.app[data-theme="dark"] .routine-card {
+    border-radius: 22px;
+}
+
+/* Subtle darker surfaces for panels */
+.app[data-theme="dark"] .sidebar-quick,
+.app[data-theme="dark"] .menu-link,
+.app[data-theme="dark"] input,
+.app[data-theme="dark"] textarea {
+    background: rgba(20,22,28,0.7);
+    border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Progress bars and small accents */
+.progress-bar {
+    height: 8px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.progress-bar span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent-strong) 100%);
+}
+
+/* Buttons color tweaks for dark */
+.btn-primary {
+    background: linear-gradient(90deg, rgba(139,156,255,0.14), rgba(110,120,255,0.06));
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.03);
+}
+.btn-secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid rgba(255,255,255,0.03);
+}
+.btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Tables / lists look */
+.app[data-theme="dark"] .task-list li,
+.app[data-theme="dark"] .routine-list li {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.02);
+}
+
 * {
     box-sizing: border-box;
 }
