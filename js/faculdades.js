@@ -52,12 +52,50 @@ export const initFaculdades = (data, onChange) => {
             card.innerHTML = `<div class="card-header"><h3>${course.name}</h3><span>${(course.disciplines || []).length} disciplinas</span></div><div class="stat-row"><span>Média</span><strong>${avg}</strong></div><div class="progress-bar"><span style="width:${avg}%"></span></div><div class="disciplines-list"></div><div class="card-actions"></div>`;
 
             const list = card.querySelector('.disciplines-list');
-            (course.disciplines || []).forEach((item) => {
-                const row = document.createElement('div');
-                row.className = 'task-head';
-                row.innerHTML = `<strong>${item.name}</strong><span>${(item.grade||0).toFixed(1)} • ${item.attendance || 0}%</span>`;
-                list.appendChild(row);
-            });
+                (course.disciplines || []).forEach((item) => {
+                    const row = document.createElement('div');
+                    row.className = 'task-head';
+                    row.style.display = 'flex';
+                    row.style.justifyContent = 'space-between';
+                    row.style.alignItems = 'center';
+                    row.innerHTML = `<div><strong>${item.name}</strong><div class="muted small">${(item.grade||0).toFixed(1)} • ${item.attendance || 0}%</div></div>`;
+                    const controls = document.createElement('div');
+                    controls.style.display = 'flex';
+                    controls.style.gap = '8px';
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn-secondary';
+                    editBtn.textContent = 'Editar';
+                    editBtn.addEventListener('click', () => {
+                        const name = window.prompt('Nome da disciplina', item.name);
+                        if (name === null) return;
+                        const grade = Number(window.prompt('Nota média', item.grade)) || 0;
+                        const attendance = Number(window.prompt('Frequência %', item.attendance)) || 0;
+                        const updated = { ...data };
+                        const target = updated.faculties.find((f) => f.id === course.id);
+                        const disc = target.disciplines.find((d) => d.id === item.id);
+                        disc.name = name;
+                        disc.grade = Number(grade) || 0;
+                        disc.attendance = Number(attendance) || 0;
+                        onChange(updated);
+                    });
+
+                    const delDiscBtn = document.createElement('button');
+                    delDiscBtn.className = 'btn-danger';
+                    delDiscBtn.textContent = 'Remover';
+                    delDiscBtn.addEventListener('click', () => {
+                        if (!confirm(`Remover a disciplina "${item.name}"?`)) return;
+                        const updated = { ...data };
+                        const target = updated.faculties.find((f) => f.id === course.id);
+                        target.disciplines = (target.disciplines || []).filter((d) => d.id !== item.id);
+                        onChange(updated);
+                    });
+
+                    controls.appendChild(editBtn);
+                    controls.appendChild(delDiscBtn);
+                    row.appendChild(controls);
+                    list.appendChild(row);
+                });
 
             const actions = card.querySelector('.card-actions');
             const addDiscBtn = document.createElement('button');
