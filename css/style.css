@@ -1459,3 +1459,25 @@ label select {
         width: 100%;
     }
 }
+/* =====================================
+   DASHBOARD V2
+===================================== */
+
+.dashboard-focus-card{
+    background:#0f172a;
+    border:1px solid rgba(255,255,255,.04);
+    border-radius:24px;
+    padding:40px;
+    margin-bottom:24px;
+}
+
+.dashboard-date{
+    margin:0;
+    color:var(--muted);
+    font-size:.95rem;
+}
+
+.dashboard-focus-card h2{
+    font-size:3rem;
+    font-weight:800;
+    margin: 10px;
