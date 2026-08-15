@@ -100,8 +100,8 @@
         <main class="conteudo">
             <header class="topo">
                 <div>
-                    <h1 id="pageTitle">Dashboard</h1>
-                    <p id="topMessage">Bem-vindo ao Planner TI Life OS</p>
+                    <h1 id="pageTitle"></h1>
+                    <p id="topMessage"></p>
                 </div>
                 <div class="topo-actions">
                     <button class="btn-icon" id="themeToggle" aria-label="Alternar tema">
@@ -116,101 +116,147 @@
 
             <div class="page-shell">
                 <section id="dashboardPage" class="page active">
-                    <article class="card dashboard-hero-card">
-                        <div>
-                            <p class="eyebrow">Painel inteligente</p>
-                            <h2 id="dashboardGreeting">Bom dia, João</h2>
-                            <p class="hero-copy">Organize seu fluxo de estudos, prazos e foco em uma plataforma que entende sua rotina acadêmica.</p>
-                        </div>
-                        <div class="hero-stats">
-                            <div><strong id="heroTodayHours">0h</strong><span>Hoje</span></div>
-                            <div><strong id="heroWeeklyHours">0h</strong><span>Semana</span></div>
-                            <div><strong id="heroMonthlyHours">0h</strong><span>Mês</span></div>
-                        </div>
-                    </article>
-                    <div class="grid-4 dashboard-insights">
-                        <article class="card insight-card">
-                            <h3>Próxima atividade</h3>
-                            <p class="insight-value" id="nextActivity">Nenhuma atividade agendada</p>
-                        </article>
-                        <article class="card insight-card">
-                            <h3>Próxima prova</h3>
-                            <p class="insight-value" id="nextExam">Nenhuma prova cadastrada</p>
-                        </article>
-                        <article class="card insight-card">
-                            <h3>Próxima aula</h3>
-                            <p class="insight-value" id="nextClass">Sem aula marcada</p>
-                        </article>
-                        <article class="card insight-card">
-                            <h3>Meta diária</h3>
-                            <p class="insight-value" id="remainingGoal">Faltam 4h</p>
-                        </article>
-                    </div>
-                    <div class="grid-4">
-                        <article class="card metric-card">
-                            <span class="metric-label">Horas estudadas hoje</span>
-                            <strong id="todayHours">0 h</strong>
-                            <small>Meta diária: <span id="dailyGoalLabel">4h</span></small>
-                        </article>
-                        <article class="card metric-card">
-                            <span class="metric-label">Horas semanais</span>
-                            <strong id="weeklyHours">0 h</strong>
-                            <small>Meta semanal: <span id="weeklyGoalLabel">20h</span></small>
-                        </article>
-                        <article class="card metric-card">
-                            <span class="metric-label">Horas mensais</span>
-                            <strong id="monthlyHours">0 h</strong>
-                            <small>Meta mensal: <span id="monthlyGoalLabel">80h</span></small>
-                        </article>
-                        <article class="card metric-card">
-                            <span class="metric-label">Sequência</span>
-                            <strong id="streakDays">0 dias</strong>
-                            <small>Consecutivos ativos</small>
-                        </article>
-                    </div>
 
-                    <div class="grid-2">
-                        <article class="card chart-card">
-                            <div class="card-header">
-                                <h2>Gráfico semanal</h2>
-                                <span class="tag blue">Últimos 7 dias</span>
-                            </div>
-                            <div class="bar-chart" id="weeklyChart"></div>
-                        </article>
-                        <article class="card chart-card">
-                            <div class="card-header">
-                                <h2>Gráfico mensal</h2>
-                                <span class="tag purple">Este mês</span>
-                            </div>
-                            <div class="bar-chart" id="monthlyChart"></div>
-                        </article>
-                    </div>
+    <article class="dashboard-focus-card">
 
-                    <div class="grid-4">
-                        <article class="card small-card routine-card">
-                            <h3>Minha Rotina</h3>
-                            <div class="routine-summary" id="dashboardRoutineSummary">
-                                <p class="muted">Seu bloco de rotina diária já está preparado e aparece nesta visualização.</p>
-                                <strong id="dashboardRoutineCount">0 ações</strong>
-                                <span id="dashboardRoutinePreview">Segunda a sexta configurada.</span>
-                            </div>
-                        </article>
-                        <article class="card small-card">
-                            <h3>Últimos eventos</h3>
-                            <ul class="summary-list" id="dashboardRecentEvents"></ul>
-                        </article>
-                        <article class="card small-card">
-                            <h3>Últimas tarefas</h3>
-                            <ul class="summary-list" id="dashboardRecentTasks"></ul>
-                        </article>
-                        <article class="card small-card stats-card">
-                            <h3>Estatísticas gerais</h3>
-                            <div class="stat-row"><span>Tarefas</span><strong id="statOpenTasks">0</strong></div>
-                            <div class="stat-row"><span>Eventos</span><strong id="statEvents">0</strong></div>
-                            <div class="stat-row"><span>Projetos</span><strong id="statProjects">0</strong></div>
-                        </article>
-                    </div>
-                </section>
+        <div class="dashboard-focus-header">
+
+            <div>
+                <p class="dashboard-date" id="dashboardCurrentDate">
+                    Sexta-feira, 14 de agosto
+                </p>
+
+                <h2 id="dashboardGreeting">
+                    Boa noite, João
+                </h2>
+
+                <p class="dashboard-description">
+                    Seu centro de comando pessoal para estudos,
+                    projetos, faculdade e evolução profissional.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="dashboard-focus-grid">
+
+            <div class="focus-item">
+                <span>Próxima atividade</span>
+                <strong id="nextActivity">Nenhuma atividade</strong>
+            </div>
+
+            <div class="focus-item">
+                <span>Próxima prova</span>
+                <strong id="nextExam">Nenhuma prova</strong>
+            </div>
+
+            <div class="focus-item">
+                <span>Próxima aula</span>
+                <strong id="nextClass">Sem aula</strong>
+            </div>
+
+            <div class="focus-item">
+                <span>Meta diária</span>
+                <strong id="remainingGoal">4h restantes</strong>
+            </div>
+
+        </div>
+
+    </article>
+
+    <div class="dashboard-metrics">
+
+        <article class="metric-v2">
+            <span>Hoje</span>
+            <strong id="todayHours">0 h</strong>
+        </article>
+
+        <article class="metric-v2">
+            <span>Semana</span>
+            <strong id="weeklyHours">0 h</strong>
+        </article>
+
+        <article class="metric-v2">
+            <span>Mês</span>
+            <strong id="monthlyHours">0 h</strong>
+        </article>
+
+        <article class="metric-v2">
+            <span>Sequência</span>
+            <strong id="streakDays">0 dias</strong>
+        </article>
+
+    </div>
+
+    <div class="dashboard-content-grid">
+
+        <article class="card dashboard-chart-card">
+
+            <div class="card-header">
+                <h3>Evolução semanal</h3>
+            </div>
+
+            <div class="bar-chart" id="weeklyChart"></div>
+
+        </article>
+
+        <article class="card dashboard-chart-card">
+
+            <div class="card-header">
+                <h3>Evolução mensal</h3>
+            </div>
+
+            <div class="bar-chart" id="monthlyChart"></div>
+
+        </article>
+
+    </div>
+
+    <div class="dashboard-lists">
+
+        <article class="card">
+
+            <div class="card-header">
+                <h3>Eventos recentes</h3>
+            </div>
+
+            <ul class="summary-list" id="dashboardRecentEvents"></ul>
+
+        </article>
+
+        <article class="card">
+
+            <div class="card-header">
+                <h3>Tarefas recentes</h3>
+            </div>
+
+            <ul class="summary-list" id="dashboardRecentTasks"></ul>
+
+        </article>
+
+        <article class="card">
+
+            <div class="card-header">
+                <h3>Minha rotina</h3>
+            </div>
+
+            <div class="routine-summary">
+
+                <strong id="dashboardRoutineCount">
+                    0 ações
+                </strong>
+
+                <span id="dashboardRoutinePreview">
+                    Sem rotina cadastrada
+                </span>
+
+            </div>
+
+        </article>
+
+    </div>
+
+</section>
 
                 <section id="routinePage" class="page">
                     <div class="page-header-row">

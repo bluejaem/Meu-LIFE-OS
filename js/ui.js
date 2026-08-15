@@ -26,8 +26,20 @@ export const bindSidebarToggle = () => {
     toggle?.addEventListener('click', () => sidebar?.classList.toggle('collapsed'));
 };
 export const showPage = (pageId) => {
-    document.getElementById('pageTitle').textContent = document.querySelector(`.menu-link[data-page="${pageId}"] span`)?.textContent || 'Planner';
-    document.getElementById('topMessage').textContent = `Gerenciando ${document.getElementById('pageTitle').textContent}`;
+
+    const pageTitle = document.getElementById('pageTitle');
+    const topMessage = document.getElementById('topMessage');
+
+    if(pageId === 'dashboardPage'){
+        pageTitle.textContent = '';
+        topMessage.textContent = '';
+    }else{
+        pageTitle.textContent =
+            document.querySelector(`.menu-link[data-page="${pageId}"] span`)?.textContent || 'Planner';
+
+        topMessage.textContent = '';
+    }
+
     document.querySelectorAll('.page').forEach((page) => {
         page.classList.toggle('active', page.id === pageId);
     });
