@@ -36,11 +36,15 @@ const menuItems = [
   { id: 'certificacoes', icon: Award, label: 'Certificações' },
 ];
 
-export function Sidebar({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (t: string) => void }) {
+export function Sidebar({ activeTab, setActiveTab, isOpen }: { activeTab: string, setActiveTab: (t: string) => void, isOpen?: boolean }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <aside className="w-[240px] flex-shrink-0 h-full flex flex-col bg-black/20 backdrop-blur-3xl border-r border-white/5 py-5 select-none relative z-10 shadow-2xl">
+    <aside className={cn(
+      "w-[240px] flex-shrink-0 h-full flex flex-col bg-black/20 backdrop-blur-3xl border-r border-white/5 py-5 select-none z-50 shadow-2xl transition-transform duration-300 ease-in-out",
+      "fixed md:relative top-0 left-0",
+      isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+    )}>
       
       <CommandPalette isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} onNavigate={setActiveTab} />
 
