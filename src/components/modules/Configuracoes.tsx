@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageLayout } from '../layout/PageLayout';
 import { useStore } from '@/store/useStore';
-import { User, Image, Bell } from 'lucide-react';
+import { User, Image, Bell, Upload } from 'lucide-react';
 import { FormField, inputClass } from '../ui/Modal';
 
 const WALLPAPERS = [
@@ -20,6 +20,42 @@ export function Configuracoes() {
 
   const applyWallpaper = (url: string) => {
     updateSettings({ wallpaperUrl: url });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = document.createElement('img');
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 256;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        updateSettings({ avatarUrl: dataUrl });
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -41,15 +77,28 @@ export function Configuracoes() {
             />
           </FormField>
           
-          <FormField label="URL da Foto de Perfil (Opcional)">
-            <input
-              className={inputClass}
-              value={settings.avatarUrl || ''}
-              onChange={e => updateSettings({ avatarUrl: e.target.value })}
-              placeholder="https://suafoto.com/perfil.jpg (Deixe vazio para usar suas iniciais)"
-            />
+          <FormField label="Foto de Perfil">
+            <div className="flex items-center gap-5 mt-1">
+              <img 
+                src={settings.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(settings.userName)}&background=6366f1&color=fff`} 
+                alt="Avatar Preview" 
+                className="w-16 h-16 rounded-full object-cover object-top border border-white/10" 
+              />
+              <div className="flex flex-col gap-2 items-start">
+                <label className="cursor-pointer px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-lg text-[13px] font-semibold text-indigo-300 transition-colors flex items-center gap-2">
+                  <Upload size={14} />
+                  Carregar Foto
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                </label>
+                {settings.avatarUrl && (
+                  <button onClick={() => updateSettings({ avatarUrl: '' })} className="text-xs text-red-400 hover:text-red-300 font-medium px-1 transition-colors">
+                    Remover foto
+                  </button>
+                )}
+              </div>
+            </div>
           </FormField>
-          <p className="text-xs text-slate-500">A URL da imagem será carregada no menu. Deixe vazio para usar a imagem de iniciais padrão.</p>
+          <p className="text-xs text-slate-500">A foto escolhida será usada no menu do sistema.</p>
         </div>
 
         {/* Wallpaper Section */}
