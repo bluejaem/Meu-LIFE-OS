@@ -106,10 +106,10 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
   const displayTime = formatSecondsToTime(pomodoroSecondsLeft);
 
   return (
-    <div className="flex h-full w-full overflow-hidden">
+    <div className="flex flex-col xl:flex-row h-full w-full overflow-y-auto xl:overflow-hidden scrollbar-hide">
       <ModalAddStudy isOpen={isStudyModalOpen} onClose={() => setIsStudyModalOpen(false)} />
       {/* Main Column */}
-      <div className="flex-1 flex flex-col px-10 py-8 overflow-y-auto scrollbar-hide gap-8">
+      <div className="flex-1 flex flex-col px-5 xl:px-10 py-6 xl:py-8 overflow-y-visible xl:overflow-y-auto scrollbar-hide gap-6 xl:gap-8">
 
         {/* Header */}
         <header className="flex flex-col gap-1.5 shrink-0">
@@ -126,7 +126,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
         </header>
 
         {/* KPIs */}
-        <div className="grid grid-cols-4 gap-4 shrink-0">
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 shrink-0">
           <MetricCard
             title="Tarefas"
             value={`${doneTodayTasks.length}`}
@@ -197,7 +197,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
         </div>
 
         {/* Bottom row */}
-        <div className="grid grid-cols-2 gap-6 shrink-0 pb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0 pb-10">
           {/* Goals */}
           <div className="glass-panel p-5 flex flex-col">
             <div className="flex items-center justify-between mb-5">
@@ -288,7 +288,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
       </div>
 
       {/* Right Column */}
-      <div className="w-[300px] flex-shrink-0 border-l border-white/5 bg-black/20 backdrop-blur-3xl p-6 overflow-y-auto scrollbar-hide flex flex-col gap-8 shadow-2xl">
+      <div className="w-full xl:w-[300px] flex-shrink-0 border-t xl:border-t-0 xl:border-l border-white/5 bg-black/20 backdrop-blur-3xl p-6 xl:overflow-y-auto scrollbar-hide flex flex-col gap-8 shadow-2xl">
 
         {/* Profile */}
         <div className="flex justify-end">
