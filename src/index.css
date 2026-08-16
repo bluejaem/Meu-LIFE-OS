@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Variables (shadcn/ui dark) ─── */
+@layer base {
+  :root {
+    --background: 222 47% 5%;
+    --foreground: 213 31% 91%;
+    --card: 222 47% 8%;
+    --card-foreground: 213 31% 91%;
+    --popover: 222 47% 5%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 213 31% 91%;
+    --primary-foreground: 222 47% 5%;
+    --secondary: 222 47% 12%;
+    --secondary-foreground: 213 31% 91%;
+    --muted: 222 47% 12%;
+    --muted-foreground: 215 16% 57%;
+    --accent: 222 47% 12%;
+    --accent-foreground: 213 31% 91%;
+    --border: 222 47% 12%;
+    --input: 222 47% 12%;
+    --ring: 222 47% 20%;
+    --radius: 0.75rem;
+  }
+}
+
+/* ─── Global Reset & Body ─── */
+@layer base {
+  * {
+    @apply border-border box-border;
+  }
+
+  html, body {
+    @apply h-full w-full m-0 p-0;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #0a0b10;
+    color: #e2e8f0;
+    overflow: hidden;
+  }
+
+  /* Wallpaper fixo */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: var(--bg-image, url('https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=3028&auto=format&fit=crop'));
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    /* Overlay escuro + blur para legibilidade */
+    filter: blur(0px);
+    z-index: -2;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(9,11,17,0.93) 0%, rgba(9,11,17,0.82) 100%);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: -1;
+  }
+}
+
+/* ─── Design System Components ─── */
+@layer components {
+  /* Painel principal em Liquid Glass */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 1rem;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.4),
+      0 2px 4px -1px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* Scrollbar oculta */
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+}
