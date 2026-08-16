@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PageLayout } from '../layout/PageLayout';
-import { Plus, Clock, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Clock, Pencil, Trash2, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
 import type { RoutineBlock, RoutineDay } from '@/types';
@@ -19,6 +19,11 @@ export function Rotina() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<any>(EMPTY_FORM);
   const [activeDay, setActiveDay] = useState<RoutineDay>('Seg');
+
+  // Import State
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [previewBlocks, setPreviewBlocks] = useState<any[]>([]);
 
   const todayBlocks = routine.filter(r => r.days.includes(activeDay) || r.days.includes('Todos' as RoutineDay)).sort((a, b) => a.time.localeCompare(b.time));
 
@@ -43,14 +48,96 @@ export function Rotina() {
     setForm({ ...form, days: newDays });
   };
 
+  const parseText = (text: string) => {
+    setImportText(text);
+    const lines = text.split('\n');
+    let currentDays: RoutineDay[] = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'];
+    const parsed: any[] = [];
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      
+      const upper = trimmed.toUpperCase();
+      if (upper.includes('SEGUNDA A SEXTA') || upper.includes('DIAS ÚTEIS')) {
+        currentDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'];
+        continue;
+      } else if (upper.includes('SÁBADO') || upper.includes('SABADO')) {
+        currentDays = ['Sáb'];
+        continue;
+      } else if (upper.includes('DOMINGO')) {
+        currentDays = ['Dom'];
+        continue;
+      } else if (upper.includes('FIM DE SEMANA') || upper.includes('FINAL DE SEMANA')) {
+        currentDays = ['Sáb', 'Dom'];
+        continue;
+      } else if (upper.includes('TODOS OS DIAS') || upper.includes('DIARIAMENTE')) {
+        currentDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+        continue;
+      }
+
+      // Match HH:MM potentially followed by another HH:MM, and then any text
+      // e.g. "06:20 - Acordar" or "07:00-08:20 Estudo" or "10:00 — 12:00 Reunião"
+      const timeMatch = trimmed.match(/^(\d{2}:\d{2})(?:\s*(?:-|–|—|a|ate|até)\s*(\d{2}:\d{2}))?\s*[-–—:\s]*\s*(.+)$/i);
+      
+      if (timeMatch) {
+        const start = timeMatch[1];
+        const end = timeMatch[2];
+        const title = timeMatch[3].trim();
+        
+        let duration = 30; // default
+        if (end) {
+          const [sh, sm] = start.split(':').map(Number);
+          const [eh, em] = end.split(':').map(Number);
+          duration = (eh * 60 + em) - (sh * 60 + sm);
+          if (duration <= 0) duration += 24 * 60; // crossed midnight
+        }
+
+        let category = 'Outro';
+        const tUpper = title.toUpperCase();
+        if (tUpper.includes('ESTUD') || tUpper.includes('AULA') || tUpper.includes('CURSO') || tUpper.includes('LER') || tUpper.includes('LEITURA')) category = 'Estudo';
+        else if (tUpper.includes('TRABALHO') || tUpper.includes('REUNIÃO') || tUpper.includes('PROJETO') || tUpper.includes('PROGRAMAR')) category = 'Trabalho';
+        else if (tUpper.includes('ACORDAR') || tUpper.includes('DORMIR') || tUpper.includes('SONO') || tUpper.includes('DESCANSAR')) category = 'Sono';
+        else if (tUpper.includes('ALMOÇO') || tUpper.includes('CAFÉ') || tUpper.includes('LANCHE') || tUpper.includes('JANTA') || tUpper.includes('COMER')) category = 'Alimentação';
+        else if (tUpper.includes('ACADEMIA') || tUpper.includes('TREINO') || tUpper.includes('CORRIDA') || tUpper.includes('EXERCÍCIO') || tUpper.includes('ALONGAMENTO')) category = 'Exercício';
+        else if (tUpper.includes('LAZER') || tUpper.includes('JOGO') || tUpper.includes('FILME') || tUpper.includes('SÉRIE') || tUpper.includes('CELULAR')) category = 'Lazer';
+
+        const colorMap: Record<string, string> = {
+          'Estudo': '#6366f1',
+          'Exercício': '#10b981',
+          'Trabalho': '#f59e0b',
+          'Alimentação': '#ec4899',
+          'Sono': '#8b5cf6',
+          'Lazer': '#3b82f6',
+          'Outro': '#64748b',
+        };
+
+        parsed.push({ time: start, duration, title, category, days: [...currentDays], color: colorMap[category] || '#6366f1' });
+      }
+    }
+    setPreviewBlocks(parsed);
+  };
+
+  const handleImport = () => {
+    previewBlocks.forEach(b => addRoutineBlock(b));
+    setImportOpen(false);
+    setImportText('');
+    setPreviewBlocks([]);
+  };
+
   return (
     <PageLayout
       title="Rotina"
       subtitle="Organização do seu dia a dia"
       actions={
-        <button onClick={openCreate} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20">
-          <Plus size={16} /> Adicionar Atividade
-        </button>
+        <div className="flex items-center gap-3">
+          <button onClick={() => { setImportText(''); setPreviewBlocks([]); setImportOpen(true); }} className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors border border-white/10">
+            <Download size={16} /> Importar Texto
+          </button>
+          <button onClick={openCreate} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20">
+            <Plus size={16} /> Adicionar Atividade
+          </button>
+        </div>
       }
     >
       <div className="flex flex-col gap-6 pb-8">
@@ -122,6 +209,51 @@ export function Rotina() {
         <RoutineForm form={form} setForm={setForm} toggleDay={toggleDay} onSubmit={handleEdit} label="Salvar" />
       </Modal>
       <ConfirmModal open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={() => deleteId && deleteRoutineBlock(deleteId)} title="Remover Atividade" confirmLabel="Remover" danger />
+
+      {/* Modal de Importação */}
+      <Modal open={importOpen} onClose={() => setImportOpen(false)} title="Importar Rotina por Texto" description="Cole sua rotina aqui. Identificaremos horários e dias automaticamente.">
+        <div className="flex flex-col gap-4">
+          <textarea
+            className={cn(inputClass, "h-48 resize-none font-mono text-xs")}
+            placeholder="Exemplo:&#10;SEGUNDA A SEXTA:&#10;06:20 - Acordar&#10;07:00-08:20 - Estudo Cálculo&#10;&#10;SÁBADO:&#10;08:00 - Academia"
+            value={importText}
+            onChange={e => parseText(e.target.value)}
+            autoFocus
+          />
+          
+          {previewBlocks.length > 0 && (
+            <div className="mt-2">
+              <h4 className="text-sm font-semibold text-slate-300 mb-2">Pré-visualização ({previewBlocks.length} itens)</h4>
+              <div className="max-h-40 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-white/10">
+                {previewBlocks.map((b, i) => (
+                  <div key={i} className="flex items-center gap-3 p-2 bg-white/5 rounded-lg text-xs">
+                    <span className="font-bold text-slate-300 w-10 shrink-0">{b.time}</span>
+                    <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: b.color }} />
+                    <span className="font-semibold text-white truncate flex-1">{b.title}</span>
+                    <div className="flex gap-1 shrink-0">
+                      {b.days.slice(0,3).map((d:string) => <span key={d} className="bg-white/10 px-1 rounded text-[10px] text-slate-400">{d}</span>)}
+                      {b.days.length > 3 && <span className="text-[10px] text-slate-500">+{b.days.length - 3}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 mt-4">
+            <button onClick={() => setImportOpen(false)} className="px-4 py-2 text-sm font-semibold text-slate-400 hover:text-slate-200">
+              Cancelar
+            </button>
+            <button 
+              onClick={handleImport}
+              disabled={previewBlocks.length === 0}
+              className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Importar {previewBlocks.length} Atividades
+            </button>
+          </div>
+        </div>
+      </Modal>
     </PageLayout>
   );
 }
