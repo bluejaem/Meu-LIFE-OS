@@ -111,12 +111,13 @@ export function Rotina() {
 
         let category = 'Outro';
         const tUpper = title.toUpperCase();
-        if (tUpper.includes('ESTUD') || tUpper.includes('AULA') || tUpper.includes('CURSO') || tUpper.includes('LER') || tUpper.includes('LEITURA')) category = 'Estudo';
-        else if (tUpper.includes('TRABALHO') || tUpper.includes('REUNIÃO') || tUpper.includes('PROJETO') || tUpper.includes('PROGRAMAR')) category = 'Trabalho';
-        else if (tUpper.includes('ACORDAR') || tUpper.includes('DORMIR') || tUpper.includes('SONO') || tUpper.includes('DESCANSAR')) category = 'Sono';
-        else if (tUpper.includes('ALMOÇO') || tUpper.includes('CAFÉ') || tUpper.includes('LANCHE') || tUpper.includes('JANTA') || tUpper.includes('COMER')) category = 'Alimentação';
-        else if (tUpper.includes('ACADEMIA') || tUpper.includes('TREINO') || tUpper.includes('CORRIDA') || tUpper.includes('EXERCÍCIO') || tUpper.includes('ALONGAMENTO')) category = 'Exercício';
-        else if (tUpper.includes('LAZER') || tUpper.includes('JOGO') || tUpper.includes('FILME') || tUpper.includes('SÉRIE') || tUpper.includes('CELULAR')) category = 'Lazer';
+        
+        if (tUpper.includes('ACORDAR') || tUpper.includes('DORMIR') || tUpper.includes('SONO') || tUpper.includes('DESCANSAR')) category = 'Sono';
+        else if (tUpper.includes('ALMOÇO') || tUpper.includes('CAFÉ') || tUpper.includes('CAFE') || tUpper.includes('LANCHE') || tUpper.includes('JANTA') || tUpper.includes('COMER')) category = 'Alimentação';
+        else if (tUpper.includes('ESTUD') || tUpper.includes('AULA') || tUpper.includes('CURSO') || tUpper.includes('LER') || tUpper.includes('LEITURA') || tUpper.includes('REVISÃO') || tUpper.includes('REVISAO') || tUpper.includes('ACADÊMIC') || tUpper.includes('ACADEMIC') || tUpper.includes('ENGENHARIA') || tUpper.includes('INFORMÁTICA') || tUpper.includes('INFORMATICA') || tUpper.includes('TECNOLOGIA') || tUpper.includes('FACULDADE')) category = 'Estudo';
+        else if (tUpper.includes('TRABALHO') || tUpper.includes('REUNIÃO') || tUpper.includes('REUNIAO') || tUpper.includes('PROJETO') || tUpper.includes('PROGRAMAR') || tUpper.includes('ORGANIZAÇÃO') || tUpper.includes('ORGANIZACAO') || tUpper.includes('PLANEJAMENTO') || tUpper.includes('PENDÊNCIAS') || tUpper.includes('PENDENCIAS')) category = 'Trabalho';
+        else if (tUpper.includes('ACADEMIA') || tUpper.includes('TREINO') || tUpper.includes('CORRIDA') || tUpper.includes('ALONGAMENTO') || tUpper.includes('EXERCÍCIO FÍSICO') || tUpper.includes('ESPORTE')) category = 'Exercício';
+        else if (tUpper.includes('LAZER') || tUpper.includes('JOGO') || tUpper.includes('FILME') || tUpper.includes('SÉRIE') || tUpper.includes('SERIE') || tUpper.includes('CELULAR') || tUpper.includes('LIVRE')) category = 'Lazer';
 
         const colorMap: Record<string, string> = {
           'Estudo': '#6366f1',
