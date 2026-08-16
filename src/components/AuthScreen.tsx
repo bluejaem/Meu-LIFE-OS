@@ -27,14 +27,14 @@ export function AuthScreen() {
       if (!res.success) {
         setError(res.error || 'Erro ao fazer login.');
       } else if (res.user) {
-        updateSettings({ userName: res.user.name, avatarUrl: res.user.avatarUrl });
+        updateSettings({ userName: res.user.name, avatarUrl: res.user.avatarUrl || '' });
       }
     } else {
-      const res = register({ name, username, passwordHash: password, avatarUrl: '/avatar.jpg' });
+      const res = register({ name, username, passwordHash: password, avatarUrl: '' });
       if (!res.success) {
         setError(res.error || 'Erro ao cadastrar.');
       } else if (res.user) {
-        updateSettings({ userName: res.user.name, avatarUrl: res.user.avatarUrl });
+        updateSettings({ userName: res.user.name, avatarUrl: res.user.avatarUrl || '' });
       }
     }
   };

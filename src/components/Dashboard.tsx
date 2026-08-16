@@ -294,7 +294,11 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
         <div className="flex justify-end">
           <div className="flex items-center gap-3">
             <span className="text-xs font-semibold text-slate-400">{settings.userName}</span>
-            <img src={settings.avatarUrl || "/avatar.jpg"} alt="Avatar" className="w-8 h-8 rounded-full object-cover object-top border border-white/10" />
+            <img 
+              src={settings.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(settings.userName)}&background=6366f1&color=fff`} 
+              alt="Avatar" 
+              className="w-8 h-8 rounded-full object-cover object-top border border-white/10" 
+            />
           </div>
         </div>
 

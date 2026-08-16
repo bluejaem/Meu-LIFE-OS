@@ -40,7 +40,16 @@ export function Configuracoes() {
               placeholder="Seu nome"
             />
           </FormField>
-          <p className="text-xs text-slate-500">Seu nome aparece no Dashboard e nos cumprimentos.</p>
+          
+          <FormField label="URL da Foto de Perfil (Opcional)">
+            <input
+              className={inputClass}
+              value={settings.avatarUrl || ''}
+              onChange={e => updateSettings({ avatarUrl: e.target.value })}
+              placeholder="https://suafoto.com/perfil.jpg (Deixe vazio para usar suas iniciais)"
+            />
+          </FormField>
+          <p className="text-xs text-slate-500">A URL da imagem será carregada no menu. Deixe vazio para usar a imagem de iniciais padrão.</p>
         </div>
 
         {/* Wallpaper Section */}
