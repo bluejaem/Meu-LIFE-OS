@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useStore } from '@/store/useStore';
 import { Lock, User, UserPlus, LogIn, ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
