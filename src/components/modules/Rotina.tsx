@@ -128,15 +128,13 @@ export function Rotina() {
           'Outro': '#64748b',
         };
 
+        // Adiciona à lista não agrupada primeiro
         parsed.push({ time: start, duration, title, category, days: [...currentDays], color: colorMap[category] || '#6366f1' });
       }
     }
-    setPreviewBlocks(parsed);
-  };
 
-  const handleImport = () => {
-    // Agrupa os blocos do preview que tenham mesmo horário e título
-    const grouped = previewBlocks.reduce((acc, curr) => {
+    // Agrupa os blocos no preview para o usuário ver o merge visualmente
+    const grouped = parsed.reduce((acc, curr) => {
       const key = `${curr.time}|${curr.title.toLowerCase().trim()}`;
       if (!acc[key]) {
         acc[key] = { ...curr, days: [...curr.days] };
@@ -148,20 +146,24 @@ export function Rotina() {
       return acc;
     }, {} as Record<string, any>);
 
-    Object.values(grouped).forEach(newBlock => {
+    setPreviewBlocks(Object.values(grouped));
+  };
+
+  const handleImport = () => {
+    previewBlocks.forEach(newBlock => {
       // Busca o estado mais atual da store para evitar duplicações no loop
       const currentRoutine = useStore.getState().routine;
-      const existing = currentRoutine.find(r => r.time === (newBlock as any).time && r.title.toLowerCase().trim() === (newBlock as any).title.toLowerCase().trim());
+      const existing = currentRoutine.find(r => r.time === newBlock.time && r.title.toLowerCase().trim() === newBlock.title.toLowerCase().trim());
       
       if (existing) {
         // Se a atividade já existe neste horário, mescla os dias da semana
-        const daysToAdd = (newBlock as any).days.filter((d: RoutineDay) => !existing.days.includes(d));
+        const daysToAdd = newBlock.days.filter((d: RoutineDay) => !existing.days.includes(d));
         if (daysToAdd.length > 0) {
           updateRoutineBlock(existing.id, { days: [...existing.days, ...daysToAdd] });
         }
       } else {
         // Caso não exista, adiciona
-        addRoutineBlock(newBlock as any);
+        addRoutineBlock(newBlock);
       }
     });
 
