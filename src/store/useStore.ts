@@ -235,12 +235,6 @@ export const useStore = create<AppStore>()(
       })),
 
       // ── Pomodoro ───────────────────────────────────────────────────────────
-      pomodoroMode: 'focus',
-      pomodoroSecondsLeft: 25 * 60,
-      pomodoroIsRunning: false,
-      pomodoroSelectedTask: null,
-      pomodoroDurations: { focus: 25, shortBreak: 5, longBreak: 15 },
-      
       setPomodoroState: (state) => set((s) => ({ ...s, ...state })),
       setPomodoroDurations: (durations) => set((s) => ({
         pomodoroDurations: { ...s.pomodoroDurations, ...durations }
