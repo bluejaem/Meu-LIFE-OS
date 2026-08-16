@@ -12,11 +12,13 @@ import {
   BookHeart,
   Timer,
   Settings,
-  Search
+  Search,
+  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { CommandPalette } from './CommandPalette';
+import { useAuthStore } from '@/store/authStore';
 
 const menuItems = [
   { section: 'Principal' },
@@ -109,13 +111,20 @@ export function Sidebar({ activeTab, setActiveTab, isOpen }: { activeTab: string
       </nav>
 
       {/* Footer Settings */}
-      <div className="px-3 pt-4 pb-2 mt-auto">
+      <div className="px-3 pt-4 pb-2 mt-auto space-y-1">
         <button
           onClick={() => setActiveTab('configuracoes')}
           className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] font-medium text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors"
         >
           <Settings size={16} className="text-slate-500" />
           Settings
+        </button>
+        <button
+          onClick={() => useAuthStore.getState().logout()}
+          className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] font-medium text-red-400/80 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+        >
+          <LogOut size={16} className="text-red-400/70" />
+          Sair
         </button>
       </div>
 

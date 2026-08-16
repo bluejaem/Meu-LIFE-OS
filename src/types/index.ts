@@ -145,6 +145,7 @@ export interface College {
 export interface AppSettings {
   wallpaperUrl: string;
   userName: string;
+  avatarUrl?: string;
   accentColor: string;
   language: string;
   notifications: boolean;

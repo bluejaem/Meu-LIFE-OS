@@ -16,11 +16,14 @@ import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 
 import { Menu } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { AuthScreen } from '@/components/AuthScreen';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { pomodoroIsRunning, tickPomodoro, settings } = useStore();
+  const { currentUser } = useAuthStore();
 
   useEffect(() => {
     document.documentElement.style.setProperty('--bg-image', `url('${settings.wallpaperUrl}')`);
@@ -56,6 +59,10 @@ export default function App() {
       default: return <Dashboard key="dashboard" />;
     }
   };
+
+  if (!currentUser) {
+    return <AuthScreen />;
+  }
 
   return (
     <div className="flex h-screen w-full overflow-hidden text-slate-200 font-sans selection:bg-indigo-500/30">
