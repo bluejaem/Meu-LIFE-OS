@@ -312,7 +312,10 @@ export const useStore = create<AppStore>()(
 
       // ── Computed Helpers ───────────────────────────────────────────────────
       getProjectProgress: (projectId) => {
-        const { tasks } = get();
+        const { tasks, projects } = get();
+        const project = projects.find(p => p.id === projectId);
+        if (project?.status === 'Concluído') return 100;
+        
         const projectTasks = tasks.filter(t => t.projectId === projectId);
         if (projectTasks.length === 0) return 0;
         const done = projectTasks.filter(t => t.done).length;

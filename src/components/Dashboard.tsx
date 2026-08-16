@@ -36,7 +36,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
   
   const doneTasks = tasks.filter(t => t.done).length;
 
-  const activeProjects = projects.filter(p => p.status === 'Em progresso');
+  const completedProjects = projects.filter(p => p.status === 'Concluído');
   
   const todaySessions = pomodoroSessions.filter(s => s.date === todayStr);
   const todayMinutes = todaySessions.reduce((acc, s) => acc + s.duration, 0);
@@ -137,9 +137,9 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
           />
           <MetricCard
             title="Projetos"
-            value={String(activeProjects.length)}
+            value={String(completedProjects.length)}
             total={String(projects.length)}
-            subtitle="Em andamento"
+            subtitle="Concluídos"
             icon={<FolderKanban size={14} className="text-indigo-400" />}
           />
           <MetricCard
