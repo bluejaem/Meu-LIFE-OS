@@ -75,6 +75,7 @@ interface AppStore {
   addRoutineBlock: (data: Omit<RoutineBlock, 'id'>) => void;
   updateRoutineBlock: (id: string, data: Partial<RoutineBlock>) => void;
   deleteRoutineBlock: (id: string) => void;
+  clearRoutine: () => void;
 
   // ── Diary CRUD
   addDiaryEntry: (data: Omit<DiaryEntry, 'id' | 'createdAt'>) => void;
@@ -222,6 +223,7 @@ export const useStore = create<AppStore>()(
       deleteRoutineBlock: (id) => set((s) => ({
         routine: s.routine.filter(r => r.id !== id)
       })),
+      clearRoutine: () => set(() => ({ routine: [] })),
 
       // ── Diary ──────────────────────────────────────────────────────────────
       addDiaryEntry: (data) => set((s) => ({

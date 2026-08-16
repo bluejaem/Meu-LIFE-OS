@@ -13,10 +13,11 @@ const BLOCK_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3
 const EMPTY_FORM = { time: '07:00', title: '', duration: 60, category: 'Estudo', days: ['Seg','Ter','Qua','Qui','Sex'] as RoutineDay[], color: '#6366f1' };
 
 export function Rotina() {
-  const { routine, addRoutineBlock, updateRoutineBlock, deleteRoutineBlock } = useStore();
+  const { routine, addRoutineBlock, updateRoutineBlock, deleteRoutineBlock, clearRoutine } = useStore();
   const [createOpen, setCreateOpen] = useState(false);
   const [editBlock, setEditBlock] = useState<RoutineBlock | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [clearOpen, setClearOpen] = useState(false);
   const [form, setForm] = useState<any>(EMPTY_FORM);
   const [activeDay, setActiveDay] = useState<RoutineDay>('Seg');
 
@@ -131,6 +132,11 @@ export function Rotina() {
       subtitle="Organização do seu dia a dia"
       actions={
         <div className="flex items-center gap-3">
+          {routine.length > 0 && (
+            <button onClick={() => setClearOpen(true)} className="flex items-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 px-4 py-2 rounded-lg font-semibold text-sm transition-colors border border-red-500/20">
+              <Trash2 size={16} /> Limpar Tudo
+            </button>
+          )}
           <button onClick={() => { setImportText(''); setPreviewBlocks([]); setImportOpen(true); }} className="flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors border border-white/10">
             <Download size={16} /> Importar Texto
           </button>
@@ -209,6 +215,7 @@ export function Rotina() {
         <RoutineForm form={form} setForm={setForm} toggleDay={toggleDay} onSubmit={handleEdit} label="Salvar" />
       </Modal>
       <ConfirmModal open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={() => deleteId && deleteRoutineBlock(deleteId)} title="Remover Atividade" confirmLabel="Remover" danger />
+      <ConfirmModal open={clearOpen} onClose={() => setClearOpen(false)} onConfirm={() => { clearRoutine(); setClearOpen(false); }} title="Limpar Rotina" description="Tem certeza que deseja apagar todas as atividades da rotina? Isso não pode ser desfeito." confirmLabel="Apagar Tudo" danger />
 
       {/* Modal de Importação */}
       <Modal open={importOpen} onClose={() => setImportOpen(false)} title="Importar Rotina por Texto" description="Cole sua rotina aqui. Identificaremos horários e dias automaticamente.">
