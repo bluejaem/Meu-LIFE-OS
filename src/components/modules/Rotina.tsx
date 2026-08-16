@@ -135,7 +135,36 @@ export function Rotina() {
   };
 
   const handleImport = () => {
-    previewBlocks.forEach(b => addRoutineBlock(b));
+    // Agrupa os blocos do preview que tenham mesmo horário e título
+    const grouped = previewBlocks.reduce((acc, curr) => {
+      const key = `${curr.time}|${curr.title.toLowerCase().trim()}`;
+      if (!acc[key]) {
+        acc[key] = { ...curr, days: [...curr.days] };
+      } else {
+        curr.days.forEach((d: RoutineDay) => {
+          if (!acc[key].days.includes(d)) acc[key].days.push(d);
+        });
+      }
+      return acc;
+    }, {} as Record<string, any>);
+
+    Object.values(grouped).forEach(newBlock => {
+      // Busca o estado mais atual da store para evitar duplicações no loop
+      const currentRoutine = useStore.getState().routine;
+      const existing = currentRoutine.find(r => r.time === (newBlock as any).time && r.title.toLowerCase().trim() === (newBlock as any).title.toLowerCase().trim());
+      
+      if (existing) {
+        // Se a atividade já existe neste horário, mescla os dias da semana
+        const daysToAdd = (newBlock as any).days.filter((d: RoutineDay) => !existing.days.includes(d));
+        if (daysToAdd.length > 0) {
+          updateRoutineBlock(existing.id, { days: [...existing.days, ...daysToAdd] });
+        }
+      } else {
+        // Caso não exista, adiciona
+        addRoutineBlock(newBlock as any);
+      }
+    });
+
     setImportOpen(false);
     setImportText('');
     setPreviewBlocks([]);
