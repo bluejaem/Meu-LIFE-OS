@@ -52,7 +52,7 @@ export function Rotina() {
   const parseText = (text: string) => {
     setImportText(text);
     const lines = text.split('\n');
-    let currentDays: RoutineDay[] = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'];
+    let currentDays: RoutineDay[] = [activeDay];
     const parsed: any[] = [];
     
     for (const line of lines) {
@@ -74,6 +74,21 @@ export function Rotina() {
         continue;
       } else if (upper.includes('TODOS OS DIAS') || upper.includes('DIARIAMENTE')) {
         currentDays = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+        continue;
+      } else if (upper.includes('SEGUNDA-FEIRA') || upper === 'SEGUNDA' || upper === 'SEGUNDA:') {
+        currentDays = ['Seg'];
+        continue;
+      } else if (upper.includes('TERÇA-FEIRA') || upper.includes('TERÇA') || upper === 'TERCA' || upper === 'TERCA:') {
+        currentDays = ['Ter'];
+        continue;
+      } else if (upper.includes('QUARTA-FEIRA') || upper.includes('QUARTA') || upper === 'QUARTA:') {
+        currentDays = ['Qua'];
+        continue;
+      } else if (upper.includes('QUINTA-FEIRA') || upper.includes('QUINTA') || upper === 'QUINTA:') {
+        currentDays = ['Qui'];
+        continue;
+      } else if (upper.includes('SEXTA-FEIRA') || upper.includes('SEXTA') || upper === 'SEXTA:' && !upper.includes('SEGUNDA')) {
+        currentDays = ['Sex'];
         continue;
       }
 
