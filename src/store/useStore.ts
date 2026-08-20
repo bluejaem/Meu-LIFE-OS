@@ -4,7 +4,7 @@ import { startOfWeek } from 'date-fns';
 import type {
   Task, Project, CalendarEvent, Goal, Book,
   Certification, RoutineBlock, DiaryEntry, PomodoroSession,
-  College, AppSettings
+  College, AppSettings, RoutineDay
 } from '@/types';
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
@@ -348,25 +348,53 @@ export const useStore = create<AppStore>()(
       },
 
       getUpcomingEvents: () => {
-        const { events, tasks } = get();
-        const todayStr = today();
+        const { events, tasks, routine } = get();
         
-        const upcomingEvents = events.filter(e => e.date >= todayStr);
+        // Generate an array of date strings for today + next 7 days
+        const next7Days = Array.from({ length: 8 }).map((_, i) => {
+          const d = new Date();
+          d.setDate(d.getDate() + i);
+          return {
+            dateStr: d.toISOString().split('T')[0],
+            weekDay: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d.getDay()] as RoutineDay
+          };
+        });
+
+        const minDate = next7Days[0].dateStr;
+        const maxDate = next7Days[7].dateStr;
+
+        const upcomingEvents = events.filter(e => e.date >= minDate && e.date <= maxDate);
         
-        // Incluir tarefas futuras (já que as de hoje aparecem em "Tarefas de Hoje")
         const upcomingTasks = tasks
-          .filter(t => !t.done && t.date > todayStr)
+          .filter(t => !t.done && t.date >= minDate && t.date <= maxDate)
           .map(t => ({
             id: t.id,
             title: t.title,
             subtitle: `Tarefa • ${t.tag}`,
             date: t.date,
             time: '',
-            color: '#6366f1', // índigo
+            color: '#6366f1',
             createdAt: t.createdAt
           } as CalendarEvent));
 
-        return [...upcomingEvents, ...upcomingTasks]
+        const upcomingRoutines: CalendarEvent[] = [];
+        next7Days.forEach(({ dateStr, weekDay }) => {
+          routine.forEach(r => {
+            if ((r.days.includes(weekDay) || r.days.includes('Todos')) && r.category.toLowerCase().includes('estudo')) {
+              upcomingRoutines.push({
+                id: `routine-${r.id}-${dateStr}`,
+                title: r.title,
+                subtitle: `Rotina • ${r.category}`,
+                date: dateStr,
+                time: r.time,
+                color: r.color || '#8b5cf6',
+                createdAt: now()
+              });
+            }
+          });
+        });
+
+        return [...upcomingEvents, ...upcomingTasks, ...upcomingRoutines]
           .sort((a, b) => `${a.date}${a.time || '23:59'}`.localeCompare(`${b.date}${b.time || '23:59'}`))
           .slice(0, 5);
       },

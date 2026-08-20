@@ -13,7 +13,7 @@ const EVENT_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3
 const EMPTY_FORM = { title: '', subtitle: '', date: '', time: '09:00', color: '#6366f1' };
 
 export function Calendario() {
-  const { events, tasks, addEvent, updateEvent, deleteEvent } = useStore();
+  const { events, tasks, routine, addEvent, updateEvent, deleteEvent } = useStore();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [createOpen, setCreateOpen] = useState(false);
   const [, setCreateDate] = useState('');
@@ -37,6 +37,12 @@ export function Calendario() {
   const dateStr = (day: number) => `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
   const eventsForDay = (day: number) => events.filter(e => e.date === dateStr(day));
   const tasksForDay = (day: number) => tasks.filter(t => t.date === dateStr(day));
+  
+  const getRoutineForDate = (dateString: string) => {
+    const d = new Date(dateString + 'T12:00:00'); // Evita timezone offset issues
+    const weekDay = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d.getDay()];
+    return routine.filter(r => r.days.includes(weekDay as any) || r.days.includes('Todos'));
+  };
 
   const openCreate = (day?: number) => {
     const d = day ? dateStr(day) : todayStr;
@@ -64,6 +70,8 @@ export function Calendario() {
   };
 
   const selectedDayEvents = selectedDay ? events.filter(e => e.date === selectedDay) : [];
+  const selectedDayTasks = selectedDay ? tasks.filter(t => t.date === selectedDay) : [];
+  const selectedDayRoutines = selectedDay ? getRoutineForDate(selectedDay) : [];
 
   return (
     <PageLayout title="Calendário" subtitle="Visão geral de seus eventos e prazos">
@@ -99,7 +107,8 @@ export function Calendario() {
                 const ds = day ? dateStr(day) : null;
                 const dayEvents = day ? eventsForDay(day) : [];
                 const dayTasks = day ? tasksForDay(day) : [];
-                const totalItems = dayEvents.length + dayTasks.length;
+                const dayRoutines = ds ? getRoutineForDate(ds) : [];
+                const totalItems = dayEvents.length + dayTasks.length + dayRoutines.length;
                 const isToday = ds === todayStr;
                 const isSelected = ds === selectedDay;
 
@@ -151,6 +160,16 @@ export function Calendario() {
                         ☑ {task.title}
                       </div>
                     ))}
+                    {/* Rotinas */}
+                    {dayEvents.length + dayTasks.length < 2 && dayRoutines.slice(0, 2 - (dayEvents.length + dayTasks.length)).map(r => (
+                      <div
+                        key={r.id}
+                        className="text-[10px] font-semibold px-1.5 py-0.5 rounded truncate text-white"
+                        style={{ backgroundColor: `${r.color || '#8b5cf6'}33`, border: `1px solid ${r.color || '#8b5cf6'}40` }}
+                      >
+                        ↻ {r.time} {r.title}
+                      </div>
+                    ))}
                     {totalItems > 2 && <span className="text-[10px] text-slate-500">+{totalItems - 2}</span>}
                 </div>
               );
@@ -171,7 +190,7 @@ export function Calendario() {
               </button>
             </div>
             
-            {selectedDayEvents.length === 0 && tasks.filter(t => t.date === selectedDay).length === 0 ? (
+            {selectedDayEvents.length === 0 && selectedDayTasks.length === 0 && selectedDayRoutines.length === 0 ? (
               <p className="text-sm text-slate-500 text-center py-8">Sem agendamentos para este dia.</p>
             ) : (
               <div className="flex flex-col gap-3">
@@ -194,12 +213,25 @@ export function Calendario() {
                   </div>
                 ))}
                 
-                {tasks.filter(t => t.date === selectedDay).map(task => (
+                {selectedDayRoutines.sort((a, b) => a.time.localeCompare(b.time)).map(r => (
+                  <div key={r.id} className="group flex gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/8 transition-colors">
+                    <div className="w-1 rounded-full self-stretch" style={{ backgroundColor: r.color || '#8b5cf6' }} />
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <div className="flex items-center gap-1 text-[11px] text-slate-400 mb-1">
+                        <Clock size={10} /> {r.time}
+                      </div>
+                      <p className="text-sm font-semibold text-slate-200 leading-snug">{r.title}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Rotina • {r.category}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {selectedDayTasks.map(task => (
                   <div key={task.id} className={cn("group flex gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/8 transition-colors", task.done ? "opacity-50" : "")}>
                     <div className="w-1 rounded-full self-stretch bg-indigo-500" />
                     <div className="flex-1 min-w-0 flex flex-col justify-center">
                       <p className={cn("text-sm font-semibold text-slate-200 leading-snug", task.done ? "line-through" : "")}>{task.title}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Tarefa</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Tarefa • {task.tag}</p>
                     </div>
                   </div>
                 ))}
