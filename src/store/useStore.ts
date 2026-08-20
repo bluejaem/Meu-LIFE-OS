@@ -246,14 +246,45 @@ export const useStore = create<AppStore>()(
         if (!s.pomodoroIsRunning || s.pomodoroSecondsLeft <= 0) return s;
         const newSeconds = s.pomodoroSecondsLeft - 1;
         if (newSeconds === 0) {
-          if (s.pomodoroMode === 'focus') {
+          // Tocar som e enviar notificação
+          try {
+            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+            if (AudioContext) {
+              const ctx = new AudioContext();
+              const playBeep = (time: number) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, time);
+                gain.gain.setValueAtTime(0.1, time);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(time);
+                osc.stop(time + 0.25);
+              };
+              playBeep(ctx.currentTime);
+              playBeep(ctx.currentTime + 0.3);
+              playBeep(ctx.currentTime + 0.6);
+            }
+          } catch(e) {}
+
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Cronômetro Finalizado!', { 
+              body: 'Seu tempo acabou. Volte para o LIFE OS!',
+              icon: '/favicon.ico'
+            });
+          }
+
+          if (s.pomodoroMode === 'focus' || s.pomodoroMode === 'custom') {
             const task = s.tasks.find(t => t.id === s.pomodoroSelectedTask);
+            const modeDuration = s.pomodoroDurations[s.pomodoroMode];
             const newSession = {
               id: uid(),
               date: today(),
-              duration: s.pomodoroDurations.focus, // Usa o tempo configurado em vez de 25 fixo
+              duration: modeDuration, // Usa o tempo configurado do respectivo modo
               taskId: s.pomodoroSelectedTask || undefined,
-              label: task ? task.title : 'Sessão livre',
+              label: task ? task.title : (s.pomodoroMode === 'custom' ? 'Estudo Personalizado' : 'Sessão livre'),
               createdAt: now()
             };
             return { 

@@ -145,7 +145,12 @@ export function Pomodoro() {
               <Settings2 size={20} />
             </button>
             <button
-              onClick={() => setPomodoroState({ pomodoroIsRunning: !isRunning })}
+                onClick={() => {
+                  if (!isRunning && 'Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                    Notification.requestPermission();
+                  }
+                  setPomodoroState({ pomodoroIsRunning: !isRunning });
+                }}
               className="h-20 w-20 rounded-full bg-white text-black flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all"
             >
               {isRunning ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-2" />}

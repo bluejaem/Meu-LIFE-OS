@@ -273,7 +273,12 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
                   <Settings2 size={16} />
                 </button>
                 <button
-                  onClick={() => setPomodoroState({ pomodoroIsRunning: !pomodoroIsRunning })}
+                  onClick={() => {
+                    if (!pomodoroIsRunning && 'Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                      Notification.requestPermission();
+                    }
+                    setPomodoroState({ pomodoroIsRunning: !pomodoroIsRunning });
+                  }}
                   className="h-12 w-12 rounded-full bg-white text-black flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all"
                 >
                   {pomodoroIsRunning ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
