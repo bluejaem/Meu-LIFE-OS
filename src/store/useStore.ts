@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { firestoreStorage } from '@/lib/firestoreStorage';
 import { startOfWeek } from 'date-fns';
 import type {
   Task, Project, CalendarEvent, Goal, Book,
@@ -432,7 +433,7 @@ export const useStore = create<AppStore>()(
     }),
     {
       name: 'planner-ti-life-os-storage',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => firestoreStorage),
       version: 1,
       migrate: (persistedState: any, version: number) => {
         if (version === 0) {
@@ -443,3 +444,30 @@ export const useStore = create<AppStore>()(
     }
   )
 );
+
+// Sincronização em Tempo Real (multi-device)
+import { onSnapshot, doc } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    const docRef = doc(db, 'userState', user.uid);
+    onSnapshot(docRef, (snap) => {
+      if (snap.exists()) {
+        const remoteDataStr = snap.data()['planner-ti-life-os-storage'];
+        if (remoteDataStr) {
+          try {
+            const remoteData = JSON.parse(remoteDataStr);
+            const currentState = useStore.getState();
+            
+            // Comparamos pra não causar loops
+            if (JSON.stringify(remoteData.state) !== JSON.stringify(currentState)) {
+              useStore.setState(remoteData.state);
+            }
+          } catch(e) {}
+        }
+      }
+    });
+  }
+});

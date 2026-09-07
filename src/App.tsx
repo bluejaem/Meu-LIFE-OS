@@ -23,7 +23,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { pomodoroIsRunning, tickPomodoro, settings } = useStore();
-  const { currentUser } = useAuthStore();
+  const { currentUser, loading } = useAuthStore();
 
   useEffect(() => {
     document.documentElement.style.setProperty('--bg-image', `url('${settings.wallpaperUrl}')`);
@@ -56,9 +56,17 @@ export default function App() {
       case 'diario': return <Diario key="diario" />;
       case 'faculdades': return <Faculdades key="faculdades" />;
       case 'configuracoes': return <Configuracoes key="configuracoes" />;
-      default: return <Dashboard key="dashboard" />;
+      default: return <Dashboard key="dashboard" setActiveTab={setActiveTab} />;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black z-50">
+        <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return <AuthScreen />;

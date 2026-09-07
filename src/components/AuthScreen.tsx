@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
-import { useStore } from '@/store/useStore';
 import { Lock, User, UserPlus, LogIn, ArrowRight } from 'lucide-react';
 
 export function AuthScreen() {
@@ -11,9 +10,8 @@ export function AuthScreen() {
   const [error, setError] = useState('');
 
   const { login, register } = useAuthStore();
-  const { updateSettings } = useStore();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -23,18 +21,14 @@ export function AuthScreen() {
     }
 
     if (isLogin) {
-      const res = login(username, password);
+      const res = await login(username, password);
       if (!res.success) {
         setError(res.error || 'Erro ao fazer login.');
-      } else if (res.user) {
-        updateSettings({ userName: res.user.name, avatarUrl: res.user.avatarUrl || '' });
       }
     } else {
-      const res = register({ name, username, passwordHash: password, avatarUrl: '' });
+      const res = await register(name, username, password);
       if (!res.success) {
         setError(res.error || 'Erro ao cadastrar.');
-      } else if (res.user) {
-        updateSettings({ userName: res.user.name, avatarUrl: res.user.avatarUrl || '' });
       }
     }
   };
