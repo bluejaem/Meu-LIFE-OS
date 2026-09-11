@@ -5,7 +5,8 @@ import { startOfWeek } from 'date-fns';
 import type {
   Task, Project, CalendarEvent, Goal, Book,
   Certification, RoutineBlock, DiaryEntry, PomodoroSession,
-  College, AppSettings, RoutineDay
+  College, AppSettings, RoutineDay,
+  KnowledgeJourneyData, KnowledgeJourneyStage, UserMilestone
 } from '@/types';
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
@@ -38,6 +39,11 @@ interface AppStore {
   pomodoroSessions: PomodoroSession[];
   colleges: College[];
   settings: AppSettings;
+  userMilestones: UserMilestone[];
+
+  // ── Jornada do Conhecimento & Marcos
+  checkAndUnlockMilestones: () => UserMilestone[];
+  getKnowledgeJourney: () => KnowledgeJourneyData;
 
   // ── Tasks CRUD
   addTask: (data: Omit<Task, 'id' | 'createdAt'>) => void;
@@ -128,6 +134,7 @@ export const useStore = create<AppStore>()(
       diary: [],
       pomodoroSessions: [],
       colleges: [],
+      userMilestones: [],
       settings: {
         theme: 'dark',
         wallpaperUrl: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=3028&auto=format&fit=crop',
@@ -429,6 +436,104 @@ export const useStore = create<AppStore>()(
         return [...upcomingEvents, ...upcomingTasks, ...upcomingRoutines]
           .sort((a, b) => `${a.date}${a.time || '23:59'}`.localeCompare(`${b.date}${b.time || '23:59'}`))
           .slice(0, 5);
+      },
+
+      // ── Jornada do Conhecimento (Zero Punição, 100% Acumulativo) ───────────
+      getKnowledgeJourney: () => {
+        const { pomodoroSessions, tasks } = get();
+        
+        const totalStudyMinutes = pomodoroSessions.reduce((acc, s) => acc + s.duration, 0);
+        const totalCompletedTasks = tasks.filter(t => t.done).length;
+        
+        // 1 min = 1 XP, 1 tarefa = 30 XP (100% cumulativo, nunca diminui)
+        const totalXP = totalStudyMinutes + (totalCompletedTasks * 30);
+        
+        const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+        const weekStartStr = weekStart.toISOString().split('T')[0];
+        
+        const currentWeekSessions = pomodoroSessions.filter(p => p.date >= weekStartStr);
+        const weeklyStudyMinutes = currentWeekSessions.reduce((acc, s) => acc + s.duration, 0);
+        const weeklyStudyHours = Math.floor(weeklyStudyMinutes / 60);
+        const weeklyStudyRemainingMins = weeklyStudyMinutes % 60;
+        
+        const weeklyCompletedTasks = tasks.filter(t => t.done && t.createdAt >= weekStartStr).length;
+
+        const STAGES: KnowledgeJourneyStage[] = [
+          { level: 1, name: 'Semente da Curiosidade', minXP: 0, maxXP: 180, stageType: 'seed', quote: 'Todo grande saber começa com a coragem e a curiosidade de dar o primeiro passo.' },
+          { level: 2, name: 'Broto de Atenção', minXP: 180, maxXP: 600, stageType: 'sprout', quote: 'Suas raízes estão se firmando. Cada momento de foco nutre seu crescimento.' },
+          { level: 3, name: 'Muda em Florescimento', minXP: 600, maxXP: 1500, stageType: 'sapling', quote: 'A constância gera clareza. Você está crescendo em perfeita harmonia com seu ritmo.' },
+          { level: 4, name: 'Árvore Jovem do Saber', minXP: 1500, maxXP: 3600, stageType: 'tree', quote: 'Ramos firmes e folhas vivas. O conhecimento acumulado é seu e ninguém tira.' },
+          { level: 5, name: 'Árvore Frondosa da Sabedoria', minXP: 3600, maxXP: 7200, stageType: 'great-tree', quote: 'Uma copa exuberante que oferece sombra, discernimento e serenidade.' },
+          { level: 6, name: 'Carvalho Sagrado da Maestria', minXP: 7200, maxXP: Infinity, stageType: 'ancient-oak', quote: 'Conhecimento profundo e inabalável. Uma jornada luminosa e inspiradora.' },
+        ];
+
+        let currentStageIndex = STAGES.findIndex(s => totalXP < s.maxXP);
+        if (currentStageIndex === -1) currentStageIndex = STAGES.length - 1;
+        const currentStage = STAGES[currentStageIndex];
+        const nextStage = STAGES[currentStageIndex + 1] || null;
+
+        const stageSpan = currentStage.maxXP === Infinity ? 5000 : (currentStage.maxXP - currentStage.minXP);
+        const progressInStage = currentStage.maxXP === Infinity 
+          ? 100 
+          : Math.min(100, Math.max(0, Math.round(((totalXP - currentStage.minXP) / stageSpan) * 100)));
+
+        return {
+          totalStudyMinutes,
+          totalCompletedTasks,
+          totalXP,
+          currentStage,
+          nextStage,
+          progressInStage,
+          weeklyStudyMinutes,
+          weeklyStudyHours,
+          weeklyStudyRemainingMins,
+          weeklyCompletedTasks,
+        };
+      },
+
+      checkAndUnlockMilestones: () => {
+        const { pomodoroSessions, tasks, userMilestones } = get();
+        const totalStudyMinutes = pomodoroSessions.reduce((acc, s) => acc + s.duration, 0);
+        const totalTasksDone = tasks.filter(t => t.done).length;
+        
+        const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+        const weekStartStr = weekStart.toISOString().split('T')[0];
+        const weeklyMinutes = pomodoroSessions
+          .filter(p => p.date >= weekStartStr)
+          .reduce((acc, s) => acc + s.duration, 0);
+
+        const definitions = [
+          { id: 'first_focus', title: 'Primeiro Broto', description: 'Completou sua primeira sessão de foco no LIFE OS', icon: 'Sprout', pass: totalStudyMinutes >= 1 },
+          { id: 'focus_5h', title: 'Raízes Firmes', description: 'Acumulou mais de 5 horas de estudo com dedicação', icon: 'Compass', pass: totalStudyMinutes >= 300 },
+          { id: 'focus_20h', title: 'Hábito Florescente', description: 'Conquistou a marca de 20 horas de aprendizado real', icon: 'Award', pass: totalStudyMinutes >= 1200 },
+          { id: 'focus_50h', title: 'Mestre da Atenção', description: 'Alcançou 50 horas de dedicação profunda e calma', icon: 'Crown', pass: totalStudyMinutes >= 3000 },
+          { id: 'tasks_10', title: 'Passos Firmes', description: 'Concluiu 10 tarefas com serenidade e consistência', icon: 'CheckCircle2', pass: totalTasksDone >= 10 },
+          { id: 'tasks_50', title: 'Jardineiro do Conhecimento', description: 'Finalizou 50 tarefas no seu próprio ritmo', icon: 'Sparkles', pass: totalTasksDone >= 50 },
+          { id: 'weekly_5h', title: 'Semana Dourada', description: 'Dedicou mais de 5 horas de estudo nesta semana', icon: 'Flame', pass: weeklyMinutes >= 300 },
+        ];
+
+        const existingIds = new Set((userMilestones || []).map(m => m.id));
+        const newUnlocked: UserMilestone[] = [];
+
+        definitions.forEach(d => {
+          if (!existingIds.has(d.id) && d.pass) {
+            newUnlocked.push({
+              id: d.id,
+              title: d.title,
+              description: d.description,
+              icon: d.icon,
+              unlockedAt: today(),
+            });
+          }
+        });
+
+        if (newUnlocked.length > 0) {
+          const updated = [...(userMilestones || []), ...newUnlocked];
+          set({ userMilestones: updated });
+          return updated;
+        }
+
+        return userMilestones || [];
       },
     }),
     {

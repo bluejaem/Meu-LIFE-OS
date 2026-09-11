@@ -11,6 +11,7 @@ import { useStore } from '@/store/useStore';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ModalAddStudy } from '@/components/modules/ModalAddStudy';
+import { JornadaConhecimento } from '@/components/modules/JornadaConhecimento';
 
 export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => void }) {
   const [isStudyModalOpen, setIsStudyModalOpen] = useState(false);
@@ -158,6 +159,9 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
             icon={<Flame size={14} className="text-orange-400" />}
           />
         </div>
+
+        {/* Jornada do Conhecimento (Árvore Orgânica & Marcos) */}
+        <JornadaConhecimento variant="dashboard" />
 
         {/* Chart */}
         <div className="glass-panel p-6 flex flex-col shrink-0 h-[300px]">

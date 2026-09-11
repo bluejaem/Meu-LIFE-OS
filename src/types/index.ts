@@ -105,11 +105,19 @@ export interface RoutineBlock {
 // ─── DIÁRIO ────────────────────────────────────────────────────────────────────
 export type Mood = '😊' | '😐' | '😔' | '🔥' | '😴' | '💪';
 
+export interface LearningReflection {
+  conceptLearned?: string; // "Qual foi o conceito mais interessante que você aprendeu hoje?"
+  whatWentWell?: string;   // "O que fluiu bem nos estudos ou na sua rotina?"
+  tryDifferently?: string; // "O que você gostaria de explorar ou fazer diferente amanhã?"
+}
+
 export interface DiaryEntry {
   id: string;
   date: string; // ISO date YYYY-MM-DD
   content: string;
   mood: Mood;
+  title?: string;
+  reflection?: LearningReflection;
   createdAt: string;
 }
 
@@ -150,3 +158,35 @@ export interface AppSettings {
   language: string;
   notifications: boolean;
 }
+
+// ─── JORNADA DO CONHECIMENTO & MARCOS ──────────────────────────────────────────
+export interface KnowledgeJourneyStage {
+  level: number;
+  name: string;
+  minXP: number;
+  maxXP: number;
+  stageType: 'seed' | 'sprout' | 'sapling' | 'tree' | 'great-tree' | 'ancient-oak';
+  quote: string;
+}
+
+export interface UserMilestone {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlockedAt: string;
+}
+
+export interface KnowledgeJourneyData {
+  totalStudyMinutes: number;
+  totalCompletedTasks: number;
+  totalXP: number;
+  currentStage: KnowledgeJourneyStage;
+  nextStage: KnowledgeJourneyStage | null;
+  progressInStage: number;
+  weeklyStudyMinutes: number;
+  weeklyStudyHours: number;
+  weeklyStudyRemainingMins: number;
+  weeklyCompletedTasks: number;
+}
+
