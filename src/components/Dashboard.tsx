@@ -12,6 +12,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ModalAddStudy } from '@/components/modules/ModalAddStudy';
 import { JornadaConhecimento } from '@/components/modules/JornadaConhecimento';
+import { RevisaoAcademicaWidget } from '@/components/modules/RevisaoAcademicaWidget';
 
 export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => void }) {
   const [isStudyModalOpen, setIsStudyModalOpen] = useState(false);
@@ -199,6 +200,9 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* Hub Acadêmico & Revisão Ativa / Flashcards IA */}
+        <RevisaoAcademicaWidget setActiveTab={setActiveTab} />
 
         {/* Bottom row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0 pb-10">

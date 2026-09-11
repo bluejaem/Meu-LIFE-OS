@@ -5,7 +5,7 @@ import { startOfWeek } from 'date-fns';
 import type {
   Task, Project, CalendarEvent, Goal, Book,
   Certification, RoutineBlock, DiaryEntry, PomodoroSession,
-  College, AppSettings, RoutineDay,
+  College, AcademicSubject, AppSettings, RoutineDay,
   KnowledgeJourneyData, KnowledgeJourneyStage, UserMilestone
 } from '@/types';
 
@@ -23,6 +23,78 @@ const initialCertifications: Certification[] = [
   { id: uid(), title: 'NEW UBEST - INTERMEDIATE', platform: 'UNINTER', status: 'Concluído', completedDate: '2026-01-01', createdAt: now() },
   { id: uid(), title: 'Qualificação Profissional para Call Center', platform: 'Desenvolve Já', status: 'Concluído', completedDate: '2025-01-01', createdAt: now() },
   { id: uid(), title: 'Semifinalista ONHB', platform: 'Olimpíada Nacional de História do Brasil', status: 'Concluído', completedDate: '2024-01-01', createdAt: now() },
+];
+
+const initialColleges: College[] = [
+  {
+    id: uid(),
+    name: 'UNINTER',
+    course: 'Análise e Desenvolvimento de Sistemas',
+    period: 'Fase Atual / 2026',
+    createdAt: now(),
+    subjects: [
+      {
+        id: uid(),
+        name: 'Estruturas de Dados e Algoritmos Avançados',
+        institution: 'UNINTER',
+        progress: 65,
+        grade: 92,
+        notes: 'Foco em árvores binárias, grafos e análise assintótica O(n).',
+        notebookUrl: 'https://gemini.google.com/',
+        aiArtifacts: {
+          slidesUrl: 'https://slides.google.com/',
+          videoScriptUrl: 'https://docs.google.com/',
+          flashcardsSummary: '1. O que é busca binária? Divisão e conquista em O(log n).\n2. Diferença entre Pilha e Fila? LIFO vs FIFO.\n3. O que é Hash Map? Estrutura com acesso médio em O(1).\n4. O que é Árvore AVL? Árvore binária de busca autobalanceada.',
+          infographicUrl: 'https://canva.com/',
+        },
+        lastReviewedDate: today(),
+        flashcardsCount: 24,
+      },
+      {
+        id: uid(),
+        name: 'Engenharia de Software e Práticas DevOps',
+        institution: 'UNINTER',
+        progress: 40,
+        grade: 88,
+        notes: 'Integração contínua, Docker, pipelines de entrega e Scrum.',
+        notebookUrl: 'https://gemini.google.com/',
+        aiArtifacts: {
+          slidesUrl: 'https://slides.google.com/',
+          videoScriptUrl: 'https://docs.google.com/',
+          flashcardsSummary: '1. O que é CI/CD? Integração contínua e entrega contínua automatizada.\n2. Pilares do Scrum: Transparência, Inspeção e Adaptação.\n3. O que é TDD? Ciclo Red-Green-Refactor.',
+          infographicUrl: 'https://canva.com/',
+        },
+        lastReviewedDate: undefined,
+        flashcardsCount: 18,
+      }
+    ]
+  },
+  {
+    id: uid(),
+    name: 'ETEP',
+    course: 'Inteligência Artificial e Ciência de Dados',
+    period: 'Módulo Especializado / 2026',
+    createdAt: now(),
+    subjects: [
+      {
+        id: uid(),
+        name: 'Fundamentos de Deep Learning e Modelos de Linguagem',
+        institution: 'ETEP',
+        progress: 50,
+        grade: 95,
+        notes: 'Transformers, Mecanismos de Atenção e RAG avançado.',
+        notebookUrl: 'https://gemini.google.com/',
+        aiArtifacts: {
+          slidesUrl: 'https://slides.google.com/',
+          videoScriptUrl: 'https://docs.google.com/',
+          flashcardsSummary: '1. O que é Self-Attention? Ponderação dinâmica da relevância de cada token com os demais.\n2. Para que serve o RAG? Recuperar documentos externos para fundamentar a resposta da IA sem alucinar.\n3. Diferença entre Zero-Shot e Few-Shot? Zero-shot pergunta direto; Few-shot fornece exemplos antes.',
+          infographicUrl: 'https://canva.com/',
+        },
+        lastReviewedDate: today(),
+        flashcardsCount: 30,
+      }
+    ]
+  }
 ];
 
 // ─── Store Interface ──────────────────────────────────────────────────────────
@@ -108,6 +180,8 @@ interface AppStore {
   addCollege: (data: Omit<College, 'id' | 'createdAt'>) => void;
   updateCollege: (id: string, data: Partial<College>) => void;
   deleteCollege: (id: string) => void;
+  toggleSubjectReviewedToday: (collegeId: string, subjectId: string) => void;
+  updateSubject: (collegeId: string, subjectId: string, data: Partial<AcademicSubject>) => void;
 
   // ── Settings
   updateSettings: (data: Partial<AppSettings>) => void;
@@ -133,7 +207,7 @@ export const useStore = create<AppStore>()(
       routine: [],
       diary: [],
       pomodoroSessions: [],
-      colleges: [],
+      colleges: initialColleges,
       userMilestones: [],
       settings: {
         theme: 'dark',
@@ -335,7 +409,7 @@ export const useStore = create<AppStore>()(
         return { totalMinutes, goalMinutes, percentage };
       },
 
-      // ── Colleges ───────────────────────────────────────────────────────────
+      // ── Colleges & Hub Acadêmico IA ─────────────────────────────────────────
       addCollege: (data) => set((s) => ({
         colleges: [...s.colleges, { ...data, id: uid(), createdAt: now() }]
       })),
@@ -344,6 +418,34 @@ export const useStore = create<AppStore>()(
       })),
       deleteCollege: (id) => set((s) => ({
         colleges: s.colleges.filter(c => c.id !== id)
+      })),
+      toggleSubjectReviewedToday: (collegeId, subjectId) => set((s) => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        return {
+          colleges: s.colleges.map(col => {
+            if (col.id !== collegeId) return col;
+            return {
+              ...col,
+              subjects: col.subjects.map(subj => {
+                if (subj.id !== subjectId) return subj;
+                const isReviewedToday = subj.lastReviewedDate === todayStr;
+                return {
+                  ...subj,
+                  lastReviewedDate: isReviewedToday ? undefined : todayStr
+                };
+              })
+            };
+          })
+        };
+      }),
+      updateSubject: (collegeId, subjectId, data) => set((s) => ({
+        colleges: s.colleges.map(col => {
+          if (col.id !== collegeId) return col;
+          return {
+            ...col,
+            subjects: col.subjects.map(subj => subj.id === subjectId ? { ...subj, ...data } : subj)
+          };
+        })
       })),
 
       // ── Settings ───────────────────────────────────────────────────────────

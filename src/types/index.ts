@@ -131,21 +131,35 @@ export interface PomodoroSession {
   createdAt: string;
 }
 
-// ─── FACULDADES ────────────────────────────────────────────────────────────────
-export interface Subject {
+// ─── FACULDADES & HUB ACADÊMICO INTELIGENTE ────────────────────────────────────
+export interface AIArtifacts {
+  slidesUrl?: string;          // Link para os slides de apresentação gerados
+  videoScriptUrl?: string;     // Link para o roteiro de vídeo didático
+  flashcardsSummary?: string;  // Conteúdo/resumo dos flashcards ou link
+  infographicUrl?: string;     // Link para infográfico visual gerado por IA
+}
+
+export interface AcademicSubject {
   id: string;
   name: string;
-  progress: number; // 0–100
+  institution?: string;        // 'UNINTER' | 'ETEP' | etc.
+  progress: number;            // 0–100%
   grade?: number;
   notes?: string;
+  notebookUrl?: string;        // Link direto para o Gemini Notebook da disciplina
+  aiArtifacts?: AIArtifacts;   // Ecossistema de artefatos de IA
+  lastReviewedDate?: string;   // Data da última revisão ativa (YYYY-MM-DD)
+  flashcardsCount?: number;    // Quantidade estimada de cartões de revisão
 }
+
+export type Subject = AcademicSubject;
 
 export interface College {
   id: string;
-  name: string;
+  name: string;                // Instituição (UNINTER, ETEP, etc.)
   course: string;
   period: string;
-  subjects: Subject[];
+  subjects: AcademicSubject[];
   createdAt: string;
 }
 
