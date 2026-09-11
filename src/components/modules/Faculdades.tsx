@@ -69,7 +69,7 @@ export function Faculdades() {
   return (
     <PageLayout
       title="Hub Acadêmico & Gestão de IA"
-      subtitle="UNINTER, ETEP e ecossistema de artefatos do Gemini Notebook"
+      subtitle="Integre o seu ecossistema de estudos com artefatos do Gemini Notebook"
       actions={
         <button 
           onClick={openCreate} 
@@ -97,8 +97,6 @@ export function Faculdades() {
               ? Math.round(college.subjects.reduce((acc, s) => acc + (s.progress || 0), 0) / college.subjects.length)
               : 0;
 
-            const isUninter = college.name.toUpperCase().includes('UNINTER');
-            const isEtep = college.name.toUpperCase().includes('ETEP');
 
             return (
               <div key={college.id} className="glass-panel p-6 group rounded-2xl border border-white/10 relative overflow-hidden">
@@ -106,24 +104,13 @@ export function Faculdades() {
                 <div className="flex items-start justify-between mb-5">
                   <div className="flex items-center gap-3.5">
                     <div className={cn(
-                      "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-105",
-                      isUninter 
-                        ? "bg-blue-500/15 border-blue-500/30 text-blue-400"
-                        : isEtep
-                        ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
-                        : "bg-indigo-500/15 border-indigo-500/30 text-indigo-400"
+                      "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-105 bg-indigo-500/15 border-indigo-500/30 text-indigo-400"
                     )}>
                       <GraduationCap size={24} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className={cn(
-                          "text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider",
-                          isUninter 
-                            ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                            : isEtep
-                            ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                            : "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                          "text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
                         )}>
                           {college.name}
                         </span>
@@ -408,28 +395,14 @@ function CollegeForm({ form, setForm, onSubmit, label }: any) {
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
         <FormField label="Instituição">
-          <div className="relative">
-            <input 
-              className={inputClass} 
-              placeholder="UNINTER, ETEP, etc." 
-              value={form.name} 
-              onChange={e => setForm({ ...form, name: e.target.value })} 
-              autoFocus 
-              required 
-            />
-            <div className="absolute right-2 top-2.5 flex gap-1">
-              {['UNINTER', 'ETEP'].map(inst => (
-                <button
-                  key={inst}
-                  type="button"
-                  onClick={() => setForm({ ...form, name: inst })}
-                  className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20 text-slate-300 transition-colors"
-                >
-                  {inst}
-                </button>
-              ))}
-            </div>
-          </div>
+          <input 
+            className={inputClass} 
+            placeholder="Ex: USP, Estácio, etc." 
+            value={form.name} 
+            onChange={e => setForm({ ...form, name: e.target.value })} 
+            autoFocus 
+            required 
+          />
         </FormField>
         <FormField label="Nome do Curso">
           <input 

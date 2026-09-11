@@ -14,16 +14,7 @@ const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
 const today = () => new Date().toISOString().split('T')[0];
 
-const initialCertifications: Certification[] = [
-  { id: uid(), title: 'CS50: Introduction to Computer Science', platform: 'Harvard University', status: 'Concluído', completedDate: '2025-01-01', createdAt: now() },
-  { id: uid(), title: 'Espanhol Básico', platform: 'Instituto Dom Fernando Gomes', status: 'Concluído', completedDate: '2018-01-01', createdAt: now() },
-  { id: uid(), title: 'Linguagem de Programação Python Básico', platform: 'Fundação Bradesco', status: 'Concluído', completedDate: '2025-01-01', createdAt: now() },
-  { id: uid(), title: 'HTML, CSS e JavaScript', platform: 'Fundação Bradesco', status: 'Concluído', completedDate: '2025-01-01', createdAt: now() },
-  { id: uid(), title: 'NEW UBEST - BASIC', platform: 'UNINTER', status: 'Concluído', completedDate: '2026-01-01', createdAt: now() },
-  { id: uid(), title: 'NEW UBEST - INTERMEDIATE', platform: 'UNINTER', status: 'Concluído', completedDate: '2026-01-01', createdAt: now() },
-  { id: uid(), title: 'Qualificação Profissional para Call Center', platform: 'Desenvolve Já', status: 'Concluído', completedDate: '2025-01-01', createdAt: now() },
-  { id: uid(), title: 'Semifinalista ONHB', platform: 'Olimpíada Nacional de História do Brasil', status: 'Concluído', completedDate: '2024-01-01', createdAt: now() },
-];
+const initialCertifications: Certification[] = [];
 
 const initialColleges: College[] = [];
 

@@ -22,7 +22,7 @@ export function AcademicHubView() {
   } = useAcademicStore();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedInstitution, setSelectedInstitution] = useState<'all' | 'UNINTER' | 'ETEP' | 'Outros'>('all');
+  const [selectedInstitution, setSelectedInstitution] = useState<string>('all');
   const [selectedReviewFilter, setSelectedReviewFilter] = useState<'all' | 'pending' | 'completed'>('all');
 
   // Modais
@@ -43,15 +43,14 @@ export function AcademicHubView() {
     return matchesSearch && matchesInstitution && matchesReview;
   });
 
-  const uninterCount = subjects.filter(s => s.institution === 'UNINTER').length;
-  const etepCount = subjects.filter(s => s.institution === 'ETEP').length;
+  const uniqueInstitutions = Array.from(new Set(subjects.map(s => s.institution).filter(Boolean)));
   const pendingCount = subjects.filter(s => s.activeReviewPending).length;
   const withNotebookCount = subjects.filter(s => s.artifacts?.notebookUrl).length;
 
   return (
     <PageLayout
       title="Hub Acadêmico & Artefatos de IA"
-      subtitle="UNINTER & ETEP · Ecossistema de estudos integrados ao Google AI Pro e Gemini Notebooks"
+      subtitle="Ecossistema de estudos integrados ao Google AI Pro e Gemini Notebooks"
       actions={
         <button
           onClick={() => setIsCreateModalOpen(true)}
@@ -72,9 +71,12 @@ export function AcademicHubView() {
               <span className="text-xs text-slate-500">ativas</span>
             </div>
             <div className="flex gap-2 text-[10px] text-slate-400 mt-2">
-              <span className="text-blue-300 font-semibold">{uninterCount} UNINTER</span>
-              <span>·</span>
-              <span className="text-emerald-300 font-semibold">{etepCount} ETEP</span>
+              {uniqueInstitutions.map((inst, idx) => (
+                <span key={inst} className="text-indigo-300 font-semibold">
+                  {subjects.filter(s => s.institution === inst).length} {inst}
+                  {idx < uniqueInstitutions.length - 1 && <span className="text-slate-500 mx-1">·</span>}
+                </span>
+              ))}
             </div>
           </div>
 
@@ -134,35 +136,19 @@ export function AcademicHubView() {
             >
               Todas ({subjects.length})
             </button>
-            <button
-              onClick={() => setSelectedInstitution('UNINTER')}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5",
-                selectedInstitution === 'UNINTER' ? "bg-blue-500/25 text-blue-300 border border-blue-500/40 shadow-sm" : "text-slate-400 hover:text-slate-200"
-              )}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-              UNINTER ({uninterCount})
-            </button>
-            <button
-              onClick={() => setSelectedInstitution('ETEP')}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5",
-                selectedInstitution === 'ETEP' ? "bg-emerald-500/25 text-emerald-300 border border-emerald-500/40 shadow-sm" : "text-slate-400 hover:text-slate-200"
-              )}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              ETEP ({etepCount})
-            </button>
-            <button
-              onClick={() => setSelectedInstitution('Outros')}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all",
-                selectedInstitution === 'Outros' ? "bg-indigo-500/25 text-indigo-300 border border-indigo-500/40 shadow-sm" : "text-slate-400 hover:text-slate-200"
-              )}
-            >
-              Outros
-            </button>
+            {uniqueInstitutions.map(inst => (
+              <button
+                key={inst}
+                onClick={() => setSelectedInstitution(inst)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5",
+                  selectedInstitution === inst ? "bg-indigo-500/25 text-indigo-300 border border-indigo-500/40 shadow-sm" : "text-slate-400 hover:text-slate-200"
+                )}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                {inst} ({subjects.filter(s => s.institution === inst).length})
+              </button>
+            ))}
           </div>
 
           {/* Busca e Filtro de Revisão */}
@@ -227,8 +213,7 @@ export function AcademicHubView() {
           ) : (
             filteredSubjects.map(sub => {
               const isPending = sub.activeReviewPending;
-              const isUninter = sub.institution === 'UNINTER';
-              const isEtep = sub.institution === 'ETEP';
+
               const artifacts = sub.artifacts;
 
               return (
@@ -245,14 +230,7 @@ export function AcademicHubView() {
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-3">
                       <div className="flex items-center gap-2">
-                        <span className={cn(
-                          "text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider",
-                          isUninter 
-                            ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                            : isEtep
-                            ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                            : "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
-                        )}>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                           {sub.institution}
                         </span>
 
@@ -461,13 +439,13 @@ export function AcademicHubView() {
             if (editingSubject) {
               updateSubject(editingSubject.id, {
                 ...data,
-                institution: (data.institution as 'UNINTER' | 'ETEP' | 'Outros') || 'UNINTER',
+                institution: data.institution || 'Desconhecida',
                 artifacts: data.aiArtifacts || data.artifacts
               });
             } else {
               addSubject({
                 name: data.name,
-                institution: (data.institution as 'UNINTER' | 'ETEP' | 'Outros') || 'UNINTER',
+                institution: data.institution || 'Desconhecida',
                 semester: data.semester || '2026.1',
                 activeReviewPending: true,
                 progress: data.progress || 0,

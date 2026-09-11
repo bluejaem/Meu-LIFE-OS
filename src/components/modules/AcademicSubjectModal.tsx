@@ -11,19 +11,12 @@ interface AcademicSubjectModalProps {
   defaultInstitution?: string;
 }
 
-const normalizeInstitution = (val?: string): 'UNINTER' | 'ETEP' | 'Outros' => {
-  if (!val) return 'UNINTER';
-  const upper = val.toUpperCase().trim();
-  if (upper.includes('UNINTER')) return 'UNINTER';
-  if (upper.includes('ETEP')) return 'ETEP';
-  return 'Outros';
-};
 
 const EMPTY_SUBJECT: AcademicSubject = {
   id: '',
   name: '',
-  institution: 'UNINTER',
-  semester: '2026.1',
+  institution: '',
+  semester: '',
   activeReviewPending: true,
   updatedAt: new Date().toISOString(),
   progress: 0,
@@ -117,27 +110,13 @@ export function AcademicSubjectModal({
             />
           </FormField>
 
-          <FormField label="Instituição (UNINTER, ETEP, Outros)">
-            <div className="relative">
-              <input
-                className={inputClass}
-                placeholder="UNINTER, ETEP, Outros"
-                value={form.institution}
-                onChange={e => setForm({ ...form, institution: normalizeInstitution(e.target.value) })}
-              />
-              <div className="absolute right-2 top-2.5 flex gap-1">
-                {(['UNINTER', 'ETEP', 'Outros'] as const).map(inst => (
-                  <button
-                    key={inst}
-                    type="button"
-                    onClick={() => setForm({ ...form, institution: inst })}
-                    className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 hover:bg-white/20 text-slate-300 transition-colors"
-                  >
-                    {inst}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <FormField label="Instituição">
+            <input
+              className={inputClass}
+              placeholder="Ex: USP, UNINTER, ETEP..."
+              value={form.institution}
+              onChange={e => setForm({ ...form, institution: e.target.value })}
+            />
           </FormField>
         </div>
 

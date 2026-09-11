@@ -72,7 +72,7 @@ export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: 
               </h3>
             </div>
             <p className="text-xs text-slate-400">
-              UNINTER & ETEP · Ecossistema de estudos e combate à procrastinação
+              Hub Acadêmico · Ecossistema de estudos e combate à procrastinação
             </p>
           </div>
         </div>
@@ -189,12 +189,7 @@ export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className={cn(
-                      "text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider",
-                      subj.institution?.toUpperCase().includes('UNINTER')
-                        ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                        : subj.institution?.toUpperCase().includes('ETEP')
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                        : "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                      "text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
                     )}>
                       {subj.institution || subj.collegeName}
                     </span>

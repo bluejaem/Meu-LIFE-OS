@@ -145,7 +145,7 @@ export type AIArtifacts = AiArtifacts;
 export interface AcademicSubject {
   id: string;
   name: string;
-  institution: 'UNINTER' | 'ETEP' | 'Outros';
+  institution: string;
   semester?: string;
   artifacts: AiArtifacts;
   activeReviewPending: boolean;
