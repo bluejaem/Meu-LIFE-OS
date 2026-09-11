@@ -335,9 +335,9 @@ export function AcademicHubView() {
                     <div className="flex items-center gap-1.5 flex-wrap">
                       
                       {/* Notebook */}
-                      {artifacts?.notebookUrl ? (
+                      {(sub.notebookUrl || artifacts?.notebookUrl) ? (
                         <a
-                          href={artifacts.notebookUrl}
+                          href={sub.notebookUrl || artifacts?.notebookUrl}
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 border border-indigo-500/30 transition-colors"

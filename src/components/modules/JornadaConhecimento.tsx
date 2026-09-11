@@ -135,7 +135,7 @@ export function JornadaConhecimento({ variant = 'dashboard' }: JornadaConhecimen
 
   // ─── Versão Completa (Para o Dashboard) ────────────────────────────────────
   return (
-    <div className="glass-panel p-6 rounded-3xl border border-white/10 bg-gradient-to-br from-black/40 via-emerald-950/10 to-indigo-950/20 backdrop-blur-2xl shadow-2xl relative overflow-hidden group">
+    <div className="glass-panel p-6 rounded-3xl border border-white/10 bg-gradient-to-br from-black/40 via-emerald-950/10 to-indigo-950/20 backdrop-blur-2xl shadow-2xl relative overflow-hidden group shrink-0">
       {/* Luz ambiente orgânica de fundo */}
       <div className="absolute -top-24 -right-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />

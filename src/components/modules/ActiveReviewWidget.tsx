@@ -30,7 +30,7 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
     : 100;
 
   return (
-    <div className="glass-panel p-5 relative overflow-hidden border border-white/10 rounded-2xl flex flex-col gap-4 shadow-xl">
+    <div className="glass-panel p-5 relative overflow-hidden border border-white/10 rounded-2xl flex flex-col gap-4 shadow-xl shrink-0">
       {/* Luz ambiente temática */}
       <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-indigo-500/10 to-purple-600/10 rounded-full blur-3xl pointer-events-none -mr-24 -mt-24" />
       <div className="absolute bottom-0 left-0 w-60 h-60 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
@@ -142,10 +142,12 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-200">
-                Tudo em dia! Nenhuma revisão ativa pendente hoje.
+                {totalCount === 0 ? "Nenhuma disciplina cadastrada" : "Tudo em dia! Nenhuma revisão ativa pendente hoje."}
               </p>
               <p className="text-xs text-slate-500 mt-0.5">
-                Você fixou todos os conceitos principais das suas disciplinas da UNINTER e ETEP.
+                {totalCount === 0 
+                  ? "Acesse o Hub Acadêmico Completo para vincular notebooks e adicionar flashcards."
+                  : "Você fixou todos os conceitos principais das suas disciplinas da UNINTER e ETEP."}
               </p>
             </div>
             <button
@@ -226,9 +228,9 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
                 <div className="flex items-center gap-1.5 shrink-0 flex-wrap sm:flex-nowrap">
                   
                   {/* Gemini Notebook */}
-                  {artifacts?.notebookUrl && (
+                  {(sub.notebookUrl || artifacts?.notebookUrl) && (
                     <a
-                      href={artifacts.notebookUrl}
+                      href={sub.notebookUrl || artifacts?.notebookUrl}
                       target="_blank"
                       rel="noreferrer"
                       className="p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 transition-colors"
