@@ -27,6 +27,7 @@ const menuItems = [
   { id: 'projetos', icon: FolderKanban, label: 'Projetos' },
   { id: 'calendario', icon: Calendar, label: 'Calendário' },
   { section: 'Conhecimento' },
+  { id: 'academic-hub', icon: GraduationCap, label: 'Hub Acadêmico' },
   { id: 'diario', icon: BookHeart, label: 'Diário' },
   { id: 'livros', icon: BookOpen, label: 'Livros' },
   { section: 'Tracking' },
@@ -34,7 +35,6 @@ const menuItems = [
   { id: 'metas', icon: Target, label: 'Metas' },
   { id: 'rotina', icon: CalendarCheck, label: 'Rotina' },
   { section: 'Mais' },
-  { id: 'faculdades', icon: GraduationCap, label: 'Faculdades' },
   { id: 'certificacoes', icon: Award, label: 'Certificações' },
 ];
 

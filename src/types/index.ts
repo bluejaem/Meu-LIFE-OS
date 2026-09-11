@@ -132,22 +132,31 @@ export interface PomodoroSession {
 }
 
 // ─── FACULDADES & HUB ACADÊMICO INTELIGENTE ────────────────────────────────────
-export interface AIArtifacts {
-  slidesUrl?: string;          // Link para os slides de apresentação gerados
-  videoScriptUrl?: string;     // Link para o roteiro de vídeo didático
-  flashcardsSummary?: string;  // Conteúdo/resumo dos flashcards ou link
-  infographicUrl?: string;     // Link para infográfico visual gerado por IA
+export interface AiArtifacts {
+  notebookUrl?: string;
+  slidesUrl?: string;
+  videoScriptUrl?: string;
+  flashcardsSummary?: string;
+  infographicUrl?: string;
 }
+
+export type AIArtifacts = AiArtifacts;
 
 export interface AcademicSubject {
   id: string;
   name: string;
-  institution?: string;        // 'UNINTER' | 'ETEP' | etc.
-  progress: number;            // 0–100%
+  institution: 'UNINTER' | 'ETEP' | 'Outros';
+  semester?: string;
+  artifacts: AiArtifacts;
+  activeReviewPending: boolean;
+  updatedAt: string;
+
+  // Propriedades complementares de compatibilidade e tracking
+  progress?: number;           // 0–100%
   grade?: number;
   notes?: string;
-  notebookUrl?: string;        // Link direto para o Gemini Notebook da disciplina
-  aiArtifacts?: AIArtifacts;   // Ecossistema de artefatos de IA
+  notebookUrl?: string;        // Atalho para artifacts.notebookUrl
+  aiArtifacts?: AiArtifacts;   // Atalho para artifacts
   lastReviewedDate?: string;   // Data da última revisão ativa (YYYY-MM-DD)
   flashcardsCount?: number;    // Quantidade estimada de cartões de revisão
 }

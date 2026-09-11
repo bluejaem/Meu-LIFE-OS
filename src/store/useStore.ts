@@ -41,14 +41,17 @@ const initialColleges: College[] = [
         grade: 92,
         notes: 'Foco em árvores binárias, grafos e análise assintótica O(n).',
         notebookUrl: 'https://gemini.google.com/',
-        aiArtifacts: {
+        artifacts: {
+          notebookUrl: 'https://gemini.google.com/',
           slidesUrl: 'https://slides.google.com/',
           videoScriptUrl: 'https://docs.google.com/',
           flashcardsSummary: '1. O que é busca binária? Divisão e conquista em O(log n).\n2. Diferença entre Pilha e Fila? LIFO vs FIFO.\n3. O que é Hash Map? Estrutura com acesso médio em O(1).\n4. O que é Árvore AVL? Árvore binária de busca autobalanceada.',
           infographicUrl: 'https://canva.com/',
         },
+        activeReviewPending: false,
         lastReviewedDate: today(),
         flashcardsCount: 24,
+        updatedAt: now()
       },
       {
         id: uid(),
@@ -58,14 +61,17 @@ const initialColleges: College[] = [
         grade: 88,
         notes: 'Integração contínua, Docker, pipelines de entrega e Scrum.',
         notebookUrl: 'https://gemini.google.com/',
-        aiArtifacts: {
+        artifacts: {
+          notebookUrl: 'https://gemini.google.com/',
           slidesUrl: 'https://slides.google.com/',
           videoScriptUrl: 'https://docs.google.com/',
           flashcardsSummary: '1. O que é CI/CD? Integração contínua e entrega contínua automatizada.\n2. Pilares do Scrum: Transparência, Inspeção e Adaptação.\n3. O que é TDD? Ciclo Red-Green-Refactor.',
           infographicUrl: 'https://canva.com/',
         },
+        activeReviewPending: true,
         lastReviewedDate: undefined,
         flashcardsCount: 18,
+        updatedAt: now()
       }
     ]
   },
@@ -84,14 +90,17 @@ const initialColleges: College[] = [
         grade: 95,
         notes: 'Transformers, Mecanismos de Atenção e RAG avançado.',
         notebookUrl: 'https://gemini.google.com/',
-        aiArtifacts: {
+        artifacts: {
+          notebookUrl: 'https://gemini.google.com/',
           slidesUrl: 'https://slides.google.com/',
           videoScriptUrl: 'https://docs.google.com/',
           flashcardsSummary: '1. O que é Self-Attention? Ponderação dinâmica da relevância de cada token com os demais.\n2. Para que serve o RAG? Recuperar documentos externos para fundamentar a resposta da IA sem alucinar.\n3. Diferença entre Zero-Shot e Few-Shot? Zero-shot pergunta direto; Few-shot fornece exemplos antes.',
           infographicUrl: 'https://canva.com/',
         },
+        activeReviewPending: true,
         lastReviewedDate: today(),
         flashcardsCount: 30,
+        updatedAt: now()
       }
     ]
   }

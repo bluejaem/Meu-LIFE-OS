@@ -4,7 +4,18 @@ import { auth, db } from './firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const waitForAuth = () => new Promise<string | null>((resolve) => {
+  if (auth.currentUser) {
+    resolve(auth.currentUser.uid);
+    return;
+  }
+
+  // Timeout preventivo de 1.5s para nunca bloquear a inicialização da store
+  const timer = setTimeout(() => {
+    resolve(auth.currentUser ? auth.currentUser.uid : null);
+  }, 1500);
+
   const unsubscribe = onAuthStateChanged(auth, (user) => {
+    clearTimeout(timer);
     unsubscribe();
     resolve(user ? user.uid : null);
   });
@@ -12,42 +23,62 @@ const waitForAuth = () => new Promise<string | null>((resolve) => {
 
 export const firestoreStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    const uid = await waitForAuth();
-    if (!uid) return null;
-
-    const docRef = doc(db, 'userState', uid);
-    const snap = await getDoc(docRef);
-    
-    if (snap.exists() && snap.data()[name]) {
-      return snap.data()[name];
+    try {
+      const uid = await waitForAuth();
+      if (uid) {
+        const docRef = doc(db, 'userState', uid);
+        const snap = await getDoc(docRef);
+        
+        if (snap.exists() && snap.data()[name]) {
+          const remoteData = snap.data()[name];
+          // Atualiza cache local
+          try { localStorage.setItem(name, remoteData); } catch {}
+          return remoteData;
+        }
+      }
+    } catch (err) {
+      console.warn('Aviso: Falha ao ler do Firestore, recuperando do localStorage:', err);
     }
     
-    // Migração automática do localStorage para o Firestore
-    const localData = localStorage.getItem(name);
-    if (localData) {
-      await setDoc(docRef, { [name]: localData }, { merge: true });
-      return localData;
+    // Fallback garantido para o cache local
+    try {
+      return localStorage.getItem(name);
+    } catch {
+      return null;
     }
-    
-    return null;
   },
+
   setItem: async (name: string, value: string): Promise<void> => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
-    
-    // Salvamos localmente também para servir como backup/cache rápido
-    localStorage.setItem(name, value);
+    // 1. Sempre salva localmente primeiro (ultra-rápido, Local-First)
+    try {
+      localStorage.setItem(name, value);
+    } catch {}
 
-    const docRef = doc(db, 'userState', uid);
-    await setDoc(docRef, { [name]: value }, { merge: true });
+    // 2. Sincroniza em segundo plano com o Firestore
+    try {
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+
+      const docRef = doc(db, 'userState', uid);
+      await setDoc(docRef, { [name]: value }, { merge: true });
+    } catch (err) {
+      console.warn('Aviso: Falha ao sincronizar alteração com o Firestore:', err);
+    }
   },
+
   removeItem: async (name: string): Promise<void> => {
-    const uid = auth.currentUser?.uid;
-    if (!uid) return;
-    
-    localStorage.removeItem(name);
-    
-    const docRef = doc(db, 'userState', uid);
-    await setDoc(docRef, { [name]: null }, { merge: true });
+    try {
+      localStorage.removeItem(name);
+    } catch {}
+
+    try {
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+
+      const docRef = doc(db, 'userState', uid);
+      await setDoc(docRef, { [name]: null }, { merge: true });
+    } catch (err) {
+      console.warn('Aviso: Falha ao remover do Firestore:', err);
+    }
   },
 };

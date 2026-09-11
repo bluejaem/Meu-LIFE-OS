@@ -28,33 +28,49 @@ interface AuthState {
 const getEmailFromUsername = (username: string) => `${username.toLowerCase().trim()}@meulifeos.app`;
 
 export const useAuthStore = create<AuthState>((set, get) => {
+  // Safety timeout: nunca deixe a tela travada em loading eterno por mais de 3 segundos
+  const safetyTimer = setTimeout(() => {
+    if (get().loading) {
+      console.warn('Firebase Auth safety timeout acionado. Liberando interface.');
+      set({ loading: false });
+    }
+  }, 3000);
+
   // Inicializar o listener do Firebase Auth
   onAuthStateChanged(auth, async (firebaseUser) => {
+    clearTimeout(safetyTimer);
+
     if (firebaseUser) {
-      // Buscar dados extras do Firestore
-      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-      if (userDoc.exists()) {
-        const data = userDoc.data();
-        set({ 
-          currentUser: { 
-            id: firebaseUser.uid, 
-            name: data.name || firebaseUser.displayName || '', 
-            username: data.username || '', 
-            avatarUrl: data.avatarUrl || firebaseUser.photoURL || undefined
-          },
-          loading: false
-        });
-      } else {
-        // Fallback
-        set({
-          currentUser: {
-            id: firebaseUser.uid,
-            name: firebaseUser.displayName || '',
-            username: firebaseUser.email?.split('@')[0] || ''
-          },
-          loading: false
-        });
+      try {
+        // Buscar dados extras do Firestore
+        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          set({ 
+            currentUser: { 
+              id: firebaseUser.uid, 
+              name: data.name || firebaseUser.displayName || '', 
+              username: data.username || '', 
+              avatarUrl: data.avatarUrl || firebaseUser.photoURL || undefined
+            },
+            loading: false
+          });
+          return;
+        }
+      } catch (error) {
+        console.warn('Aviso: Não foi possível obter dados de perfil do Firestore, usando dados locais de autenticação:', error);
       }
+
+      // Fallback garantido se o Firestore falhar ou doc não existir
+      set({
+        currentUser: {
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || 'Usuário',
+          username: firebaseUser.email?.split('@')[0] || 'usuario',
+          avatarUrl: firebaseUser.photoURL || undefined
+        },
+        loading: false
+      });
     } else {
       set({ currentUser: null, loading: false });
     }

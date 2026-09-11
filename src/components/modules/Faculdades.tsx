@@ -94,7 +94,7 @@ export function Faculdades() {
         ) : (
           colleges.map(college => {
             const avgProgress = college.subjects.length > 0
-              ? Math.round(college.subjects.reduce((acc, s) => acc + s.progress, 0) / college.subjects.length)
+              ? Math.round(college.subjects.reduce((acc, s) => acc + (s.progress || 0), 0) / college.subjects.length)
               : 0;
 
             const isUninter = college.name.toUpperCase().includes('UNINTER');

@@ -11,15 +11,34 @@ interface AcademicSubjectModalProps {
   defaultInstitution?: string;
 }
 
+const normalizeInstitution = (val?: string): 'UNINTER' | 'ETEP' | 'Outros' => {
+  if (!val) return 'UNINTER';
+  const upper = val.toUpperCase().trim();
+  if (upper.includes('UNINTER')) return 'UNINTER';
+  if (upper.includes('ETEP')) return 'ETEP';
+  return 'Outros';
+};
+
 const EMPTY_SUBJECT: AcademicSubject = {
   id: '',
   name: '',
-  institution: '',
+  institution: 'UNINTER',
+  semester: '2026.1',
+  activeReviewPending: true,
+  updatedAt: new Date().toISOString(),
   progress: 0,
   grade: undefined,
   notes: '',
   notebookUrl: '',
+  artifacts: {
+    notebookUrl: '',
+    slidesUrl: '',
+    videoScriptUrl: '',
+    flashcardsSummary: '',
+    infographicUrl: ''
+  },
   aiArtifacts: {
+    notebookUrl: '',
     slidesUrl: '',
     videoScriptUrl: '',
     flashcardsSummary: '',
@@ -41,19 +60,22 @@ export function AcademicSubjectModal({
     if (initialData) {
       setForm({
         ...initialData,
-        institution: initialData.institution || defaultInstitution || '',
+        institution: normalizeInstitution(initialData.institution || defaultInstitution),
+        artifacts: initialData.artifacts || initialData.aiArtifacts || {},
         aiArtifacts: {
-          slidesUrl: initialData.aiArtifacts?.slidesUrl || '',
-          videoScriptUrl: initialData.aiArtifacts?.videoScriptUrl || '',
-          flashcardsSummary: initialData.aiArtifacts?.flashcardsSummary || '',
-          infographicUrl: initialData.aiArtifacts?.infographicUrl || '',
+          notebookUrl: initialData.notebookUrl || initialData.artifacts?.notebookUrl || '',
+          slidesUrl: initialData.aiArtifacts?.slidesUrl || initialData.artifacts?.slidesUrl || '',
+          videoScriptUrl: initialData.aiArtifacts?.videoScriptUrl || initialData.artifacts?.videoScriptUrl || '',
+          flashcardsSummary: initialData.aiArtifacts?.flashcardsSummary || initialData.artifacts?.flashcardsSummary || '',
+          infographicUrl: initialData.aiArtifacts?.infographicUrl || initialData.artifacts?.infographicUrl || '',
         }
       });
     } else {
       setForm({
         ...EMPTY_SUBJECT,
         id: crypto.randomUUID(),
-        institution: defaultInstitution || ''
+        institution: normalizeInstitution(defaultInstitution),
+        updatedAt: new Date().toISOString()
       });
     }
   }, [initialData, defaultInstitution, open]);
@@ -69,7 +91,11 @@ export function AcademicSubjectModal({
 
     onSave({
       ...form,
-      flashcardsCount: count > 0 ? count : form.flashcardsCount
+      artifacts: form.artifacts || form.aiArtifacts || {},
+      aiArtifacts: form.aiArtifacts || form.artifacts || {},
+      notebookUrl: form.notebookUrl || form.artifacts?.notebookUrl,
+      flashcardsCount: count > 0 ? count : form.flashcardsCount,
+      updatedAt: new Date().toISOString()
     });
     onClose();
   };
@@ -91,16 +117,16 @@ export function AcademicSubjectModal({
             />
           </FormField>
 
-          <FormField label="Instituição (ex: UNINTER, ETEP)">
+          <FormField label="Instituição (UNINTER, ETEP, Outros)">
             <div className="relative">
               <input
                 className={inputClass}
-                placeholder="UNINTER, ETEP, etc."
-                value={form.institution || ''}
-                onChange={e => setForm({ ...form, institution: e.target.value })}
+                placeholder="UNINTER, ETEP, Outros"
+                value={form.institution}
+                onChange={e => setForm({ ...form, institution: normalizeInstitution(e.target.value) })}
               />
               <div className="absolute right-2 top-2.5 flex gap-1">
-                {['UNINTER', 'ETEP'].map(inst => (
+                {(['UNINTER', 'ETEP', 'Outros'] as const).map(inst => (
                   <button
                     key={inst}
                     type="button"
