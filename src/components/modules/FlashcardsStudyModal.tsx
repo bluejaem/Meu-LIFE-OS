@@ -52,8 +52,21 @@ export function FlashcardsStudyModal({
 
   if (!subject) return null;
 
+  const [isConnectingGoogle, setIsConnectingGoogle] = useState(false);
+
   const handleConnectGoogle = async () => {
-    await connectGoogleAccount();
+    setIsConnectingGoogle(true);
+    try {
+      const result = await connectGoogleAccount();
+      if (!result.success) {
+        throw new Error(result.error || "Erro desconhecido ao conectar com Google.");
+      }
+    } catch (error: any) {
+      console.error("Detalhes do erro OAuth:", error);
+      alert(`Erro ao conectar com Google: ${error.message}`);
+    } finally {
+      setIsConnectingGoogle(false);
+    }
   };
 
   const loadNotebooks = async () => {
@@ -203,9 +216,11 @@ export function FlashcardsStudyModal({
               </p>
               <button
                 onClick={handleConnectGoogle}
-                className="whitespace-nowrap px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/20"
+                disabled={isConnectingGoogle}
+                className="whitespace-nowrap px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/20 disabled:opacity-50 flex items-center justify-center gap-1.5"
               >
-                Conectar Conta Google (Gemini)
+                {isConnectingGoogle ? <Loader2 size={14} className="animate-spin" /> : null}
+                {isConnectingGoogle ? "Conectando..." : "Conectar Conta Google (Gemini)"}
               </button>
             </div>
           ) : (
