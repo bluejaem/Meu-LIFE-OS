@@ -12,6 +12,7 @@ import { Rotina } from '@/components/modules/Rotina';
 import { Diario } from '@/components/modules/Diario';
 import { AcademicHubView } from '@/components/modules/AcademicHubView';
 import { Configuracoes } from '@/components/modules/Configuracoes';
+import { QuickCaptureModal } from '@/components/modules/QuickCaptureModal';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 
@@ -22,12 +23,26 @@ import { AuthScreen } from '@/components/AuthScreen';
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { pomodoroIsRunning, settings } = useStore();
+  const { pomodoroIsRunning, settings, isTunnelMode, setQuickCaptureOpen } = useStore();
   const { currentUser, loading } = useAuthStore();
 
   useEffect(() => {
     document.documentElement.style.setProperty('--bg-image', `url('${settings.wallpaperUrl}')`);
   }, [settings.wallpaperUrl]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setQuickCaptureOpen(!useStore.getState().isQuickCaptureOpen);
+      }
+      if (e.key === 'Escape') {
+        setQuickCaptureOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setQuickCaptureOpen]);
 
   const workerRef = useRef<Worker | null>(null);
 
@@ -124,22 +139,25 @@ export default function App() {
   return (
     <div className="flex h-screen w-full overflow-hidden text-slate-200 font-sans selection:bg-indigo-500/30">
       {/* Mobile Overlay */}
-      {isSidebarOpen && (
+      {isSidebarOpen && !isTunnelMode && (
         <div 
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={(t) => { setActiveTab(t); setIsSidebarOpen(false); }} 
-        isOpen={isSidebarOpen} 
-      />
+      {!isTunnelMode && (
+        <Sidebar 
+          activeTab={activeTab} 
+          setActiveTab={(t) => { setActiveTab(t); setIsSidebarOpen(false); }} 
+          isOpen={isSidebarOpen} 
+        />
+      )}
       
       <main className="flex-1 h-full relative z-0 bg-black/10 overflow-hidden flex flex-col">
         {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-black/20 backdrop-blur-lg z-10 flex-shrink-0">
+        {!isTunnelMode && (
+          <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-black/20 backdrop-blur-lg z-10 flex-shrink-0">
           <button onClick={() => setIsSidebarOpen(true)} className="p-1 rounded-md bg-white/5 hover:bg-white/10 text-white">
             <Menu size={20} />
           </button>
@@ -155,6 +173,9 @@ export default function App() {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* Cmd+K Modal */}
+      <QuickCaptureModal />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { PageLayout } from '../layout/PageLayout';
-import { Play, Pause, RotateCcw, Settings2, Check, Trash2, Sparkles } from 'lucide-react';
+import { Play, Pause, RotateCcw, Settings2, Check, Trash2, Sparkles, Maximize, Minimize } from 'lucide-react';
 import { cn, formatSecondsToTime, parseTimeToSeconds } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
 import { AmbientSoundPlayer } from './AmbientSoundPlayer';
@@ -25,7 +25,8 @@ export function Pomodoro() {
     pomodoroSessions, tasks, deletePomodoroSession,
     pomodoroMode: mode, pomodoroSecondsLeft: secondsLeft, 
     pomodoroIsRunning: isRunning, pomodoroSelectedTask: selectedTask,
-    pomodoroDurations, setPomodoroState, setPomodoroDurations
+    pomodoroDurations, setPomodoroState, setPomodoroDurations,
+    isTunnelMode, toggleTunnelMode
   } = useStore();
   
   const [isEditingTime, setIsEditingTime] = useState(false);
@@ -208,20 +209,29 @@ export function Pomodoro() {
             </button>
           </div>
 
-          {/* Task selector */}
-          {pendingTasks.length > 0 && (
-            <div className="mb-6 w-full max-w-sm shrink-0">
-              <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2 text-center">Focando em</p>
-              <select
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 text-center [&>option]:bg-[#0c0e16]"
-                value={selectedTask || ''}
-                onChange={e => setPomodoroState({ pomodoroSelectedTask: e.target.value })}
-              >
-                <option value="">— Sessão livre —</option>
-                {pendingTasks.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
-              </select>
-            </div>
-          )}
+          {/* Task selector & Tunnel Mode */}
+          <div className="flex flex-col gap-3 mb-6 w-full max-w-sm shrink-0">
+            {pendingTasks.length > 0 && (
+              <div>
+                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-2 text-center">Focando em</p>
+                <select
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 text-center [&>option]:bg-[#0c0e16]"
+                  value={selectedTask || ''}
+                  onChange={e => setPomodoroState({ pomodoroSelectedTask: e.target.value })}
+                >
+                  <option value="">— Sessão livre —</option>
+                  {pendingTasks.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+                </select>
+              </div>
+            )}
+            <button 
+              onClick={toggleTunnelMode}
+              className="flex items-center justify-center gap-2 w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+            >
+              {isTunnelMode ? <Minimize size={16} /> : <Maximize size={16} />}
+              <span>{isTunnelMode ? 'Sair do Modo Túnel' : 'Modo Túnel'}</span>
+            </button>
+          </div>
 
           {/* Mini-Player de Sons Ambiente: Modo Foco Gentil */}
           <div className="w-full max-w-sm shrink-0">
@@ -230,42 +240,52 @@ export function Pomodoro() {
         </div>
 
         {/* Right Column: Jornada do Conhecimento & History */}
-        <div className="w-full lg:w-80 flex flex-col gap-4 overflow-y-auto scrollbar-hide shrink-0 pb-12">
-          {/* Jornada do Conhecimento Compacta */}
-          <JornadaConhecimento variant="compact" />
+        <AnimatePresence>
+          {!isTunnelMode && (
+            <motion.div 
+              initial={{ opacity: 0, x: 20, width: 0 }}
+              animate={{ opacity: 1, x: 0, width: 'auto' }}
+              exit={{ opacity: 0, x: 20, width: 0 }}
+              transition={{ duration: 0.3 }}
+              className="w-full lg:w-80 flex flex-col gap-4 overflow-y-auto scrollbar-hide shrink-0 pb-12 overflow-hidden"
+            >
+              {/* Jornada do Conhecimento Compacta */}
+              <JornadaConhecimento variant="compact" />
 
-          <div className="glass-panel p-5 flex flex-col gap-4">
-            <div className="flex flex-col gap-1">
-              <h3 className="text-sm font-bold text-slate-200">Histórico de Hoje</h3>
-              <p className="text-xs text-slate-500">{todayMinutes}min registradas</p>
-            </div>
-
-          {todaySessions.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center py-6">
-              <p className="text-sm text-slate-600 text-center">Inicie uma sessão de foco para registrar aqui.</p>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {todaySessions.map(s => (
-                <div key={s.id} className="group flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/8 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                      <Check size={14} className="text-indigo-400" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-slate-200 max-w-[130px] truncate">{s.label || 'Sessão'}</p>
-                      <p className="text-[11px] text-slate-500">{s.duration}min</p>
-                    </div>
-                  </div>
-                  <button onClick={() => deletePomodoroSession(s.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all">
-                    <Trash2 size={14} />
-                  </button>
+              <div className="glass-panel p-5 flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-sm font-bold text-slate-200">Histórico de Hoje</h3>
+                  <p className="text-xs text-slate-500">{todayMinutes}min registradas</p>
                 </div>
-              ))}
-            </div>
+
+                {todaySessions.length === 0 ? (
+                  <div className="flex-1 flex items-center justify-center py-6">
+                    <p className="text-sm text-slate-600 text-center">Inicie uma sessão de foco para registrar aqui.</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {todaySessions.map(s => (
+                      <div key={s.id} className="group flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/8 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                            <Check size={14} className="text-indigo-400" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-slate-200 max-w-[130px] truncate">{s.label || 'Sessão'}</p>
+                            <p className="text-[11px] text-slate-500">{s.duration}min</p>
+                          </div>
+                        </div>
+                        <button onClick={() => deletePomodoroSession(s.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
           )}
-          </div>
-        </div>
+        </AnimatePresence>
       </div>
     </PageLayout>
   );

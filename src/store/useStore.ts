@@ -112,9 +112,17 @@ interface AppStore {
   // ── Settings
   updateSettings: (data: Partial<AppSettings>) => void;
 
+  // ── UI States
+  dashboardTimeRange: 'week' | 'month' | 'semester';
+  setDashboardTimeRange: (range: 'week' | 'month' | 'semester') => void;
+  isQuickCaptureOpen: boolean;
+  setQuickCaptureOpen: (open: boolean) => void;
+  isTunnelMode: boolean;
+  toggleTunnelMode: () => void;
+
   // ── Computed helpers
   getProjectProgress: (projectId: string) => number;
-  getWeeklyProductivity: () => { name: string; tarefas: number; horas: number }[];
+  getProductivityData: (range: 'week' | 'month' | 'semester') => { name: string; tarefas: number; horas: number }[];
   getTodayTasks: () => Task[];
   getUpcomingEvents: () => CalendarEvent[];
 }
@@ -143,6 +151,11 @@ export const useStore = create<AppStore>()(
         language: 'pt-BR',
         notifications: true,
       },
+
+      // UI States
+      dashboardTimeRange: 'week',
+      isQuickCaptureOpen: false,
+      isTunnelMode: false,
 
       // Pomodoro Global State
       pomodoroMode: 'focus',
@@ -345,6 +358,11 @@ export const useStore = create<AppStore>()(
         settings: { ...s.settings, ...data }
       })),
 
+      // ── UI States Actions ──────────────────────────────────────────────────
+      setDashboardTimeRange: (range) => set({ dashboardTimeRange: range }),
+      setQuickCaptureOpen: (open) => set({ isQuickCaptureOpen: open }),
+      toggleTunnelMode: () => set((s) => ({ isTunnelMode: !s.isTunnelMode })),
+
       // ── Computed Helpers ───────────────────────────────────────────────────
       getProjectProgress: (projectId) => {
         const { tasks, projects } = get();
@@ -357,20 +375,69 @@ export const useStore = create<AppStore>()(
         return Math.round((done / projectTasks.length) * 100);
       },
 
-      getWeeklyProductivity: () => {
+      getProductivityData: (range) => {
         const { tasks, pomodoroSessions } = get();
-        const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
         const result = [];
-        for (let i = 6; i >= 0; i--) {
-          const d = new Date();
-          d.setDate(d.getDate() - i);
-          const dateStr = d.toISOString().split('T')[0];
-          const dayName = days[d.getDay()];
-          const tarefas = tasks.filter(t => t.done && t.createdAt.startsWith(dateStr)).length;
-          const sessions = pomodoroSessions.filter(p => p.date === dateStr);
-          const horas = Math.round(sessions.reduce((acc, s) => acc + s.duration, 0) / 60 * 10) / 10;
-          result.push({ name: dayName, tarefas, horas });
+        const todayD = new Date();
+        todayD.setHours(23, 59, 59, 999);
+
+        let daysToIterate = 7;
+        if (range === 'month') daysToIterate = 30;
+        else if (range === 'semester') daysToIterate = 180;
+
+        // Function to format the label based on range
+        const formatLabel = (d: Date) => {
+          if (range === 'week') {
+            const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            return days[d.getDay()];
+          }
+          if (range === 'month') {
+            return `${d.getDate()}/${d.getMonth() + 1}`;
+          }
+          if (range === 'semester') {
+            return `${d.getDate()}/${d.getMonth() + 1}`;
+          }
+          return '';
+        };
+
+        // For large ranges, we might want to group by week or month, but let's keep it daily for now or group if needed.
+        // Recharts handles large data by squishing it, but 180 points might be too much.
+        // If semester, let's group by week
+        if (range === 'semester') {
+          // Group by week (every 7 days)
+          for (let i = 25; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - (i * 7));
+            const endD = new Date(d);
+            endD.setDate(d.getDate() + 6);
+            
+            let tarefas = 0;
+            let horasStr = 0;
+
+            for (let j = 0; j <= 6; j++) {
+              const iterD = new Date(d);
+              iterD.setDate(iterD.getDate() + j);
+              const dateStr = iterD.toISOString().split('T')[0];
+              tarefas += tasks.filter(t => t.done && t.createdAt.startsWith(dateStr)).length;
+              const sessions = pomodoroSessions.filter(p => p.date === dateStr);
+              horasStr += sessions.reduce((acc, s) => acc + s.duration, 0);
+            }
+            const horas = Math.round(horasStr / 60 * 10) / 10;
+            result.push({ name: `Sem. ${26 - i}`, tarefas, horas });
+          }
+        } else {
+          for (let i = daysToIterate - 1; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            const name = formatLabel(d);
+            const tarefas = tasks.filter(t => t.done && t.createdAt.startsWith(dateStr)).length;
+            const sessions = pomodoroSessions.filter(p => p.date === dateStr);
+            const horas = Math.round(sessions.reduce((acc, s) => acc + s.duration, 0) / 60 * 10) / 10;
+            result.push({ name, tarefas, horas });
+          }
         }
+        
         return result;
       },
 
@@ -541,6 +608,8 @@ export const useStore = create<AppStore>()(
           pomodoroIsRunning,
           pomodoroSelectedTask,
           pomodoroMode,
+          isQuickCaptureOpen,
+          isTunnelMode,
           ...rest
         } = state;
         return rest;
@@ -571,7 +640,7 @@ onAuthStateChanged(auth, (user) => {
             const remoteData = JSON.parse(remoteDataStr);
             const currentState = useStore.getState();
             
-            const transientKeys = ['pomodoroSecondsLeft', 'pomodoroIsRunning', 'pomodoroSelectedTask', 'pomodoroMode'];
+            const transientKeys = ['pomodoroSecondsLeft', 'pomodoroIsRunning', 'pomodoroSelectedTask', 'pomodoroMode', 'isQuickCaptureOpen', 'isTunnelMode'];
             
             const getComparableState = (state: any) => {
               const obj = { ...state };

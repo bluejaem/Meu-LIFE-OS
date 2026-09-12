@@ -26,11 +26,12 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
     return () => clearInterval(timer);
   }, []);
   const { 
-    tasks, projects, pomodoroSessions, goals, getWeeklyProductivity, getUpcomingEvents,
+    tasks, projects, pomodoroSessions, goals, getProductivityData, getUpcomingEvents,
     pomodoroSecondsLeft, pomodoroIsRunning, pomodoroMode, pomodoroDurations, 
-    setPomodoroState, setPomodoroDurations, toggleTask, getWeeklyStudyProgress
+    setPomodoroState, setPomodoroDurations, toggleTask, getWeeklyStudyProgress,
+    dashboardTimeRange, setDashboardTimeRange
   } = useStore();
-  const chartData = getWeeklyProductivity();
+  const chartData = getProductivityData(dashboardTimeRange);
   const upcomingEvents = getUpcomingEvents();
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -168,7 +169,28 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
         {/* Chart */}
         <div className="glass-panel p-6 flex flex-col shrink-0 h-[300px]">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-semibold text-[13px] text-slate-200 uppercase tracking-wider">Produtividade Semanal</h3>
+            <div className="flex items-center gap-4">
+              <h3 className="font-semibold text-[13px] text-slate-200 uppercase tracking-wider">Produtividade</h3>
+              {/* Time Range Tabs */}
+              <div className="hidden sm:flex gap-1 bg-black/20 p-1 rounded-full">
+                {[
+                  { id: 'week', label: '7 Dias' },
+                  { id: 'month', label: '30 Dias' },
+                  { id: 'semester', label: '6 Meses' }
+                ].map(range => (
+                  <button
+                    key={range.id}
+                    onClick={() => setDashboardTimeRange(range.id as 'week' | 'month' | 'semester')}
+                    className={cn(
+                      "px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-300",
+                      dashboardTimeRange === range.id ? "bg-white/15 text-white shadow-sm" : "text-slate-500 hover:text-slate-300"
+                    )}
+                  >
+                    {range.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="flex gap-4 text-[12px] font-medium">
               <span className="flex items-center gap-1.5 text-slate-300">
                 <span className="w-2 h-2 rounded-full bg-indigo-500" /> Tarefas
