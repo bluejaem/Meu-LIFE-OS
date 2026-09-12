@@ -156,9 +156,21 @@ export interface AcademicSubject {
   grade?: number;
   notes?: string;
   notebookUrl?: string;        // Atalho para artifacts.notebookUrl
+  notebookId?: string;         // ID do Notebook vinculado (NotebookLM)
+  notebookName?: string;       // Nome do Notebook vinculado
   aiArtifacts?: AiArtifacts;   // Atalho para artifacts
   lastReviewedDate?: string;   // Data da última revisão ativa (YYYY-MM-DD)
   flashcardsCount?: number;    // Quantidade estimada de cartões de revisão
+}
+
+export interface NotebookInfo {
+  name: string; // formato: 'notebooks/{notebook_id}'
+  displayName: string;
+}
+
+export interface NotebookSource {
+  name: string;
+  displayName: string;
 }
 
 export type Subject = AcademicSubject;

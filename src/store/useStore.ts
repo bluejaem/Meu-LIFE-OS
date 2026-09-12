@@ -103,6 +103,7 @@ interface AppStore {
   deleteCollege: (id: string) => void;
   toggleSubjectReviewedToday: (collegeId: string, subjectId: string) => void;
   updateSubject: (collegeId: string, subjectId: string, data: Partial<AcademicSubject>) => void;
+  linkNotebookToSubject: (collegeId: string, subjectId: string, notebookId: string, notebookName: string) => Promise<void>;
 
   // ── Settings
   updateSettings: (data: Partial<AppSettings>) => void;
@@ -368,6 +369,22 @@ export const useStore = create<AppStore>()(
           };
         })
       })),
+      linkNotebookToSubject: async (collegeId, subjectId, notebookId, notebookName) => {
+        set((s) => ({
+          colleges: s.colleges.map(col => {
+            if (col.id !== collegeId) return col;
+            return {
+              ...col,
+              subjects: col.subjects.map(subj => 
+                subj.id === subjectId 
+                  ? { ...subj, notebookId, notebookName } 
+                  : subj
+              )
+            };
+          })
+        }));
+        // O Zustand persist middleware cuida de persistir essa alteração no Firestore em background.
+      },
 
       // ── Settings ───────────────────────────────────────────────────────────
       updateSettings: (data) => set((s) => ({
@@ -563,6 +580,16 @@ export const useStore = create<AppStore>()(
       name: 'planner-ti-life-os-storage',
       storage: createJSONStorage(() => firestoreStorage),
       version: 1,
+      partialize: (state) => {
+        const {
+          pomodoroSecondsLeft,
+          pomodoroIsRunning,
+          pomodoroSelectedTask,
+          pomodoroMode,
+          ...rest
+        } = state;
+        return rest;
+      },
       migrate: (persistedState: any, version: number) => {
         if (version === 0) {
           persistedState.certifications = initialCertifications;
@@ -589,8 +616,25 @@ onAuthStateChanged(auth, (user) => {
             const remoteData = JSON.parse(remoteDataStr);
             const currentState = useStore.getState();
             
+            const transientKeys = ['pomodoroSecondsLeft', 'pomodoroIsRunning', 'pomodoroSelectedTask', 'pomodoroMode'];
+            
+            const getComparableState = (state: any) => {
+              const obj = { ...state };
+              transientKeys.forEach(k => delete obj[k]);
+              // Remove functions to ensure clean comparison
+              Object.keys(obj).forEach(key => {
+                if (typeof obj[key] === 'function') {
+                  delete obj[key];
+                }
+              });
+              return obj;
+            };
+
+            const remoteComparable = getComparableState(remoteData.state);
+            const currentComparable = getComparableState(currentState);
+            
             // Comparamos pra não causar loops
-            if (JSON.stringify(remoteData.state) !== JSON.stringify(currentState)) {
+            if (JSON.stringify(remoteComparable) !== JSON.stringify(currentComparable)) {
               useStore.setState(remoteData.state);
             }
           } catch(e) {}
