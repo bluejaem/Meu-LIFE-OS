@@ -3,7 +3,12 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { firestoreStorage } from '@/lib/firestoreStorage';
 import type { AcademicSubject } from '@/types';
 
-const uid = () => crypto.randomUUID();
+const uid = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
 const now = () => new Date().toISOString();
 
 const initialSubjects: AcademicSubject[] = [];

@@ -10,7 +10,12 @@ import type {
 } from '@/types';
 
 // ─── Utility ──────────────────────────────────────────────────────────────────
-const uid = () => crypto.randomUUID();
+const uid = () => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
 const now = () => new Date().toISOString();
 const today = () => new Date().toISOString().split('T')[0];
 
@@ -533,7 +538,8 @@ export const useStore = create<AppStore>()(
           { id: 'weekly_5h', title: 'Semana Dourada', description: 'Dedicou mais de 5 horas de estudo nesta semana', icon: 'Flame', pass: weeklyMinutes >= 300 },
         ];
 
-        const existingIds = new Set((userMilestones || []).map(m => m.id));
+        const uniqueExisting = (userMilestones || []).filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+        const existingIds = new Set(uniqueExisting.map(m => m.id));
         const newUnlocked: UserMilestone[] = [];
 
         definitions.forEach(d => {
@@ -548,13 +554,13 @@ export const useStore = create<AppStore>()(
           }
         });
 
-        if (newUnlocked.length > 0) {
-          const updated = [...(userMilestones || []), ...newUnlocked];
+        if (newUnlocked.length > 0 || uniqueExisting.length !== (userMilestones || []).length) {
+          const updated = [...uniqueExisting, ...newUnlocked];
           set({ userMilestones: updated });
           return updated;
         }
 
-        return userMilestones || [];
+        return uniqueExisting;
       },
     }),
     {
