@@ -100,7 +100,13 @@ export const useAcademicStore = create<AcademicState>()(
       migrate: (persistedState: any, version: number) => {
         if (version === 0) {
           // Remove fake subjects from previous versions
-          const fakeSubjectNames = ['Cálculo Diferencial e Integral', 'Introdução à Programação'];
+          const fakeSubjectNames = [
+            'Cálculo Diferencial e Integral', 
+            'Introdução à Programação',
+            'Finanças Corporativas',
+            'Estruturas de Dados e Algoritmos',
+            'Deep Learning & Modelos de Linguagem (LLMs)'
+          ];
           if (persistedState && Array.isArray(persistedState.subjects)) {
             persistedState.subjects = persistedState.subjects.filter(
               (sub: any) => !fakeSubjectNames.includes(sub.name)
