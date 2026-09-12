@@ -95,7 +95,8 @@ interface AppStore {
   pomodoroDurations: { focus: number; shortBreak: number; longBreak: number; custom: number };
   setPomodoroState: (state: Partial<{ pomodoroMode: 'focus' | 'shortBreak' | 'longBreak' | 'custom', pomodoroSecondsLeft: number, pomodoroIsRunning: boolean, pomodoroSelectedTask: string | null }>) => void;
   setPomodoroDurations: (durations: Partial<{ focus: number; shortBreak: number; longBreak: number; custom: number }>) => void;
-  tickPomodoro: () => void;
+  updatePomodoroTime: (secondsLeft: number) => void;
+  finishPomodoro: () => void;
 
   addPomodoroSession: (data: Omit<PomodoroSession, 'id' | 'createdAt'>) => void;
   deletePomodoroSession: (id: string) => void;
@@ -249,60 +250,27 @@ export const useStore = create<AppStore>()(
         pomodoroDurations: { ...s.pomodoroDurations, ...durations }
       })),
       
-      tickPomodoro: () => set((s) => {
-        if (!s.pomodoroIsRunning || s.pomodoroSecondsLeft <= 0) return s;
-        const newSeconds = s.pomodoroSecondsLeft - 1;
-        if (newSeconds === 0) {
-          // Tocar som e enviar notificação
-          try {
-            const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-            if (AudioContext) {
-              const ctx = new AudioContext();
-              const playBeep = (time: number) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(880, time);
-                gain.gain.setValueAtTime(0.1, time);
-                gain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(time);
-                osc.stop(time + 0.25);
-              };
-              playBeep(ctx.currentTime);
-              playBeep(ctx.currentTime + 0.3);
-              playBeep(ctx.currentTime + 0.6);
-            }
-          } catch(e) {}
-
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Cronômetro Finalizado!', { 
-              body: 'Seu tempo acabou. Volte para o LIFE OS!',
-              icon: '/favicon.ico'
-            });
-          }
-
-          if (s.pomodoroMode === 'focus' || s.pomodoroMode === 'custom') {
-            const task = s.tasks.find(t => t.id === s.pomodoroSelectedTask);
-            const modeDuration = s.pomodoroDurations[s.pomodoroMode];
-            const newSession = {
-              id: uid(),
-              date: today(),
-              duration: modeDuration, // Usa o tempo configurado do respectivo modo
-              taskId: s.pomodoroSelectedTask || undefined,
-              label: task ? task.title : (s.pomodoroMode === 'custom' ? 'Estudo Personalizado' : 'Sessão livre'),
-              createdAt: now()
-            };
-            return { 
-              pomodoroSecondsLeft: 0, 
-              pomodoroIsRunning: false,
-              pomodoroSessions: [...s.pomodoroSessions, newSession]
-            };
-          }
-          return { pomodoroSecondsLeft: 0, pomodoroIsRunning: false };
+      updatePomodoroTime: (secondsLeft) => set({ pomodoroSecondsLeft: secondsLeft }),
+      
+      finishPomodoro: () => set((s) => {
+        if (s.pomodoroMode === 'focus' || s.pomodoroMode === 'custom') {
+          const task = s.tasks.find(t => t.id === s.pomodoroSelectedTask);
+          const modeDuration = s.pomodoroDurations[s.pomodoroMode];
+          const newSession = {
+            id: uid(),
+            date: today(),
+            duration: modeDuration,
+            taskId: s.pomodoroSelectedTask || undefined,
+            label: task ? task.title : (s.pomodoroMode === 'custom' ? 'Estudo Personalizado' : 'Sessão livre'),
+            createdAt: now()
+          };
+          return { 
+            pomodoroSecondsLeft: 0, 
+            pomodoroIsRunning: false,
+            pomodoroSessions: [...s.pomodoroSessions, newSession]
+          };
         }
-        return { pomodoroSecondsLeft: newSeconds };
+        return { pomodoroSecondsLeft: 0, pomodoroIsRunning: false };
       }),
       addPomodoroSession: (data) => set((s) => ({
         pomodoroSessions: [...s.pomodoroSessions, { ...data, id: uid(), createdAt: now() }]

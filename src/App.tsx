@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Dashboard } from '@/components/Dashboard';
 import { Tarefas } from '@/components/modules/Tarefas';
@@ -22,25 +22,72 @@ import { AuthScreen } from '@/components/AuthScreen';
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { pomodoroIsRunning, tickPomodoro, settings } = useStore();
+  const { pomodoroIsRunning, settings } = useStore();
   const { currentUser, loading } = useAuthStore();
 
   useEffect(() => {
     document.documentElement.style.setProperty('--bg-image', `url('${settings.wallpaperUrl}')`);
   }, [settings.wallpaperUrl]);
 
+  const workerRef = useRef<Worker | null>(null);
+
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (pomodoroIsRunning) {
-      interval = setInterval(() => {
-        tickPomodoro();
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
+    workerRef.current = new Worker(new URL('./workers/pomodoroWorker.ts', import.meta.url), { type: 'module' });
+    
+    workerRef.current.onmessage = (e) => {
+      const { type, payload } = e.data;
+      if (type === 'TICK') {
+        useStore.getState().updatePomodoroTime(payload.secondsLeft);
+      } else if (type === 'FINISHED') {
+        try {
+          const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+          if (AudioContext) {
+            const ctx = new AudioContext();
+            const playBeep = (time: number) => {
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(880, time);
+              gain.gain.setValueAtTime(0.1, time);
+              gain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+              osc.start(time);
+              osc.stop(time + 0.25);
+            };
+            playBeep(ctx.currentTime);
+            playBeep(ctx.currentTime + 0.3);
+            playBeep(ctx.currentTime + 0.6);
+          }
+        } catch(e) {}
+
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('Cronômetro Finalizado!', { 
+            body: 'Seu tempo acabou. Volte para o LIFE OS!',
+            icon: '/favicon.ico'
+          });
+        }
+        
+        useStore.getState().finishPomodoro();
+      }
     };
-  }, [pomodoroIsRunning, tickPomodoro]);
-  
+
+    return () => {
+      workerRef.current?.terminate();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (pomodoroIsRunning) {
+      workerRef.current?.postMessage({ 
+        type: 'START', 
+        payload: { secondsLeft: useStore.getState().pomodoroSecondsLeft } 
+      });
+    } else {
+      workerRef.current?.postMessage({ type: 'PAUSE' });
+    }
+  }, [pomodoroIsRunning]);
+
 
   const renderModule = () => {
     switch (activeTab) {

@@ -13,6 +13,7 @@ import { ptBR } from 'date-fns/locale';
 import { ModalAddStudy } from '@/components/modules/ModalAddStudy';
 import { JornadaConhecimento } from '@/components/modules/JornadaConhecimento';
 import { ActiveReviewWidget } from '@/components/modules/ActiveReviewWidget';
+import { MiniCalendar } from '@/components/modules/MiniCalendar';
 
 export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => void }) {
   const [isStudyModalOpen, setIsStudyModalOpen] = useState(false);
@@ -336,6 +337,9 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
             </div>
           )}
         </div>
+
+        {/* Mini Calendário */}
+        <MiniCalendar />
 
         {/* Upcoming Events */}
         <div className="flex-1">
