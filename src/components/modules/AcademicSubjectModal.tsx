@@ -53,7 +53,7 @@ export function AcademicSubjectModal({
     if (initialData) {
       setForm({
         ...initialData,
-        institution: normalizeInstitution(initialData.institution || defaultInstitution),
+        institution: initialData.institution || defaultInstitution || '',
         artifacts: initialData.artifacts || initialData.aiArtifacts || {},
         aiArtifacts: {
           notebookUrl: initialData.notebookUrl || initialData.artifacts?.notebookUrl || '',
@@ -67,7 +67,7 @@ export function AcademicSubjectModal({
       setForm({
         ...EMPTY_SUBJECT,
         id: crypto.randomUUID(),
-        institution: normalizeInstitution(defaultInstitution),
+        institution: defaultInstitution || '',
         updatedAt: new Date().toISOString()
       });
     }
