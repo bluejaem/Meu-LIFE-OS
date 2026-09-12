@@ -109,13 +109,24 @@ export function AcademicSubjectModal({
               autoFocus
             />
           </FormField>
+        </div>
 
+        <div className="grid grid-cols-2 gap-3">
           <FormField label="Instituição">
             <input
               className={inputClass}
-              placeholder="Ex: USP, UNINTER, ETEP..."
+              placeholder="Ex: USP, Estácio..."
               value={form.institution}
               onChange={e => setForm({ ...form, institution: e.target.value })}
+            />
+          </FormField>
+
+          <FormField label="Semestre / Período">
+            <input
+              className={inputClass}
+              placeholder="Ex: 2026.2, 3º Semestre..."
+              value={form.semester || ''}
+              onChange={e => setForm({ ...form, semester: e.target.value })}
             />
           </FormField>
         </div>
