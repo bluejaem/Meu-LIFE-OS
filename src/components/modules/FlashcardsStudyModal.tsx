@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { 
   Sparkles, ExternalLink, BookOpen, CheckCircle2, RotateCcw, 
   ChevronLeft, ChevronRight, Layers, Presentation, Video, Image as ImageIcon,
-  Loader2, RefreshCw, Link as LinkIcon
+  Loader2, RefreshCw, Link as LinkIcon, Headphones, FileText
 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { cn } from '@/lib/utils';
-import type { AcademicSubject, NotebookInfo } from '@/types';
+import type { AcademicSubject, NotebookInfo, NotebookArtifact } from '@/types';
 import { useStore } from '@/store/useStore';
-import { fetchNotebooks, fetchNotebookFlashcards, Flashcard } from '@/services/notebookService';
+import { fetchNotebooks, fetchNotebookArtifacts } from '@/services/notebookService';
 
 interface FlashcardsStudyModalProps {
   open: boolean;
@@ -42,8 +42,8 @@ export function FlashcardsStudyModal({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [notebooks, setNotebooks] = useState<NotebookInfo[]>([]);
   const [isLoadingNotebooks, setIsLoadingNotebooks] = useState(false);
-  const [remoteFlashcards, setRemoteFlashcards] = useState<Flashcard[]>([]);
-  const [isFetchingFlashcards, setIsFetchingFlashcards] = useState(false);
+  const [remoteArtifacts, setRemoteArtifacts] = useState<NotebookArtifact[]>([]);
+  const [isFetchingArtifacts, setIsFetchingArtifacts] = useState(false);
 
   if (!subject) return null;
 
@@ -107,28 +107,31 @@ export function FlashcardsStudyModal({
     setIsDropdownOpen(false);
   };
 
-  const loadFlashcards = async () => {
+  const loadArtifacts = async () => {
     if (!subject.notebookId) return;
-    setIsFetchingFlashcards(true);
+    setIsFetchingArtifacts(true);
     try {
-      const data = await fetchNotebookFlashcards(subject.notebookId);
-      setRemoteFlashcards(data);
+      const data = await fetchNotebookArtifacts(subject.notebookId);
+      setRemoteArtifacts(data);
     } catch (err) {
-      console.error('Falha ao carregar flashcards do notebook', err);
+      console.error('Falha ao carregar artefatos do notebook', err);
     } finally {
-      setIsFetchingFlashcards(false);
+      setIsFetchingArtifacts(false);
     }
   };
 
   useEffect(() => {
     if (subject?.notebookId && open) {
-      loadFlashcards();
+      loadArtifacts();
     }
   }, [subject?.notebookId, open]);
 
+  // Separa os flashcards dos outros artefatos para o modo "cards"
+  const flashcardArtifacts = remoteArtifacts.filter(a => a.type === 'flashcard');
+
   // Use flashcards remotos se existirem, senão faça parse do texto manual
-  const cards = remoteFlashcards.length > 0 
-    ? remoteFlashcards.map(f => ({ question: f.front, answer: f.back }))
+  const cards = flashcardArtifacts.length > 0 
+    ? flashcardArtifacts.map(f => ({ question: f.content || f.title, answer: f.backContent || '' }))
     : parseFlashcards(subject.aiArtifacts?.flashcardsSummary);
     
   const currentCard = cards[currentCardIndex];
@@ -143,10 +146,10 @@ export function FlashcardsStudyModal({
     setCurrentCardIndex((prev) => (prev - 1 + cards.length) % cards.length);
   };
 
-  const artifacts = subject.aiArtifacts;
+  const artifactsLegacy = subject.aiArtifacts;
 
   return (
-    <Modal open={open} onClose={onClose} title="Estudo Ativo & Flashcards IA" size="lg">
+    <Modal open={open} onClose={onClose} title="Estudo Ativo & Artefatos IA" size="lg">
       <div className="flex flex-col gap-5">
         
         {/* Header com Metadados da Matéria */}
@@ -168,116 +171,111 @@ export function FlashcardsStudyModal({
               onClick={() => setViewMode(viewMode === 'cards' ? 'summary' : 'cards')}
               className="text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 transition-colors"
             >
-              {viewMode === 'cards' ? 'Ver Texto Completo' : 'Modo Flashcards'}
+              {viewMode === 'cards' ? 'Ver Todos Artefatos' : 'Modo Flashcards'}
             </button>
           </div>
         </div>
 
         {/* Barra de Acesso Rápido a Artefatos de IA do Gemini Notebook */}
-        <div className="flex items-center gap-2 flex-wrap p-3 rounded-xl bg-white/[0.03] border border-white/5 relative">
-          <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1 mr-1">
-            <Sparkles size={12} className="text-indigo-400" />
-            Artefatos IA:
-          </span>
+        <div className="flex flex-col gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 relative">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+              <Sparkles size={12} className="text-indigo-400" />
+              Integração Gemini:
+            </span>
 
-          {subject.notebookId ? (
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-300 bg-indigo-500/20 border border-indigo-500/30 px-3 py-1.5 rounded-lg shadow-sm">
-                <BookOpen size={12} /> {subject.notebookName}
-              </span>
-              <button 
-                onClick={loadFlashcards}
-                disabled={isFetchingFlashcards}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
-                title="Recarregar flashcards"
-              >
-                <RefreshCw size={14} className={cn(isFetchingFlashcards && "animate-spin")} />
-              </button>
-            </div>
-          ) : (
-            <div className="relative">
-              <button
-                onClick={loadNotebooks}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 px-3 py-1.5 rounded-lg transition-colors"
-              >
-                <LinkIcon size={12} /> Vincular Notebook Gemini
-              </button>
-              
-              {isDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-slate-900 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
-                  <div className="p-2 border-b border-white/10 flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Seus Notebooks</span>
-                    {isLoadingNotebooks && <Loader2 size={12} className="animate-spin text-indigo-400" />}
+            {subject.notebookId ? (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-300 bg-indigo-500/20 border border-indigo-500/30 px-3 py-1.5 rounded-lg shadow-sm">
+                  <BookOpen size={12} /> {subject.notebookName}
+                </span>
+                
+                <a
+                  href={`https://notebooklm.google.com/notebook/${subject.notebookId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <ExternalLink size={14} /> Abrir no Gemini Notebook
+                </a>
+
+                <button 
+                  onClick={loadArtifacts}
+                  disabled={isFetchingArtifacts}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+                  title="Recarregar artefatos"
+                >
+                  <RefreshCw size={14} className={cn(isFetchingArtifacts && "animate-spin")} />
+                </button>
+              </div>
+            ) : (
+              <div className="relative">
+                <button
+                  onClick={loadNotebooks}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  <LinkIcon size={12} /> Vincular Notebook Gemini
+                </button>
+                
+                {isDropdownOpen && (
+                  <div className="absolute top-full right-0 sm:left-0 sm:right-auto mt-2 w-64 bg-slate-900 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+                    <div className="p-2 border-b border-white/10 flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Seus Notebooks</span>
+                      {isLoadingNotebooks && <Loader2 size={12} className="animate-spin text-indigo-400" />}
+                    </div>
+                    <div className="max-h-48 overflow-y-auto p-1 scrollbar-hide">
+                      {notebooks.map(nb => (
+                        <button
+                          key={nb.name}
+                          onClick={() => handleLinkNotebook(nb.name, nb.displayName)}
+                          className="w-full text-left px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                        >
+                          {nb.displayName}
+                        </button>
+                      ))}
+                      {!isLoadingNotebooks && notebooks.length === 0 && (
+                        <div className="p-3 text-center text-xs text-slate-500">Nenhum notebook encontrado</div>
+                      )}
+                    </div>
                   </div>
-                  <div className="max-h-48 overflow-y-auto p-1 scrollbar-hide">
-                    {notebooks.map(nb => (
-                      <button
-                        key={nb.name}
-                        onClick={() => handleLinkNotebook(nb.name, nb.displayName)}
-                        className="w-full text-left px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                      >
-                        {nb.displayName}
-                      </button>
-                    ))}
-                    {!isLoadingNotebooks && notebooks.length === 0 && (
-                      <div className="p-3 text-center text-xs text-slate-500">Nenhum notebook encontrado</div>
-                    )}
-                  </div>
-                </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          {/* Legacy Artifacts (apenas se não houver notebookId e tiver artefatos antigos) */}
+          {!subject.notebookId && (artifactsLegacy?.slidesUrl || artifactsLegacy?.videoScriptUrl || artifactsLegacy?.infographicUrl) && (
+            <div className="flex gap-2 flex-wrap pt-2 border-t border-white/5">
+               {artifactsLegacy?.slidesUrl && (
+                <a href={artifactsLegacy.slidesUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 px-2.5 py-1.5 rounded-lg transition-colors">
+                  <Presentation size={12} /> Slides
+                </a>
+              )}
+              {artifactsLegacy?.videoScriptUrl && (
+                <a href={artifactsLegacy.videoScriptUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 px-2.5 py-1.5 rounded-lg transition-colors">
+                  <Video size={12} /> Roteiro
+                </a>
+              )}
+              {artifactsLegacy?.infographicUrl && (
+                <a href={artifactsLegacy.infographicUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 px-2.5 py-1.5 rounded-lg transition-colors">
+                  <ImageIcon size={12} /> Infográfico
+                </a>
               )}
             </div>
           )}
-
-          {subject.notebookUrl && !subject.notebookId && (
-            <a
-              href={subject.notebookUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-white/5 hover:bg-white/10 border border-white/10 px-2.5 py-1.5 rounded-lg transition-colors"
-            >
-              <ExternalLink size={12} /> Acessar Link Manual
-            </a>
-          )}
-
-          {artifacts?.slidesUrl && (
-            <a
-              href={artifacts.slidesUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 px-2.5 py-1.5 rounded-lg transition-colors"
-            >
-              <Presentation size={12} /> Slides
-            </a>
-          )}
-
-          {artifacts?.videoScriptUrl && (
-            <a
-              href={artifacts.videoScriptUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 px-2.5 py-1.5 rounded-lg transition-colors"
-            >
-              <Video size={12} /> Roteiro
-            </a>
-          )}
-
-          {artifacts?.infographicUrl && (
-            <a
-              href={artifacts.infographicUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 px-2.5 py-1.5 rounded-lg transition-colors"
-            >
-              <ImageIcon size={12} /> Infográfico
-            </a>
-          )}
         </div>
 
-        {/* Conteúdo: Cartões Interativos vs Resumo Textual */}
-        {isFetchingFlashcards ? (
+        {/* Conteúdo Principal */}
+        {isFetchingArtifacts ? (
           <div className="py-12 flex flex-col items-center justify-center gap-3">
             <Loader2 size={32} className="animate-spin text-indigo-500" />
-            <p className="text-xs text-slate-400 font-medium animate-pulse">Sincronizando com o Gemini Notebook...</p>
+            <p className="text-xs text-slate-400 font-medium animate-pulse">Sincronizando artefatos...</p>
+          </div>
+        ) : remoteArtifacts.length === 0 && subject.notebookId ? (
+          <div className="py-12 flex flex-col items-center justify-center text-center px-4">
+             <p className="text-slate-400 text-sm max-w-sm leading-relaxed">
+               Nenhum artefato encontrado. Adicione suas fontes e clique em 'Abrir no Gemini Notebook' para gerar seus resumos, podcasts e flashcards.
+             </p>
           </div>
         ) : viewMode === 'cards' && cards.length > 0 ? (
           <div className="flex flex-col gap-4">
@@ -360,24 +358,84 @@ export function FlashcardsStudyModal({
             </div>
           </div>
         ) : (
-          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 max-h-60 overflow-y-auto scrollbar-hide">
+          <div className="flex flex-col gap-4">
             <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-2">
-              Resumo & Flashcards da Matéria
+              Todos os Artefatos Gerados
             </h4>
             
-            {subject.notebookId && remoteFlashcards.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                {remoteFlashcards.map((f, i) => (
-                  <div key={f.id || i} className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10 hover:border-indigo-500/30 transition-colors group">
-                    <p className="text-xs font-semibold text-indigo-300 mb-2">P: {f.front}</p>
-                    <p className="text-sm text-slate-200 group-hover:text-white transition-colors">R: {f.back}</p>
-                  </div>
-                ))}
+            {subject.notebookId && remoteArtifacts.length > 0 ? (
+              <div className="flex flex-col gap-4">
+                {remoteArtifacts.map((artifact) => {
+                  if (artifact.type === 'audio') {
+                    return (
+                      <div key={artifact.id} className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                        <div className="flex items-center gap-2 text-indigo-300 mb-3">
+                          <Headphones size={16} />
+                          <span className="text-sm font-semibold">{artifact.title}</span>
+                        </div>
+                        {artifact.mediaUrl && (
+                          <audio controls src={artifact.mediaUrl} className="w-full h-10 rounded-lg outline-none" />
+                        )}
+                      </div>
+                    );
+                  }
+                  
+                  if (artifact.type === 'summary' || artifact.type === 'note') {
+                    return (
+                      <div key={artifact.id} className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10 flex flex-col gap-2">
+                        <div className="flex items-center gap-2 text-indigo-300">
+                          <FileText size={16} />
+                          <span className="text-sm font-semibold">{artifact.title}</span>
+                        </div>
+                        <div className="max-h-64 overflow-y-auto scrollbar-hide text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
+                          {artifact.content}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if (artifact.type === 'video' || artifact.type === 'presentation' || artifact.type === 'infographic') {
+                    return (
+                      <div key={artifact.id} className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10 flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-indigo-300">
+                          {artifact.type === 'video' ? <Video size={16} /> : artifact.type === 'presentation' ? <Presentation size={16} /> : <ImageIcon size={16} />}
+                          <span className="text-sm font-semibold">{artifact.title}</span>
+                        </div>
+                        {artifact.mediaUrl && (
+                          <a
+                            href={artifact.mediaUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5"
+                          >
+                            <ExternalLink size={12} /> Abrir {artifact.type}
+                          </a>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  if (artifact.type === 'flashcard') {
+                    return (
+                      <div key={artifact.id} className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10 flex flex-col gap-2 border-l-2 border-l-indigo-500">
+                        <div className="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
+                          Flashcard
+                        </div>
+                        <p className="text-sm font-medium text-slate-200">P: {artifact.content || artifact.title}</p>
+                        <p className="text-sm text-slate-400">R: {artifact.backContent}</p>
+                      </div>
+                    );
+                  }
+
+                  return null;
+                })}
               </div>
-            ) : subject.aiArtifacts?.flashcardsSummary ? (
-              <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
-                {subject.aiArtifacts.flashcardsSummary}
-              </p>
+            ) : artifactsLegacy?.flashcardsSummary ? (
+              <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 max-h-60 overflow-y-auto scrollbar-hide">
+                <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
+                  {artifactsLegacy.flashcardsSummary}
+                </p>
+              </div>
             ) : (
               <p className="text-xs text-slate-500 italic">
                 Nenhum flashcard ou resumo cadastrado para esta matéria ainda. Vincule um Notebook ou edite a matéria no módulo acadêmico para adicionar.
@@ -418,3 +476,4 @@ export function FlashcardsStudyModal({
     </Modal>
   );
 }
+

@@ -173,6 +173,18 @@ export interface NotebookSource {
   displayName: string;
 }
 
+export type ArtifactType = 'flashcard' | 'summary' | 'audio' | 'video' | 'presentation' | 'infographic' | 'note';
+
+export interface NotebookArtifact {
+  id: string;
+  type: ArtifactType;
+  title: string;
+  content?: string; // Para textos, resumos ou frente de flashcards
+  backContent?: string; // Para verso de flashcards
+  mediaUrl?: string; // Para links de áudios, vídeos, iframes de slides ou imagens
+  createdAt: string;
+}
+
 export type Subject = AcademicSubject;
 
 export interface College {
