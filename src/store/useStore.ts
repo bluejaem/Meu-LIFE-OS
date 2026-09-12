@@ -639,7 +639,40 @@ onAuthStateChanged(auth, (user) => {
             }
           } catch(e) {}
         }
+      } else {
+        // Se o documento não existe, é um usuário novo. 
+        // Não podemos sobrescrever o Firestore imediatamente com os dados do local storage
+        // a não ser que os dados do local storage sejam estritamente limpos. 
+        // Como o authStateChanged detectou um login novo, limpamos o estado se não houver remoteData.
+        useStore.setState({
+          tasks: [],
+          projects: [],
+          events: [],
+          goals: [],
+          books: [],
+          certifications: [],
+          routine: [],
+          diary: [],
+          pomodoroSessions: [],
+          colleges: [],
+          userMilestones: [],
+        });
       }
+    });
+  } else {
+    // Limpar o store quando o usuário deslogar
+    useStore.setState({
+      tasks: [],
+      projects: [],
+      events: [],
+      goals: [],
+      books: [],
+      certifications: [],
+      routine: [],
+      diary: [],
+      pomodoroSessions: [],
+      colleges: [],
+      userMilestones: [],
     });
   }
 });
