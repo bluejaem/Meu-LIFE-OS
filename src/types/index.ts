@@ -132,12 +132,20 @@ export interface PomodoroSession {
 }
 
 // ─── FACULDADES & HUB ACADÊMICO INTELIGENTE ────────────────────────────────────
+export interface Flashcard {
+  id: string;
+  front: string;
+  back: string;
+}
+
 export interface AiArtifacts {
   notebookUrl?: string;
   slidesUrl?: string;
   videoScriptUrl?: string;
   flashcardsSummary?: string;
   infographicUrl?: string;
+  generatedFlashcards?: Flashcard[];
+  generatedSummary?: string;
 }
 
 export type AIArtifacts = AiArtifacts;

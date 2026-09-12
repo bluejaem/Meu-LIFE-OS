@@ -4,7 +4,9 @@ import {
   createUserWithEmailAndPassword, 
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
@@ -19,10 +21,12 @@ export interface User {
 interface AuthState {
   currentUser: User | null;
   loading: boolean;
+  googleAccessToken: string | null;
   register: (name: string, username: string, passwordHash: string) => Promise<{ success: boolean; error?: string }>;
   login: (username: string, passwordHash: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateUserAvatar: (url: string) => Promise<void>;
+  connectGoogleAccount: () => Promise<{ success: boolean; error?: string }>;
 }
 
 const getEmailFromUsername = (username: string) => `${username.toLowerCase().trim()}@meulifeos.app`;
@@ -72,13 +76,14 @@ export const useAuthStore = create<AuthState>((set, get) => {
         loading: false
       });
     } else {
-      set({ currentUser: null, loading: false });
+      set({ currentUser: null, loading: false, googleAccessToken: null });
     }
   });
 
   return {
     currentUser: null,
     loading: true,
+    googleAccessToken: null,
 
     register: async (name, username, passwordHash) => {
       try {
@@ -123,6 +128,7 @@ export const useAuthStore = create<AuthState>((set, get) => {
 
     logout: async () => {
       await signOut(auth);
+      set({ googleAccessToken: null });
     },
 
     updateUserAvatar: async (url: string) => {
@@ -133,6 +139,28 @@ export const useAuthStore = create<AuthState>((set, get) => {
       await setDoc(doc(db, 'users', currentUser.id), { avatarUrl: url }, { merge: true });
       
       set({ currentUser: { ...currentUser, avatarUrl: url } });
+    },
+
+    connectGoogleAccount: async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        provider.addScope('https://www.googleapis.com/auth/drive.readonly'); // Escopo sugerido pelo usuário
+        
+        // Pode falhar dependendo das configurações do Firebase
+        const result = await signInWithPopup(auth, provider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential?.accessToken;
+        
+        if (token) {
+          set({ googleAccessToken: token });
+          return { success: true };
+        } else {
+          return { success: false, error: "Não foi possível obter o token de acesso do Google." };
+        }
+      } catch (error: any) {
+        console.error("Erro ao conectar Google:", error);
+        return { success: false, error: error.message };
+      }
     }
   };
 });

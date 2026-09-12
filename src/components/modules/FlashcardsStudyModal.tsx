@@ -2,13 +2,15 @@ import { useState, useEffect } from 'react';
 import { 
   Sparkles, ExternalLink, BookOpen, CheckCircle2, RotateCcw, 
   ChevronLeft, ChevronRight, Layers, Presentation, Video, Image as ImageIcon,
-  Loader2, RefreshCw, Link as LinkIcon, Headphones, FileText
+  Loader2, RefreshCw, Link as LinkIcon, Headphones, FileText,
+  AlertCircle
 } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { cn } from '@/lib/utils';
-import type { AcademicSubject, NotebookInfo, NotebookArtifact } from '@/types';
+import type { AcademicSubject, NotebookInfo, NotebookArtifact, Flashcard } from '@/types';
 import { useStore } from '@/store/useStore';
-import { fetchNotebooks, fetchNotebookArtifacts } from '@/services/notebookService';
+import { useAuthStore } from '@/store/authStore';
+import { listNotebooks, fetchNotebookArtifacts, generateDirectArtifact } from '@/services/aiIntegrationService';
 
 interface FlashcardsStudyModalProps {
   open: boolean;
@@ -17,11 +19,6 @@ interface FlashcardsStudyModalProps {
   collegeId?: string;
   onMarkReviewed?: () => void;
   isReviewedToday?: boolean;
-}
-
-interface ParsedCard {
-  question: string;
-  answer: string;
 }
 
 export function FlashcardsStudyModal({
@@ -33,65 +30,38 @@ export function FlashcardsStudyModal({
   isReviewedToday
 }: FlashcardsStudyModalProps) {
   const linkNotebookToSubject = useStore(state => state.linkNotebookToSubject);
+  const updateSubject = useStore(state => state.updateSubject);
+  const { googleAccessToken, connectGoogleAccount } = useAuthStore();
 
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [viewMode, setViewMode] = useState<'cards' | 'summary'>('cards');
 
-  // Estados do NotebookLM
+  // Estados Híbridos
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [notebooks, setNotebooks] = useState<NotebookInfo[]>([]);
   const [isLoadingNotebooks, setIsLoadingNotebooks] = useState(false);
   const [remoteArtifacts, setRemoteArtifacts] = useState<NotebookArtifact[]>([]);
   const [isFetchingArtifacts, setIsFetchingArtifacts] = useState(false);
 
+  // Estados Geração Nativa
+  const [showNativeGenerator, setShowNativeGenerator] = useState(false);
+  const [subjectContextText, setSubjectContextText] = useState(subject?.notes || '');
+  const [isGeneratingNative, setIsGeneratingNative] = useState(false);
+  const [nativeError, setNativeError] = useState('');
+
   if (!subject) return null;
 
-  // Parser dos flashcards a partir do texto do resumo
-  const parseFlashcards = (text?: string): ParsedCard[] => {
-    if (!text) return [];
-    
-    // Suporte a formatos "1. Pergunta? Resposta" ou "Q: ... A: ..." ou linhas separadas
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-    const cards: ParsedCard[] = [];
-
-    lines.forEach((line) => {
-      // Procura por "? " ou ":" para dividir pergunta e resposta
-      const questionMarkIdx = line.indexOf('?');
-      if (questionMarkIdx !== -1) {
-        const question = line.substring(0, questionMarkIdx + 1).replace(/^(\d+[\.\)]|\-|\*)\s*/, '').trim();
-        const answer = line.substring(questionMarkIdx + 1).trim();
-        if (question && answer) {
-          cards.push({ question, answer });
-          return;
-        }
-      }
-
-      const colonIdx = line.indexOf(':');
-      if (colonIdx !== -1 && colonIdx < 40) {
-        const question = line.substring(0, colonIdx).replace(/^(\d+[\.\)]|\-|\*)\s*/, '').trim();
-        const answer = line.substring(colonIdx + 1).trim();
-        if (question && answer) {
-          cards.push({ question, answer });
-          return;
-        }
-      }
-
-      // Fallback: cartão único
-      cards.push({
-        question: `Conceito ${cards.length + 1}`,
-        answer: line.replace(/^(\d+[\.\)]|\-|\*)\s*/, '')
-      });
-    });
-
-    return cards;
+  const handleConnectGoogle = async () => {
+    await connectGoogleAccount();
   };
 
   const loadNotebooks = async () => {
+    if (!googleAccessToken) return;
     setIsDropdownOpen(true);
     setIsLoadingNotebooks(true);
     try {
-      const data = await fetchNotebooks();
+      const data = await listNotebooks(googleAccessToken);
       setNotebooks(data);
     } catch (err) {
       console.error('Falha ao carregar notebooks', err);
@@ -108,10 +78,10 @@ export function FlashcardsStudyModal({
   };
 
   const loadArtifacts = async () => {
-    if (!subject.notebookId) return;
+    if (!subject.notebookId || !googleAccessToken) return;
     setIsFetchingArtifacts(true);
     try {
-      const data = await fetchNotebookArtifacts(subject.notebookId);
+      const data = await fetchNotebookArtifacts(googleAccessToken, subject.notebookId);
       setRemoteArtifacts(data);
     } catch (err) {
       console.error('Falha ao carregar artefatos do notebook', err);
@@ -121,19 +91,63 @@ export function FlashcardsStudyModal({
   };
 
   useEffect(() => {
-    if (subject?.notebookId && open) {
+    if (subject?.notebookId && open && googleAccessToken) {
       loadArtifacts();
     }
-  }, [subject?.notebookId, open]);
+  }, [subject?.notebookId, open, googleAccessToken]);
 
-  // Separa os flashcards dos outros artefatos para o modo "cards"
-  const flashcardArtifacts = remoteArtifacts.filter(a => a.type === 'flashcard');
-
-  // Use flashcards remotos se existirem, senão faça parse do texto manual
-  const cards = flashcardArtifacts.length > 0 
-    ? flashcardArtifacts.map(f => ({ question: f.content || f.title, answer: f.backContent || '' }))
-    : parseFlashcards(subject.aiArtifacts?.flashcardsSummary);
+  const handleGenerateNative = async (type: 'flashcard' | 'summary') => {
+    if (!subjectContextText.trim()) {
+      setNativeError("Cole o conteúdo da matéria para gerar os artefatos.");
+      return;
+    }
     
+    setIsGeneratingNative(true);
+    setNativeError('');
+    
+    try {
+      const result = await generateDirectArtifact(subjectContextText, type);
+      
+      if (collegeId && subject.id) {
+        if (type === 'flashcard') {
+          updateSubject(collegeId, subject.id, {
+            artifacts: {
+              ...subject.artifacts,
+              generatedFlashcards: result as Flashcard[]
+            }
+          });
+          setViewMode('cards');
+        } else {
+          updateSubject(collegeId, subject.id, {
+            artifacts: {
+              ...subject.artifacts,
+              generatedSummary: result as string
+            }
+          });
+          setViewMode('summary');
+        }
+      }
+      
+      setShowNativeGenerator(false);
+    } catch (error: any) {
+      console.error("Erro na geração:", error);
+      setNativeError(error.message || "Falha ao gerar o artefato. Verifique sua chave de API.");
+    } finally {
+      setIsGeneratingNative(false);
+    }
+  };
+
+  // Separa os flashcards (NotebookLM vs Nativo)
+  const notebookFlashcards = remoteArtifacts
+    .filter(a => a.type === 'flashcard')
+    .map(f => ({ question: f.content || f.title, answer: f.backContent || '' }));
+    
+  const nativeFlashcards = (subject.artifacts?.generatedFlashcards || []).map(f => ({
+    question: f.front,
+    answer: f.back
+  }));
+
+  const cards = [...notebookFlashcards, ...nativeFlashcards];
   const currentCard = cards[currentCardIndex];
 
   const handleNext = () => {
@@ -146,10 +160,10 @@ export function FlashcardsStudyModal({
     setCurrentCardIndex((prev) => (prev - 1 + cards.length) % cards.length);
   };
 
-  const artifactsLegacy = subject.aiArtifacts;
+  const artifactsLegacy = subject.artifacts;
 
   return (
-    <Modal open={open} onClose={onClose} title="Estudo Ativo & Artefatos IA" size="lg">
+    <Modal open={open} onClose={onClose} title="Estudo Ativo & IA Integrada" size="lg">
       <div className="flex flex-col gap-5">
         
         {/* Header com Metadados da Matéria */}
@@ -171,95 +185,131 @@ export function FlashcardsStudyModal({
               onClick={() => setViewMode(viewMode === 'cards' ? 'summary' : 'cards')}
               className="text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 transition-colors"
             >
-              {viewMode === 'cards' ? 'Ver Todos Artefatos' : 'Modo Flashcards'}
+              {viewMode === 'cards' ? 'Ver Resumos / Artefatos' : 'Modo Flashcards'}
             </button>
           </div>
         </div>
 
-        {/* Barra de Acesso Rápido a Artefatos de IA do Gemini Notebook */}
-        <div className="flex flex-col gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 relative">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
-              <Sparkles size={12} className="text-indigo-400" />
-              Integração Gemini:
-            </span>
+        {/* Integração IA: Modo Híbrido (NotebookLM + Nativo) */}
+        <div className="flex flex-col gap-4 p-4 rounded-xl bg-gradient-to-br from-indigo-500/10 via-slate-800/40 to-slate-900/80 border border-indigo-500/20 relative overflow-hidden">
+          <div className="flex items-center gap-2 text-indigo-400 font-bold text-sm tracking-wide">
+            <Sparkles size={16} /> Central de Inteligência Artificial
+          </div>
 
-            {subject.notebookId ? (
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-300 bg-indigo-500/20 border border-indigo-500/30 px-3 py-1.5 rounded-lg shadow-sm">
-                  <BookOpen size={12} /> {subject.notebookName}
-                </span>
-                
-                <a
-                  href={`https://notebooklm.google.com/notebook/${subject.notebookId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  <ExternalLink size={14} /> Abrir no Gemini Notebook
-                </a>
-
-                <button 
-                  onClick={loadArtifacts}
-                  disabled={isFetchingArtifacts}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
-                  title="Recarregar artefatos"
-                >
-                  <RefreshCw size={14} className={cn(isFetchingArtifacts && "animate-spin")} />
-                </button>
-              </div>
-            ) : (
-              <div className="relative">
-                <button
-                  onClick={loadNotebooks}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/20 px-3 py-1.5 rounded-lg transition-colors"
-                >
-                  <LinkIcon size={12} /> Vincular Notebook Gemini
-                </button>
-                
-                {isDropdownOpen && (
-                  <div className="absolute top-full right-0 sm:left-0 sm:right-auto mt-2 w-64 bg-slate-900 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
-                    <div className="p-2 border-b border-white/10 flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Seus Notebooks</span>
-                      {isLoadingNotebooks && <Loader2 size={12} className="animate-spin text-indigo-400" />}
-                    </div>
-                    <div className="max-h-48 overflow-y-auto p-1 scrollbar-hide">
-                      {notebooks.map(nb => (
-                        <button
-                          key={nb.name}
-                          onClick={() => handleLinkNotebook(nb.name, nb.displayName)}
-                          className="w-full text-left px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                        >
-                          {nb.displayName}
-                        </button>
-                      ))}
-                      {!isLoadingNotebooks && notebooks.length === 0 && (
-                        <div className="p-3 text-center text-xs text-slate-500">Nenhum notebook encontrado</div>
-                      )}
-                    </div>
+          {!googleAccessToken ? (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-3 bg-slate-900/50 rounded-xl border border-white/5">
+              <p className="text-xs text-slate-300">
+                Conecte sua conta do Google para buscar cadernos do NotebookLM ou gerar flashcards e resumos avançados.
+              </p>
+              <button
+                onClick={handleConnectGoogle}
+                className="whitespace-nowrap px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-lg shadow-indigo-600/20"
+              >
+                Conectar Conta Google (Gemini)
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap gap-2">
+                {subject.notebookId ? (
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-300 bg-indigo-500/20 border border-indigo-500/30 px-3 py-1.5 rounded-lg">
+                      <BookOpen size={14} /> {subject.notebookName}
+                    </span>
+                    <button 
+                      onClick={loadArtifacts}
+                      disabled={isFetchingArtifacts}
+                      className="p-1.5 rounded-lg bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-50"
+                      title="Sincronizar Artefatos NotebookLM"
+                    >
+                      <RefreshCw size={14} className={cn(isFetchingArtifacts && "animate-spin")} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <button
+                      onClick={loadNotebooks}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-300 bg-indigo-500/20 border border-indigo-500/30 hover:bg-indigo-500/30 px-3 py-2 rounded-lg transition-colors"
+                    >
+                      <LinkIcon size={14} /> Vincular Caderno NotebookLM
+                    </button>
+                    
+                    {isDropdownOpen && (
+                      <div className="absolute top-full left-0 mt-2 w-64 bg-slate-900 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+                        <div className="p-2 border-b border-white/10 flex items-center justify-between">
+                          <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Seus Cadernos</span>
+                          {isLoadingNotebooks && <Loader2 size={12} className="animate-spin text-indigo-400" />}
+                        </div>
+                        <div className="max-h-48 overflow-y-auto p-1 scrollbar-hide">
+                          {notebooks.map(nb => (
+                            <button
+                              key={nb.name}
+                              onClick={() => handleLinkNotebook(nb.name, nb.displayName)}
+                              className="w-full text-left px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                            >
+                              {nb.displayName}
+                            </button>
+                          ))}
+                          {!isLoadingNotebooks && notebooks.length === 0 && (
+                            <div className="p-3 text-center text-xs text-slate-500">Nenhum caderno encontrado</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
+                
+                <button
+                  onClick={() => setShowNativeGenerator(!showNativeGenerator)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg transition-all shadow-lg",
+                    showNativeGenerator 
+                      ? "bg-slate-700 text-white" 
+                      : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20"
+                  )}
+                >
+                  <Sparkles size={14} /> 
+                  {showNativeGenerator ? "Ocultar Gerador de IA" : "Gerar Flashcards/Resumo (IA Nativa)"}
+                </button>
               </div>
-            )}
-          </div>
-          
-          {/* Legacy Artifacts (apenas se não houver notebookId e tiver artefatos antigos) */}
-          {!subject.notebookId && (artifactsLegacy?.slidesUrl || artifactsLegacy?.videoScriptUrl || artifactsLegacy?.infographicUrl) && (
-            <div className="flex gap-2 flex-wrap pt-2 border-t border-white/5">
-               {artifactsLegacy?.slidesUrl && (
-                <a href={artifactsLegacy.slidesUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 px-2.5 py-1.5 rounded-lg transition-colors">
-                  <Presentation size={12} /> Slides
-                </a>
-              )}
-              {artifactsLegacy?.videoScriptUrl && (
-                <a href={artifactsLegacy.videoScriptUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 px-2.5 py-1.5 rounded-lg transition-colors">
-                  <Video size={12} /> Roteiro
-                </a>
-              )}
-              {artifactsLegacy?.infographicUrl && (
-                <a href={artifactsLegacy.infographicUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300 bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 px-2.5 py-1.5 rounded-lg transition-colors">
-                  <ImageIcon size={12} /> Infográfico
-                </a>
+
+              {/* Área de Geração Nativa */}
+              {showNativeGenerator && (
+                <div className="flex flex-col gap-3 mt-2 p-4 bg-slate-900/60 rounded-xl border border-white/10 animate-in fade-in slide-in-from-top-2">
+                  <p className="text-xs text-slate-400">Cole abaixo o texto da matéria, transcrição de aula ou anotações para a IA processar:</p>
+                  
+                  <textarea
+                    value={subjectContextText}
+                    onChange={(e) => setSubjectContextText(e.target.value)}
+                    placeholder="Cole o conteúdo aqui..."
+                    className="w-full h-32 px-3 py-2 text-sm bg-slate-950 border border-white/10 rounded-lg text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                  />
+                  
+                  {nativeError && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-rose-400 bg-rose-500/10 p-2 rounded-md">
+                      <AlertCircle size={12} /> {nativeError}
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-2 mt-1">
+                    <button
+                      onClick={() => handleGenerateNative('summary')}
+                      disabled={isGeneratingNative || !subjectContextText.trim()}
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {isGeneratingNative ? <Loader2 size={14} className="animate-spin inline mr-1" /> : <FileText size={14} className="inline mr-1" />}
+                      Gerar Resumo
+                    </button>
+                    <button
+                      onClick={() => handleGenerateNative('flashcard')}
+                      disabled={isGeneratingNative || !subjectContextText.trim()}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg transition-colors shadow-lg shadow-indigo-600/20 disabled:opacity-50"
+                    >
+                      {isGeneratingNative ? <Loader2 size={14} className="animate-spin inline mr-1" /> : <Layers size={14} className="inline mr-1" />}
+                      Gerar Flashcards
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           )}
@@ -269,13 +319,7 @@ export function FlashcardsStudyModal({
         {isFetchingArtifacts ? (
           <div className="py-12 flex flex-col items-center justify-center gap-3">
             <Loader2 size={32} className="animate-spin text-indigo-500" />
-            <p className="text-xs text-slate-400 font-medium animate-pulse">Sincronizando artefatos...</p>
-          </div>
-        ) : remoteArtifacts.length === 0 && subject.notebookId ? (
-          <div className="py-12 flex flex-col items-center justify-center text-center px-4">
-             <p className="text-slate-400 text-sm max-w-sm leading-relaxed">
-               Nenhum artefato encontrado. Adicione suas fontes e clique em 'Abrir no Gemini Notebook' para gerar seus resumos, podcasts e flashcards.
-             </p>
+            <p className="text-xs text-slate-400 font-medium animate-pulse">Buscando artefatos...</p>
           </div>
         ) : viewMode === 'cards' && cards.length > 0 ? (
           <div className="flex flex-col gap-4">
@@ -320,7 +364,7 @@ export function FlashcardsStudyModal({
                 </div>
 
                 <div className="flex items-center justify-center text-[11px] text-slate-500">
-                  {isFlipped ? "Conceito revelado com IA" : "Pense na resposta e clique para conferir"}
+                  {isFlipped ? "Conceito revelado" : "Pense na resposta e clique para conferir"}
                 </div>
               </div>
             )}
@@ -357,15 +401,36 @@ export function FlashcardsStudyModal({
               </button>
             </div>
           </div>
+        ) : viewMode === 'cards' && cards.length === 0 ? (
+           <div className="py-12 flex flex-col items-center justify-center text-center px-4">
+             <p className="text-slate-400 text-sm max-w-sm leading-relaxed">
+               Nenhum flashcard encontrado. Use o botão <strong>Gerar Flashcards</strong> acima colando suas anotações!
+             </p>
+           </div>
         ) : (
           <div className="flex flex-col gap-4">
             <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-400 mb-2">
-              Todos os Artefatos Gerados
+              Resumos e Artefatos
             </h4>
             
+            {/* Exibe o Resumo Gerado Nativamente (se existir) */}
+            {subject.artifacts?.generatedSummary && (
+              <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-indigo-500/20 flex flex-col gap-2 relative">
+                <div className="flex items-center justify-between text-indigo-300">
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={16} />
+                    <span className="text-sm font-semibold">Resumo (IA Nativa)</span>
+                  </div>
+                </div>
+                <div className="max-h-64 overflow-y-auto scrollbar-hide text-sm text-slate-200 whitespace-pre-wrap leading-relaxed mt-2 prose prose-invert prose-sm">
+                  {subject.artifacts.generatedSummary}
+                </div>
+              </div>
+            )}
+
             {subject.notebookId && remoteArtifacts.length > 0 ? (
               <div className="flex flex-col gap-4">
-                {remoteArtifacts.map((artifact) => {
+                {remoteArtifacts.filter(a => a.type !== 'flashcard').map((artifact) => {
                   if (artifact.type === 'audio') {
                     return (
                       <div key={artifact.id} className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10">
@@ -415,32 +480,20 @@ export function FlashcardsStudyModal({
                     );
                   }
 
-                  if (artifact.type === 'flashcard') {
-                    return (
-                      <div key={artifact.id} className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10 flex flex-col gap-2 border-l-2 border-l-indigo-500">
-                        <div className="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
-                          Flashcard
-                        </div>
-                        <p className="text-sm font-medium text-slate-200">P: {artifact.content || artifact.title}</p>
-                        <p className="text-sm text-slate-400">R: {artifact.backContent}</p>
-                      </div>
-                    );
-                  }
-
                   return null;
                 })}
               </div>
-            ) : artifactsLegacy?.flashcardsSummary ? (
+            ) : artifactsLegacy?.flashcardsSummary && !subject.artifacts?.generatedSummary ? (
               <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 max-h-60 overflow-y-auto scrollbar-hide">
                 <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">
                   {artifactsLegacy.flashcardsSummary}
                 </p>
               </div>
-            ) : (
+            ) : !subject.artifacts?.generatedSummary && remoteArtifacts.filter(a => a.type !== 'flashcard').length === 0 ? (
               <p className="text-xs text-slate-500 italic">
-                Nenhum flashcard ou resumo cadastrado para esta matéria ainda. Vincule um Notebook ou edite a matéria no módulo acadêmico para adicionar.
+                Nenhum resumo encontrado. Use a Geração de IA acima.
               </p>
-            )}
+            ) : null}
           </div>
         )}
 
@@ -476,4 +529,3 @@ export function FlashcardsStudyModal({
     </Modal>
   );
 }
-
