@@ -158,14 +158,15 @@ export default function App() {
         {/* Mobile Header */}
         {!isTunnelMode && (
           <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-black/20 backdrop-blur-lg z-10 flex-shrink-0">
-          <button onClick={() => setIsSidebarOpen(true)} className="p-1 rounded-md bg-white/5 hover:bg-white/10 text-white">
-            <Menu size={20} />
-          </button>
-          <span className="font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-            Meu LIFE OS
-          </span>
-          <div className="w-7" />
-        </div>
+            <button onClick={() => setIsSidebarOpen(true)} className="p-1 rounded-md bg-white/5 hover:bg-white/10 text-white">
+              <Menu size={20} />
+            </button>
+            <span className="font-bold tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+              Meu LIFE OS
+            </span>
+            <div className="w-7" />
+          </div>
+        )}
 
         <div className="flex-1 overflow-hidden relative">
           <AnimatePresence mode="wait">

@@ -25,7 +25,8 @@ export function QuickCaptureModal() {
     
     addTask({
       title: taskTitle.trim(),
-      tag: 'Geral',
+      tag: 'Outro',
+      priority: 'medium',
       done: false,
       date: todayStr,
       subtasks: []
