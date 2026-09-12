@@ -29,7 +29,7 @@ export const fetchNotebookSources = async (notebookId: string): Promise<Notebook
   });
 };
 
-export const fetchNotebookFlashcards = async (notebookId: string): Promise<Flashcard[]> => {
+export const fetchNotebookFlashcards = async (_notebookId: string): Promise<Flashcard[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([
