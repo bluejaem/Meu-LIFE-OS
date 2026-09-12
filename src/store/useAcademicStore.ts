@@ -95,7 +95,20 @@ export const useAcademicStore = create<AcademicState>()(
     }),
     {
       name: 'academic-hub-storage',
-      storage: createJSONStorage(() => firestoreStorage)
+      storage: createJSONStorage(() => firestoreStorage),
+      version: 1,
+      migrate: (persistedState: any, version: number) => {
+        if (version === 0) {
+          // Remove fake subjects from previous versions
+          const fakeSubjectNames = ['Cálculo Diferencial e Integral', 'Introdução à Programação'];
+          if (persistedState && Array.isArray(persistedState.subjects)) {
+            persistedState.subjects = persistedState.subjects.filter(
+              (sub: any) => !fakeSubjectNames.includes(sub.name)
+            );
+          }
+        }
+        return persistedState;
+      }
     }
   )
 );

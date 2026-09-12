@@ -165,7 +165,7 @@ export type Subject = AcademicSubject;
 
 export interface College {
   id: string;
-  name: string;                // Instituição (UNINTER, ETEP, etc.)
+  name: string;                // Nome da instituição
   course: string;
   period: string;
   subjects: AcademicSubject[];
