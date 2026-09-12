@@ -89,7 +89,7 @@ export function AcademicHubView() {
               <span className="text-xs text-slate-500">hoje</span>
             </div>
             <span className="text-[10px] text-slate-400 mt-2">
-              {pendingCount === 0 ? "🎉 Todas concluídas!" : "Combata a procrastinação"}
+              {pendingCount === 0 ? "Todas concluídas!" : "Combata a procrastinação"}
             </span>
           </div>
 

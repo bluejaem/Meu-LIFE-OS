@@ -157,7 +157,7 @@ export function Calendario() {
                         className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded truncate text-white", task.done ? "line-through opacity-50" : "")}
                         style={{ backgroundColor: `#6366f133`, border: `1px solid #6366f140` }}
                       >
-                        ☑ {task.title}
+                        {task.title}
                       </div>
                     ))}
                     {/* Rotinas */}

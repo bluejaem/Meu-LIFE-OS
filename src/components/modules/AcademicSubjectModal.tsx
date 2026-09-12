@@ -179,7 +179,7 @@ export function AcademicSubjectModal({
             Adicione os links diretos para seus materiais gerados por IA para acesso imediato a 1 clique.
           </p>
 
-          <FormField label="📓 Link do Gemini Notebook (Caderno Interativo)">
+          <FormField label="Link do Gemini Notebook (Caderno Interativo)">
             <div className="relative">
               <input
                 type="url"
@@ -192,7 +192,7 @@ export function AcademicSubjectModal({
           </FormField>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <FormField label="📑 Link dos Slides">
+            <FormField label="Link dos Slides">
               <input
                 type="url"
                 className={inputClass}
@@ -205,7 +205,7 @@ export function AcademicSubjectModal({
               />
             </FormField>
 
-            <FormField label="🎬 Roteiro de Vídeo">
+            <FormField label="Roteiro de Vídeo">
               <input
                 type="url"
                 className={inputClass}
@@ -218,7 +218,7 @@ export function AcademicSubjectModal({
               />
             </FormField>
 
-            <FormField label="📊 Link do Infográfico">
+            <FormField label="Link do Infográfico">
               <input
                 type="url"
                 className={inputClass}
@@ -232,7 +232,7 @@ export function AcademicSubjectModal({
             </FormField>
           </div>
 
-          <FormField label="🧠 Resumo para Flashcards / Conceitos-Chave da IA">
+          <FormField label="Resumo para Flashcards / Conceitos-Chave da IA">
             <textarea
               className={`${inputClass} resize-none h-24 text-xs font-mono leading-relaxed`}
               placeholder="Cole os conceitos ou perguntas gerados pelo Gemini Notebook (ex: 'O que é busca binária? Divisão e conquista em O(log n)')..."

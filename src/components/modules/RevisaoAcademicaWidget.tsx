@@ -84,7 +84,7 @@ export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: 
               {reviewedTodayCount} / {totalSubjectsCount} revisadas
             </span>
             <span className="text-[10px] text-slate-500">
-              {reviewPercentage === 100 ? "🎉 Meta atingida!" : "Meta diária"}
+              {reviewPercentage === 100 ? "Meta atingida!" : "Meta diária"}
             </span>
           </div>
 

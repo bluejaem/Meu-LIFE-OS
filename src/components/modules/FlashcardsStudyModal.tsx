@@ -322,7 +322,7 @@ export function FlashcardsStudyModal({
                 </div>
 
                 <div className="flex items-center justify-center text-[11px] text-slate-500">
-                  {isFlipped ? "✦ Conceito revelado com IA" : "Pense na resposta e clique para conferir"}
+                  {isFlipped ? "Conceito revelado com IA" : "Pense na resposta e clique para conferir"}
                 </div>
               </div>
             )}

@@ -103,7 +103,7 @@ export interface RoutineBlock {
 }
 
 // ─── DIÁRIO ────────────────────────────────────────────────────────────────────
-export type Mood = '😊' | '😐' | '😔' | '🔥' | '😴' | '💪';
+export type Mood = 'Feliz' | 'Neutro' | 'Triste' | 'Motivado' | 'Cansado' | 'Forte' | string;
 
 export interface LearningReflection {
   conceptLearned?: string; // "Qual foi o conceito mais interessante que você aprendeu hoje?"

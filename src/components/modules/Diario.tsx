@@ -9,14 +9,20 @@ import { useStore } from '@/store/useStore';
 import type { DiaryEntry, Mood, LearningReflection } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, SubmitButton } from '../ui/Modal';
 
-const MOODS: Mood[] = ['😊', '😐', '😔', '🔥', '😴', '💪'];
-const MOOD_LABEL: Record<Mood, string> = { 
+const MOODS: Mood[] = ['Feliz', 'Neutro', 'Triste', 'Motivado', 'Cansado', 'Forte'];
+const MOOD_LABEL: Record<string, string> = { 
   '😊': 'Feliz', 
   '😐': 'Neutro', 
   '😔': 'Triste', 
   '🔥': 'Motivado', 
   '😴': 'Cansado', 
-  '💪': 'Forte' 
+  '💪': 'Forte',
+  'Feliz': 'Feliz', 
+  'Neutro': 'Neutro', 
+  'Triste': 'Triste', 
+  'Motivado': 'Motivado', 
+  'Cansado': 'Cansado', 
+  'Forte': 'Forte' 
 };
 
 interface DiaryFormData {
@@ -32,7 +38,7 @@ interface DiaryFormData {
 const EMPTY_FORM: DiaryFormData = {
   date: new Date().toISOString().split('T')[0],
   content: '',
-  mood: '😊',
+  mood: 'Feliz',
   includeReflection: false,
   conceptLearned: '',
   whatWentWell: '',
@@ -109,7 +115,7 @@ export function Diario() {
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{entry.mood}</span>
+                  <span className="text-sm font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-lg">{entry.mood}</span>
                   <div>
                     <p className="text-sm font-bold text-slate-200">
                       {new Date(entry.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
@@ -175,8 +181,8 @@ export function Diario() {
                     key={m} 
                     onClick={() => setForm({ ...form, mood: m })}
                     className={cn(
-                      "text-2xl p-1.5 rounded-xl transition-all", 
-                      form.mood === m ? "bg-white/20 scale-125 shadow-md shadow-white/10" : "opacity-40 hover:opacity-100"
+                      "text-xs font-semibold px-3 py-1.5 rounded-xl transition-all", 
+                      form.mood === m ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20" : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"
                     )}
                     title={MOOD_LABEL[m]}
                   >
@@ -218,7 +224,7 @@ export function Diario() {
           {/* Campos do Modo Reflexão */}
           {form.includeReflection && (
             <div className="flex flex-col gap-4 p-4 rounded-2xl bg-black/25 border border-indigo-500/20">
-              <FormField label="💡 Qual foi o conceito ou insight mais interessante que você aprendeu hoje?">
+              <FormField label="Qual foi o conceito ou insight mais interessante que você aprendeu hoje?">
                 <textarea
                   className={cn(inputClass, "resize-none h-20 text-sm")}
                   placeholder="Ex: Entendi a lógica de closures em JavaScript ou como funciona o cálculo de juros compostos..."
@@ -228,7 +234,7 @@ export function Diario() {
                 />
               </FormField>
 
-              <FormField label="✨ O que fluiu bem nos seus estudos ou na sua rotina?">
+              <FormField label="O que fluiu bem nos seus estudos ou na sua rotina?">
                 <textarea
                   className={cn(inputClass, "resize-none h-18 text-sm")}
                   placeholder="Ex: Consegui focar por 2 blocos de Pomodoro sem checar notificações..."
@@ -237,7 +243,7 @@ export function Diario() {
                 />
               </FormField>
 
-              <FormField label="🌱 O que você gostaria de explorar ou fazer diferente amanhã? (Sem cobrança)">
+              <FormField label="O que você gostaria de explorar ou fazer diferente amanhã? (Sem cobrança)">
                 <textarea
                   className={cn(inputClass, "resize-none h-18 text-sm")}
                   placeholder="Ex: Começar pelo assunto mais difícil logo pela manhã..."
@@ -268,7 +274,7 @@ export function Diario() {
           <div className="flex flex-col gap-5 max-h-[75vh] overflow-y-auto scrollbar-hide pr-1">
             <div className="flex items-center justify-between pb-3 border-b border-white/5">
               <div className="flex items-center gap-3">
-                <span className="text-3xl">{viewEntry.mood}</span>
+                <span className="text-sm font-bold text-indigo-400 bg-indigo-500/10 px-3 py-1.5 rounded-xl">{viewEntry.mood}</span>
                 <div>
                   <p className="text-lg font-bold text-slate-100">
                     {new Date(viewEntry.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}

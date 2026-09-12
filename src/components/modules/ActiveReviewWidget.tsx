@@ -62,7 +62,7 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
               {completedCount} / {totalCount} concluídas
             </span>
             <span className="text-[10px] text-slate-500">
-              {pendingCount === 0 ? "🎉 Meta diária batida!" : `${pendingCount} pendente${pendingCount > 1 ? 's' : ''}`}
+              {pendingCount === 0 ? "Meta diária batida!" : `${pendingCount} pendente${pendingCount > 1 ? 's' : ''}`}
             </span>
           </div>
 

@@ -249,7 +249,7 @@ export function JornadaConhecimento({ variant = 'dashboard' }: JornadaConhecimen
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {weeklyStudyHours >= 1 && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                    🌱 Imersão Semanal
+                    Imersão Semanal
                   </span>
                 )}
                 {weeklyCompletedTasks >= 3 && (
