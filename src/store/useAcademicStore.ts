@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { firestoreStorage } from '@/lib/firestoreStorage';
-import type { AcademicSubject, AiArtifacts } from '@/types';
+import type { AcademicSubject } from '@/types';
 
 const uid = () => crypto.randomUUID();
 const now = () => new Date().toISOString();
@@ -16,7 +16,7 @@ interface AcademicState {
   updateSubject: (id: string, data: Partial<AcademicSubject>) => void;
   deleteSubject: (id: string) => void;
   toggleReviewStatus: (id: string) => void;
-  updateArtifacts: (id: string, artifacts: Partial<AiArtifacts>) => void;
+
   
   // Helper computado
   getPendingReviewsCount: () => number;
@@ -34,9 +34,6 @@ export const useAcademicStore = create<AcademicState>()(
             ...data,
             id: uid(),
             updatedAt: now(),
-            // Garante retrocompatibilidade com campos de conveniência
-            notebookUrl: data.artifacts?.notebookUrl,
-            aiArtifacts: data.artifacts,
             lastReviewedDate: data.activeReviewPending ? undefined : new Date().toISOString().split('T')[0]
           }
         ]
@@ -47,10 +44,6 @@ export const useAcademicStore = create<AcademicState>()(
           if (sub.id !== id) return sub;
           const merged = { ...sub, ...data, updatedAt: now() };
           // Atualiza referências cruzadas
-          if (data.artifacts) {
-            merged.notebookUrl = data.artifacts.notebookUrl;
-            merged.aiArtifacts = data.artifacts;
-          }
           return merged;
         })
       })),
@@ -67,23 +60,6 @@ export const useAcademicStore = create<AcademicState>()(
             ...sub,
             activeReviewPending: newPending,
             lastReviewedDate: newPending ? undefined : new Date().toISOString().split('T')[0],
-            updatedAt: now()
-          };
-        })
-      })),
-
-      updateArtifacts: (id, newArtifacts) => set((state) => ({
-        subjects: state.subjects.map((sub) => {
-          if (sub.id !== id) return sub;
-          const updatedArtifacts: AiArtifacts = {
-            ...sub.artifacts,
-            ...newArtifacts
-          };
-          return {
-            ...sub,
-            artifacts: updatedArtifacts,
-            notebookUrl: updatedArtifacts.notebookUrl,
-            aiArtifacts: updatedArtifacts,
             updatedAt: now()
           };
         })

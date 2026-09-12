@@ -1,16 +1,14 @@
 import { useState } from 'react';
 import { PageLayout } from '../layout/PageLayout';
 import { 
-  Plus, GraduationCap, Pencil, Trash2, Sparkles, BookOpen, 
-  Layers, Presentation, Video, Image as ImageIcon, Check,
-  Settings2
+  Plus, GraduationCap, Pencil, Trash2, Sparkles, Layers, Settings2, Check
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import type { College, AcademicSubject } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
 import { cn } from '@/lib/utils';
-import { FlashcardsStudyModal } from './FlashcardsStudyModal';
+import { SubjectDetailsModal } from './SubjectDetailsModal';
 import { AcademicSubjectModal } from './AcademicSubjectModal';
 
 const EMPTY_FORM = { 
@@ -27,7 +25,7 @@ export function Faculdades() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<any>(EMPTY_FORM);
 
-  // Modais de IA e Flashcards
+  // Modais
   const [studySubject, setStudySubject] = useState<{ subject: AcademicSubject; collegeId: string } | null>(null);
   const [editingSubject, setEditingSubject] = useState<{ subject: AcademicSubject | null; collegeId: string } | null>(null);
 
@@ -155,11 +153,6 @@ export function Faculdades() {
                   ) : (
                     college.subjects.map(subj => {
                       const isReviewedToday = subj.lastReviewedDate === todayStr;
-                      const hasFlashcards = !!subj.aiArtifacts?.flashcardsSummary;
-                      const hasNotebook = !!subj.notebookUrl;
-                      const hasSlides = !!subj.aiArtifacts?.slidesUrl;
-                      const hasVideo = !!subj.aiArtifacts?.videoScriptUrl;
-                      const hasInfographic = !!subj.aiArtifacts?.infographicUrl;
 
                       return (
                         <div
@@ -203,82 +196,24 @@ export function Faculdades() {
                             )}
                           </div>
 
-                          {/* Barra de Ações e Artefatos IA */}
+                          {/* Barra de Ações */}
                           <div className="flex items-center gap-2 flex-wrap shrink-0">
                             
-                            {/* Gemini Notebook */}
-                            {hasNotebook ? (
-                              <a
-                                href={subj.notebookUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 border border-indigo-500/30 transition-colors"
-                                title="Abrir Gemini Notebook da Matéria"
-                              >
-                                <BookOpen size={13} />
-                                <span>Notebook</span>
-                              </a>
-                            ) : null}
-
-                            {/* Flashcards Modal */}
+                            {/* Detalhes Modal */}
                             <button
                               onClick={() => setStudySubject({ subject: subj, collegeId: college.id })}
-                              className={cn(
-                                "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border transition-all",
-                                hasFlashcards
-                                  ? "bg-purple-500/15 text-purple-300 border-purple-500/30 hover:bg-purple-500/25"
-                                  : "bg-white/5 text-slate-400 border-white/10 hover:text-white"
-                              )}
-                              title="Estudar Flashcards IA"
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border transition-all bg-purple-500/15 text-purple-300 border-purple-500/30 hover:bg-purple-500/25"
+                              title="Ver Detalhes e Anotações"
                             >
                               <Layers size={13} />
-                              <span>Flashcards</span>
+                              <span>Detalhes / Anotações</span>
                             </button>
-
-                            {/* Slides */}
-                            {hasSlides && (
-                              <a
-                                href={subj.aiArtifacts?.slidesUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition-colors"
-                                title="Ver Slides"
-                              >
-                                <Presentation size={14} />
-                              </a>
-                            )}
-
-                            {/* Roteiro */}
-                            {hasVideo && (
-                              <a
-                                href={subj.aiArtifacts?.videoScriptUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-colors"
-                                title="Ver Roteiro de Vídeo"
-                              >
-                                <Video size={14} />
-                              </a>
-                            )}
-
-                            {/* Infográfico */}
-                            {hasInfographic && (
-                              <a
-                                href={subj.aiArtifacts?.infographicUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/20 transition-colors"
-                                title="Ver Infográfico"
-                              >
-                                <ImageIcon size={14} />
-                              </a>
-                            )}
 
                             {/* Botão Gerenciar Artefatos */}
                             <button
                               onClick={() => setEditingSubject({ subject: subj, collegeId: college.id })}
                               className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-colors"
-                              title="Editar Matéria & Links de IA"
+                              title="Editar Matéria"
                             >
                               <Settings2 size={14} />
                             </button>
@@ -336,9 +271,9 @@ export function Faculdades() {
         danger 
       />
 
-      {/* Modal de Flashcards / Estudo Ativo */}
+      {/* Modal de Estudo Ativo */}
       {studySubject && (
-        <FlashcardsStudyModal
+        <SubjectDetailsModal
           open={!!studySubject}
           onClose={() => setStudySubject(null)}
           subject={studySubject.subject}
@@ -375,7 +310,8 @@ function CollegeForm({ form, setForm, onSubmit, label }: any) {
         name: '', 
         progress: 0, 
         institution: form.name || '',
-        aiArtifacts: {} 
+        notes: '',
+        flashcardsCount: 0
       }
     ] 
   });

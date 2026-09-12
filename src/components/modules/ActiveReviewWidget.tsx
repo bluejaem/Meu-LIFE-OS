@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { 
-  GraduationCap, Sparkles, BookOpen, Layers, CheckCircle2, 
-  ArrowRight, Presentation, Video, Image as ImageIcon,
-  Flame, Check, RotateCcw
+  GraduationCap, CheckCircle2, 
+  ArrowRight, Flame, Check, Layers, RotateCcw
 } from 'lucide-react';
 import { useAcademicStore } from '@/store/useAcademicStore';
 import { cn } from '@/lib/utils';
 import type { AcademicSubject } from '@/types';
-import { FlashcardsStudyModal } from './FlashcardsStudyModal';
+import { SubjectDetailsModal } from './SubjectDetailsModal';
 
 interface ActiveReviewWidgetProps {
   setActiveTab?: (tab: string) => void;
@@ -44,10 +43,7 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
-                Revisão Ativa & Flashcards IA
-                <span className="flex items-center gap-1 text-[10px] font-semibold text-indigo-300 bg-indigo-500/15 border border-indigo-500/30 px-2 py-0.5 rounded-full">
-                  <Sparkles size={10} className="text-amber-400" /> Gemini Pro
-                </span>
+                Revisão Ativa
               </h3>
             </div>
             <p className="text-xs text-slate-400">
@@ -146,7 +142,7 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
               </p>
               <p className="text-xs text-slate-500 mt-0.5">
                 {totalCount === 0 
-                  ? "Acesse o Hub Acadêmico Completo para vincular notebooks e adicionar flashcards."
+                  ? "Acesse o Hub Acadêmico Completo para mais detalhes e anotações."
                   : "Você fixou todos os conceitos principais das suas disciplinas."}
               </p>
             </div>
@@ -160,10 +156,6 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
         ) : (
           displayedSubjects.map((sub) => {
             const isPending = sub.activeReviewPending;
-            const artifacts = sub.artifacts;
-
-
-
             return (
               <div
                 key={sub.id}
@@ -218,70 +210,18 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
                   )}
                 </div>
 
-                {/* Botões de Acesso Rápido a Artefatos IA & Ação de Revisão */}
+                {/* Botões de Ação de Revisão */}
                 <div className="flex items-center gap-1.5 shrink-0 flex-wrap sm:flex-nowrap">
                   
-                  {/* Gemini Notebook */}
-                  {(sub.notebookUrl || artifacts?.notebookUrl) && (
-                    <a
-                      href={sub.notebookUrl || artifacts?.notebookUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 transition-colors"
-                      title="Abrir Gemini Notebook"
-                    >
-                      <BookOpen size={14} />
-                    </a>
-                  )}
-
-                  {/* Flashcards */}
+                  {/* Detalhes Modal */}
                   <button
                     onClick={() => setSelectedSubject(sub)}
                     className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-purple-500/15 text-purple-300 border border-purple-500/30 hover:bg-purple-500/25 transition-all"
-                    title="Praticar Flashcards Ativos"
+                    title="Ver Detalhes e Anotações"
                   >
                     <Layers size={13} />
-                    <span>Flashcards</span>
+                    <span>Detalhes / Anotações</span>
                   </button>
-
-                  {/* Slides */}
-                  {artifacts?.slidesUrl && (
-                    <a
-                      href={artifacts.slidesUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition-colors"
-                      title="Ver Slides de IA"
-                    >
-                      <Presentation size={14} />
-                    </a>
-                  )}
-
-                  {/* Roteiro */}
-                  {artifacts?.videoScriptUrl && (
-                    <a
-                      href={artifacts.videoScriptUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-colors"
-                      title="Ver Roteiro de Vídeo"
-                    >
-                      <Video size={14} />
-                    </a>
-                  )}
-
-                  {/* Infográfico */}
-                  {artifacts?.infographicUrl && (
-                    <a
-                      href={artifacts.infographicUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/20 transition-colors"
-                      title="Ver Infográfico"
-                    >
-                      <ImageIcon size={14} />
-                    </a>
-                  )}
 
                   {/* Botão Concluir / Desmarcar Revisão */}
                   <button
@@ -314,9 +254,9 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
         )}
       </div>
 
-      {/* Modal Interativo de Flashcards */}
+      {/* Modal Interativo */}
       {selectedSubject && (
-        <FlashcardsStudyModal
+        <SubjectDetailsModal
           open={!!selectedSubject}
           onClose={() => setSelectedSubject(null)}
           subject={selectedSubject}

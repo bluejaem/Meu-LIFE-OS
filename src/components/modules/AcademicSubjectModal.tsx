@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Sparkles } from 'lucide-react';
 import { Modal, FormField, inputClass, SubmitButton } from '../ui/Modal';
 import type { AcademicSubject } from '@/types';
 
@@ -11,7 +10,6 @@ interface AcademicSubjectModalProps {
   defaultInstitution?: string;
 }
 
-
 const EMPTY_SUBJECT: AcademicSubject = {
   id: '',
   name: '',
@@ -22,22 +20,6 @@ const EMPTY_SUBJECT: AcademicSubject = {
   progress: 0,
   grade: undefined,
   notes: '',
-  notebookUrl: '',
-  artifacts: {
-    notebookUrl: '',
-    slidesUrl: '',
-    videoScriptUrl: '',
-    flashcardsSummary: '',
-    infographicUrl: ''
-  },
-  aiArtifacts: {
-    notebookUrl: '',
-    slidesUrl: '',
-    videoScriptUrl: '',
-    flashcardsSummary: '',
-    infographicUrl: ''
-  },
-  flashcardsCount: 0
 };
 
 export function AcademicSubjectModal({
@@ -54,14 +36,6 @@ export function AcademicSubjectModal({
       setForm({
         ...initialData,
         institution: initialData.institution || defaultInstitution || '',
-        artifacts: initialData.artifacts || initialData.aiArtifacts || {},
-        aiArtifacts: {
-          notebookUrl: initialData.notebookUrl || initialData.artifacts?.notebookUrl || '',
-          slidesUrl: initialData.aiArtifacts?.slidesUrl || initialData.artifacts?.slidesUrl || '',
-          videoScriptUrl: initialData.aiArtifacts?.videoScriptUrl || initialData.artifacts?.videoScriptUrl || '',
-          flashcardsSummary: initialData.aiArtifacts?.flashcardsSummary || initialData.artifacts?.flashcardsSummary || '',
-          infographicUrl: initialData.aiArtifacts?.infographicUrl || initialData.artifacts?.infographicUrl || '',
-        }
       });
     } else {
       setForm({
@@ -77,24 +51,15 @@ export function AcademicSubjectModal({
     e.preventDefault();
     if (!form.name.trim()) return;
 
-    // Calcula quantidade estimada de cartões baseada em linhas
-    const count = form.aiArtifacts?.flashcardsSummary
-      ? form.aiArtifacts.flashcardsSummary.split('\n').filter(l => l.trim()).length
-      : 0;
-
     onSave({
       ...form,
-      artifacts: form.artifacts || form.aiArtifacts || {},
-      aiArtifacts: form.aiArtifacts || form.artifacts || {},
-      notebookUrl: form.notebookUrl || form.artifacts?.notebookUrl,
-      flashcardsCount: count > 0 ? count : form.flashcardsCount,
       updatedAt: new Date().toISOString()
     });
     onClose();
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={initialData ? "Editar Disciplina & Artefatos IA" : "Nova Disciplina Inteligente"} size="lg">
+    <Modal open={open} onClose={onClose} title={initialData ? "Editar Disciplina" : "Nova Disciplina"} size="lg">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto scrollbar-hide pr-1">
         
         {/* Dados Básicos da Disciplina */}
@@ -131,7 +96,7 @@ export function AcademicSubjectModal({
           </FormField>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
           <FormField label="Progresso (0-100%)">
             <input
               type="number"
@@ -154,93 +119,6 @@ export function AcademicSubjectModal({
               placeholder="Ex: 85.5"
               value={form.grade !== undefined ? form.grade : ''}
               onChange={e => setForm({ ...form, grade: e.target.value ? Number(e.target.value) : undefined })}
-            />
-          </FormField>
-
-          <FormField label="Cartões de Flashcards">
-            <input
-              type="number"
-              min={0}
-              className={inputClass}
-              placeholder="Ex: 25"
-              value={form.flashcardsCount || ''}
-              onChange={e => setForm({ ...form, flashcardsCount: Number(e.target.value) })}
-            />
-          </FormField>
-        </div>
-
-        {/* Seção de Artefatos de IA do Gemini Notebook */}
-        <div className="p-4 rounded-2xl bg-indigo-500/[0.07] border border-indigo-500/20 flex flex-col gap-3">
-          <div className="flex items-center gap-2 text-indigo-300 text-xs font-bold uppercase tracking-wider">
-            <Sparkles size={14} className="text-amber-400" />
-            Ecossistema de IA (Google AI Pro & Gemini Notebook)
-          </div>
-          <p className="text-xs text-slate-400">
-            Adicione os links diretos para seus materiais gerados por IA para acesso imediato a 1 clique.
-          </p>
-
-          <FormField label="Link do Gemini Notebook (Caderno Interativo)">
-            <div className="relative">
-              <input
-                type="url"
-                className={inputClass}
-                placeholder="https://gemini.google.com/..."
-                value={form.notebookUrl || ''}
-                onChange={e => setForm({ ...form, notebookUrl: e.target.value })}
-              />
-            </div>
-          </FormField>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <FormField label="Link dos Slides">
-              <input
-                type="url"
-                className={inputClass}
-                placeholder="https://docs.google.com/presentation/..."
-                value={form.aiArtifacts?.slidesUrl || ''}
-                onChange={e => setForm({
-                  ...form,
-                  aiArtifacts: { ...form.aiArtifacts, slidesUrl: e.target.value }
-                })}
-              />
-            </FormField>
-
-            <FormField label="Roteiro de Vídeo">
-              <input
-                type="url"
-                className={inputClass}
-                placeholder="https://docs.google.com/document/..."
-                value={form.aiArtifacts?.videoScriptUrl || ''}
-                onChange={e => setForm({
-                  ...form,
-                  aiArtifacts: { ...form.aiArtifacts, videoScriptUrl: e.target.value }
-                })}
-              />
-            </FormField>
-
-            <FormField label="Link do Infográfico">
-              <input
-                type="url"
-                className={inputClass}
-                placeholder="https://canva.com/..."
-                value={form.aiArtifacts?.infographicUrl || ''}
-                onChange={e => setForm({
-                  ...form,
-                  aiArtifacts: { ...form.aiArtifacts, infographicUrl: e.target.value }
-                })}
-              />
-            </FormField>
-          </div>
-
-          <FormField label="Resumo para Flashcards / Conceitos-Chave da IA">
-            <textarea
-              className={`${inputClass} resize-none h-24 text-xs font-mono leading-relaxed`}
-              placeholder="Cole os conceitos ou perguntas gerados pelo Gemini Notebook (ex: 'O que é busca binária? Divisão e conquista em O(log n)')..."
-              value={form.aiArtifacts?.flashcardsSummary || ''}
-              onChange={e => setForm({
-                ...form,
-                aiArtifacts: { ...form.aiArtifacts, flashcardsSummary: e.target.value }
-              })}
             />
           </FormField>
         </div>

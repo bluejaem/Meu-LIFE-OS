@@ -131,31 +131,13 @@ export interface PomodoroSession {
   createdAt: string;
 }
 
-// ─── FACULDADES & HUB ACADÊMICO INTELIGENTE ────────────────────────────────────
-export interface Flashcard {
-  id: string;
-  front: string;
-  back: string;
-}
-
-export interface AiArtifacts {
-  notebookUrl?: string;
-  slidesUrl?: string;
-  videoScriptUrl?: string;
-  flashcardsSummary?: string;
-  infographicUrl?: string;
-  generatedFlashcards?: Flashcard[];
-  generatedSummary?: string;
-}
-
-export type AIArtifacts = AiArtifacts;
+// ─── FACULDADES ────────────────────────────────────────────────────────────────
 
 export interface AcademicSubject {
   id: string;
   name: string;
   institution: string;
   semester?: string;
-  artifacts: AiArtifacts;
   activeReviewPending: boolean;
   updatedAt: string;
 
@@ -163,34 +145,7 @@ export interface AcademicSubject {
   progress?: number;           // 0–100%
   grade?: number;
   notes?: string;
-  notebookUrl?: string;        // Atalho para artifacts.notebookUrl
-  notebookId?: string;         // ID do Notebook vinculado (NotebookLM)
-  notebookName?: string;       // Nome do Notebook vinculado
-  aiArtifacts?: AiArtifacts;   // Atalho para artifacts
   lastReviewedDate?: string;   // Data da última revisão ativa (YYYY-MM-DD)
-  flashcardsCount?: number;    // Quantidade estimada de cartões de revisão
-}
-
-export interface NotebookInfo {
-  name: string; // formato: 'notebooks/{notebook_id}'
-  displayName: string;
-}
-
-export interface NotebookSource {
-  name: string;
-  displayName: string;
-}
-
-export type ArtifactType = 'flashcard' | 'summary' | 'audio' | 'video' | 'presentation' | 'infographic' | 'note';
-
-export interface NotebookArtifact {
-  id: string;
-  type: ArtifactType;
-  title: string;
-  content?: string; // Para textos, resumos ou frente de flashcards
-  backContent?: string; // Para verso de flashcards
-  mediaUrl?: string; // Para links de áudios, vídeos, iframes de slides ou imagens
-  createdAt: string;
 }
 
 export type Subject = AcademicSubject;

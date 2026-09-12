@@ -25,23 +25,12 @@ export function AmbientSoundPlayer({ isPomodoroRunning }: AmbientSoundPlayerProp
     }
   }, [isPomodoroRunning, isPlaying]);
 
-  // 2. Pausa o áudio automaticamente se o usuário trocar de aba no navegador ou sair do módulo
+  // 2. Limpeza segura ao desmontar o componente
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden && isPlaying) {
-        ambientSound.stop();
-        setIsPlaying(false);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      // Limpeza segura ao desmontar o componente
       ambientSound.stop();
     };
-  }, [isPlaying]);
+  }, []);
 
   const togglePlay = () => {
     if (isPlaying) {

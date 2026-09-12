@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { 
-  GraduationCap, Sparkles, BookOpen, Layers, CheckCircle2, 
-  ArrowRight, Presentation, Video, Image as ImageIcon,
-  Flame, Check
+  GraduationCap, CheckCircle2, ArrowRight, Layers, Check, Flame
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { cn } from '@/lib/utils';
 import type { AcademicSubject } from '@/types';
-import { FlashcardsStudyModal } from './FlashcardsStudyModal';
+import { SubjectDetailsModal } from './SubjectDetailsModal';
 
 interface RevisaoAcademicaWidgetProps {
   setActiveTab?: (tab: string) => void;
@@ -65,10 +63,7 @@ export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: 
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
-                Revisão Ativa & Flashcards IA
-                <span className="flex items-center gap-1 text-[10px] font-semibold text-indigo-300 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-full">
-                  <Sparkles size={10} className="text-amber-400" /> Gemini Pro
-                </span>
+                Revisão Ativa
               </h3>
             </div>
             <p className="text-xs text-slate-400">
@@ -169,12 +164,6 @@ export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: 
           </div>
         ) : (
           filteredSubjects.map(subj => {
-            const hasFlashcards = !!subj.aiArtifacts?.flashcardsSummary;
-            const hasNotebook = !!subj.notebookUrl;
-            const hasSlides = !!subj.aiArtifacts?.slidesUrl;
-            const hasVideo = !!subj.aiArtifacts?.videoScriptUrl;
-            const hasInfographic = !!subj.aiArtifacts?.infographicUrl;
-
             return (
               <div
                 key={`${subj.collegeId}-${subj.id}`}
@@ -196,11 +185,6 @@ export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: 
                     <span className="text-[11px] text-slate-400 font-medium">
                       Progresso: {subj.progress}%
                     </span>
-                    {subj.flashcardsCount ? (
-                      <span className="text-[10px] text-slate-500">
-                        · {subj.flashcardsCount} flashcards
-                      </span>
-                    ) : null}
                   </div>
 
                   <h4 className="text-xs font-bold text-slate-200 truncate group-hover:text-white transition-colors">
@@ -219,75 +203,18 @@ export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: 
                   </div>
                 </div>
 
-                {/* Botões de Ação Rápida de IA e Revisão */}
+                {/* Botões de Ação Rápida de Revisão */}
                 <div className="flex items-center gap-1.5 shrink-0 flex-wrap sm:flex-nowrap">
                   
-                  {/* Botão Gemini Notebook */}
-                  {hasNotebook && (
-                    <a
-                      href={subj.notebookUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 transition-colors"
-                      title="Abrir Gemini Notebook da Disciplina"
-                    >
-                      <BookOpen size={14} />
-                    </a>
-                  )}
-
-                  {/* Botão Flashcards IA */}
+                  {/* Botão Detalhes/Anotações */}
                   <button
                     onClick={() => setSelectedSubject({ subject: subj, collegeId: subj.collegeId })}
-                    className={cn(
-                      "flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border transition-all",
-                      hasFlashcards
-                        ? "bg-purple-500/15 text-purple-300 border-purple-500/30 hover:bg-purple-500/25"
-                        : "bg-white/5 text-slate-400 border-white/10 hover:text-white"
-                    )}
-                    title="Estudar Flashcards & Resumo de IA"
+                    className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border transition-all bg-purple-500/15 text-purple-300 border-purple-500/30 hover:bg-purple-500/25"
+                    title="Ver Detalhes e Anotações"
                   >
                     <Layers size={13} />
-                    <span>Flashcards</span>
+                    <span>Detalhes / Anotações</span>
                   </button>
-
-                  {/* Slides */}
-                  {hasSlides && (
-                    <a
-                      href={subj.aiArtifacts?.slidesUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition-colors"
-                      title="Ver Slides Gerados por IA"
-                    >
-                      <Presentation size={14} />
-                    </a>
-                  )}
-
-                  {/* Roteiro */}
-                  {hasVideo && (
-                    <a
-                      href={subj.aiArtifacts?.videoScriptUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-colors"
-                      title="Ver Roteiro de Vídeo Didático"
-                    >
-                      <Video size={14} />
-                    </a>
-                  )}
-
-                  {/* Infográfico */}
-                  {hasInfographic && (
-                    <a
-                      href={subj.aiArtifacts?.infographicUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/20 transition-colors"
-                      title="Ver Infográfico Visual"
-                    >
-                      <ImageIcon size={14} />
-                    </a>
-                  )}
 
                   {/* Botão Alternar Revisão Hoje */}
                   <button
@@ -320,9 +247,9 @@ export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: 
         )}
       </div>
 
-      {/* Modal Interativo de Flashcards */}
+      {/* Modal Interativo */}
       {selectedSubject && (
-        <FlashcardsStudyModal
+        <SubjectDetailsModal
           open={!!selectedSubject}
           onClose={() => setSelectedSubject(null)}
           subject={selectedSubject.subject}

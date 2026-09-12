@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { PageLayout } from '../layout/PageLayout';
 import { 
-  Plus, GraduationCap, Sparkles, BookOpen, Layers, 
-  Presentation, Video, Image as ImageIcon, Flame, Check, 
+  Plus, GraduationCap, Layers, 
+  Flame, Check, 
   Settings2, Trash2, Search, RotateCcw
 } from 'lucide-react';
 import { useAcademicStore } from '@/store/useAcademicStore';
 import { cn } from '@/lib/utils';
 import type { AcademicSubject } from '@/types';
-import { FlashcardsStudyModal } from './FlashcardsStudyModal';
+import { SubjectDetailsModal } from './SubjectDetailsModal';
 import { AcademicSubjectModal } from './AcademicSubjectModal';
 import { ConfirmModal } from '../ui/Modal';
 
@@ -45,12 +45,11 @@ export function AcademicHubView() {
 
   const uniqueInstitutions = Array.from(new Set(subjects.map(s => s.institution).filter(Boolean)));
   const pendingCount = subjects.filter(s => s.activeReviewPending).length;
-  const withNotebookCount = subjects.filter(s => s.artifacts?.notebookUrl).length;
 
   return (
     <PageLayout
-      title="Hub Acadêmico & Artefatos de IA"
-      subtitle="Ecossistema de estudos integrados ao Google AI Pro e Gemini Notebooks"
+      title="Hub Acadêmico"
+      subtitle="Ecossistema central de estudos e acompanhamento"
       actions={
         <button
           onClick={() => setIsCreateModalOpen(true)}
@@ -93,33 +92,7 @@ export function AcademicHubView() {
             </span>
           </div>
 
-          <div className="glass-panel p-4 rounded-2xl border border-white/10 flex flex-col justify-between">
-            <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1">
-              <BookOpen size={12} /> Gemini Notebooks
-            </span>
-            <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-2xl font-bold text-indigo-300 leading-none">{withNotebookCount}</span>
-              <span className="text-xs text-slate-500">vinculados</span>
-            </div>
-            <span className="text-[10px] text-slate-400 mt-2">
-              Cadernos de IA conectados
-            </span>
-          </div>
 
-          <div className="glass-panel p-4 rounded-2xl border border-white/10 flex flex-col justify-between">
-            <span className="text-[11px] font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1">
-              <Layers size={12} /> Flashcards de IA
-            </span>
-            <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-2xl font-bold text-purple-300 leading-none">
-                {subjects.reduce((acc, s) => acc + (s.flashcardsCount || 0), 0)}
-              </span>
-              <span className="text-xs text-slate-500">cards ativos</span>
-            </div>
-            <span className="text-[10px] text-slate-400 mt-2">
-              Estudo com repetição espaçada
-            </span>
-          </div>
         </div>
 
         {/* Barra de Filtros e Busca */}
@@ -214,8 +187,6 @@ export function AcademicHubView() {
             filteredSubjects.map(sub => {
               const isPending = sub.activeReviewPending;
 
-              const artifacts = sub.artifacts;
-
               return (
                 <div
                   key={sub.id}
@@ -300,82 +271,17 @@ export function AcademicHubView() {
                     </div>
                   </div>
 
-                  {/* Barra de Acesso Rápido a Artefatos de IA do Gemini Notebook */}
+                  {/* Barra de Ações Rápidas */}
                   <div className="pt-3 border-t border-white/5 flex flex-col gap-3">
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 font-semibold">
-                      <span className="flex items-center gap-1 text-indigo-300">
-                        <Sparkles size={12} className="text-amber-400" />
-                        Artefatos Gemini IA
-                      </span>
-                      <span className="text-[10px] text-slate-500">Acesso a 1 clique</span>
-                    </div>
-
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      
-                      {/* Notebook */}
-                      {(sub.notebookUrl || artifacts?.notebookUrl) ? (
-                        <a
-                          href={sub.notebookUrl || artifacts?.notebookUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 border border-indigo-500/30 transition-colors"
-                          title="Abrir Gemini Notebook da Disciplina"
-                        >
-                          <BookOpen size={13} />
-                          <span>Notebook</span>
-                        </a>
-                      ) : (
-                        <span className="text-[11px] text-slate-500 italic">Sem Notebook</span>
-                      )}
-
-                      {/* Flashcards */}
                       <button
                         onClick={() => setStudySubject(sub)}
                         className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-purple-500/15 text-purple-300 hover:bg-purple-500/25 border border-purple-500/30 transition-colors"
-                        title="Praticar Flashcards Ativos"
+                        title="Ver Detalhes e Anotações"
                       >
                         <Layers size={13} />
-                        <span>Flashcards</span>
+                        <span>Detalhes / Anotações</span>
                       </button>
-
-                      {/* Slides */}
-                      {artifacts?.slidesUrl && (
-                        <a
-                          href={artifacts.slidesUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition-colors"
-                          title="Ver Slides de IA"
-                        >
-                          <Presentation size={14} />
-                        </a>
-                      )}
-
-                      {/* Roteiro */}
-                      {artifacts?.videoScriptUrl && (
-                        <a
-                          href={artifacts.videoScriptUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-colors"
-                          title="Ver Roteiro de Vídeo"
-                        >
-                          <Video size={14} />
-                        </a>
-                      )}
-
-                      {/* Infográfico */}
-                      {artifacts?.infographicUrl && (
-                        <a
-                          href={artifacts.infographicUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/20 transition-colors"
-                          title="Ver Infográfico"
-                        >
-                          <ImageIcon size={14} />
-                        </a>
-                      )}
                     </div>
 
                     {/* Botão Concluir Revisão / Alternar */}
@@ -400,7 +306,6 @@ export function AcademicHubView() {
                         </>
                       )}
                     </button>
-
                   </div>
                 </div>
               );
@@ -410,9 +315,9 @@ export function AcademicHubView() {
 
       </div>
 
-      {/* Modal de Flashcards Interativos */}
+      {/* Modal Interativo */}
       {studySubject && (
-        <FlashcardsStudyModal
+        <SubjectDetailsModal
           open={!!studySubject}
           onClose={() => setStudySubject(null)}
           subject={studySubject}
@@ -439,8 +344,7 @@ export function AcademicHubView() {
             if (editingSubject) {
               updateSubject(editingSubject.id, {
                 ...data,
-                institution: data.institution || 'Desconhecida',
-                artifacts: data.aiArtifacts || data.artifacts
+                institution: data.institution || 'Desconhecida'
               });
             } else {
               addSubject({
@@ -450,15 +354,7 @@ export function AcademicHubView() {
                 activeReviewPending: true,
                 progress: data.progress || 0,
                 grade: data.grade,
-                notes: data.notes,
-                artifacts: data.aiArtifacts || {
-                  notebookUrl: data.notebookUrl,
-                  slidesUrl: '',
-                  videoScriptUrl: '',
-                  flashcardsSummary: '',
-                  infographicUrl: ''
-                },
-                flashcardsCount: data.flashcardsCount || 10
+                notes: data.notes
               });
             }
           }}
@@ -476,7 +372,7 @@ export function AcademicHubView() {
           }
         }}
         title="Excluir Disciplina"
-        description="Esta disciplina e todos os links de artefatos de IA vinculados serão removidos permanentemente."
+        description="Esta disciplina e todas as anotações serão removidas permanentemente."
         confirmLabel="Excluir"
         danger
       />
