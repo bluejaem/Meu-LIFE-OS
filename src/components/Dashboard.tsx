@@ -324,7 +324,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
       </div>
 
       {/* Right Column */}
-      <div className="w-full xl:w-[300px] flex-shrink-0 border-t xl:border-t-0 xl:border-l border-white/5 bg-black/20 backdrop-blur-3xl p-6 xl:overflow-y-auto scrollbar-hide flex flex-col gap-8 shadow-2xl">
+      <div className="w-full xl:w-[300px] flex-shrink-0 border-t xl:border-t-0 xl:border-l border-white/5 bg-black/20 backdrop-blur-3xl p-6 pb-20 xl:pb-6 xl:overflow-y-auto scrollbar-hide flex flex-col gap-8 shadow-2xl">
 
         {/* Profile */}
         <div className="flex justify-end">
@@ -381,7 +381,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
         </div>
 
         {/* Quote */}
-        <div className="glass-panel p-5 relative overflow-hidden border-white/10 bg-white/5">
+        <div className="glass-panel p-5 relative overflow-hidden border-white/10 bg-white/5 shrink-0 mb-10 xl:mb-0">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-50" />
           <p className="text-[13px] font-medium text-slate-300 leading-relaxed italic mb-3">"Disciplina hoje, liberdade amanhã."</p>
           <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-semibold">
