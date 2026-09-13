@@ -15,6 +15,7 @@ import { Configuracoes } from '@/components/modules/Configuracoes';
 import { QuickCaptureModal } from '@/components/modules/QuickCaptureModal';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 
 import { Menu } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
@@ -23,7 +24,15 @@ import { AuthScreen } from '@/components/AuthScreen';
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { pomodoroIsRunning, settings, isTunnelMode, setQuickCaptureOpen } = useStore();
+  
+  const { pomodoroIsRunning, settings, isTunnelMode, setQuickCaptureOpen } = useStore(
+    useShallow((state) => ({
+      pomodoroIsRunning: state.pomodoroIsRunning,
+      settings: state.settings,
+      isTunnelMode: state.isTunnelMode,
+      setQuickCaptureOpen: state.setQuickCaptureOpen,
+    }))
+  );
   const { currentUser, loading } = useAuthStore();
 
   useEffect(() => {

@@ -2,12 +2,16 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn, formatDateLocal } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const DAYS_OF_WEEK = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
 export function MiniCalendar() {
-  const { tasks, toggleTask } = useStore();
+  const { tasks, toggleTask } = useStore(useShallow(state => ({
+    tasks: state.tasks,
+    toggleTask: state.toggleTask
+  })));
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 

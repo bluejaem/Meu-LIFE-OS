@@ -3,6 +3,7 @@ import {
   GraduationCap, CheckCircle2, ArrowRight, Layers, Check, Flame
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import { cn } from '@/lib/utils';
 import type { AcademicSubject } from '@/types';
 import { SubjectDetailsModal } from './SubjectDetailsModal';
@@ -13,7 +14,10 @@ interface RevisaoAcademicaWidgetProps {
 }
 
 export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: RevisaoAcademicaWidgetProps) {
-  const { colleges, toggleSubjectReviewedToday } = useStore();
+  const { colleges, toggleSubjectReviewedToday } = useStore(useShallow(state => ({
+    colleges: state.colleges,
+    toggleSubjectReviewedToday: state.toggleSubjectReviewedToday
+  })));
   const [filter, setFilter] = useState<'all' | 'pending' | 'reviewed'>('all');
   const [selectedSubject, setSelectedSubject] = useState<{
     subject: AcademicSubject;

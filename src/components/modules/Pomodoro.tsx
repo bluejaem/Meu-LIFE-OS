@@ -3,6 +3,7 @@ import { PageLayout } from '../layout/PageLayout';
 import { Play, Pause, RotateCcw, Settings2, Check, Trash2, Sparkles, Maximize, Minimize } from 'lucide-react';
 import { cn, formatSecondsToTime, parseTimeToSeconds } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import { AmbientSoundPlayer } from './AmbientSoundPlayer';
 import { JornadaConhecimento } from './JornadaConhecimento';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -23,11 +24,24 @@ const GENTLE_QUOTES = [
 export function Pomodoro() {
   const { 
     pomodoroSessions, tasks, deletePomodoroSession,
-    pomodoroMode: mode, pomodoroSecondsLeft: secondsLeft, 
-    pomodoroIsRunning: isRunning, pomodoroSelectedTask: selectedTask,
+    mode, secondsLeft, 
+    isRunning, selectedTask,
     pomodoroDurations, setPomodoroState, setPomodoroDurations,
     isTunnelMode, toggleTunnelMode
-  } = useStore();
+  } = useStore(useShallow(state => ({
+    pomodoroSessions: state.pomodoroSessions,
+    tasks: state.tasks,
+    deletePomodoroSession: state.deletePomodoroSession,
+    mode: state.pomodoroMode,
+    secondsLeft: state.pomodoroSecondsLeft,
+    isRunning: state.pomodoroIsRunning,
+    selectedTask: state.pomodoroSelectedTask,
+    pomodoroDurations: state.pomodoroDurations,
+    setPomodoroState: state.setPomodoroState,
+    setPomodoroDurations: state.setPomodoroDurations,
+    isTunnelMode: state.isTunnelMode,
+    toggleTunnelMode: state.toggleTunnelMode
+  })));
   
   const [isEditingTime, setIsEditingTime] = useState(false);
   const [editMinutes, setEditMinutes] = useState('');

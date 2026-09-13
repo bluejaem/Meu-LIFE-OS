@@ -12,7 +12,7 @@ function FormField({ label, children, className }: { label: string, children: Re
 }
 
 export function ModalAddStudy({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
-  const { addManualStudySession } = useStore();
+  const addManualStudySession = useStore(state => state.addManualStudySession);
   const [hours, setHours] = useState('');
   const [minutes, setMinutes] = useState('');
 

@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import { Sparkles, X } from 'lucide-react';
 
 export function QuickCaptureModal() {
-  const { isQuickCaptureOpen, setQuickCaptureOpen, addTask } = useStore();
+  const { isQuickCaptureOpen, setQuickCaptureOpen, addTask } = useStore(useShallow(state => ({
+    isQuickCaptureOpen: state.isQuickCaptureOpen,
+    setQuickCaptureOpen: state.setQuickCaptureOpen,
+    addTask: state.addTask
+  })));
   const [taskTitle, setTaskTitle] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 

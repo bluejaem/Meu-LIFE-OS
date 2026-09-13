@@ -3,6 +3,7 @@ import { PageLayout } from '../layout/PageLayout';
 import { Plus, Tag, Calendar, Check, Pencil, Trash2, Copy, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import type { Task, TaskTag, Priority } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, selectClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
@@ -35,7 +36,14 @@ const EMPTY_TASK: Omit<Task, 'id' | 'createdAt'> = {
 };
 
 export function Tarefas() {
-  const { tasks, addTask, updateTask, deleteTask, toggleTask, duplicateTask } = useStore();
+  const { tasks, addTask, updateTask, deleteTask, toggleTask, duplicateTask } = useStore(useShallow(state => ({
+    tasks: state.tasks,
+    addTask: state.addTask,
+    updateTask: state.updateTask,
+    deleteTask: state.deleteTask,
+    toggleTask: state.toggleTask,
+    duplicateTask: state.duplicateTask
+  })));
   const [createOpen, setCreateOpen] = useState(false);
   const [editTask, setEditTask] = useState<Task | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -137,7 +145,7 @@ function TaskSection({ title, tasks, onToggle, onEdit, onDelete, onDuplicate, ex
 
 function TaskRow({ task, onToggle, onEdit, onDelete, onDuplicate, expanded, onExpand, muted }: any) {
   const colors = TAG_COLORS[task.tag as TaskTag] || TAG_COLORS.Outro;
-  const { toggleSubtask } = useStore();
+  const toggleSubtask = useStore(state => state.toggleSubtask);
 
   return (
     <div className="group">

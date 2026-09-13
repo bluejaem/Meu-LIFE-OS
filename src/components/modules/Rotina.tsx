@@ -3,6 +3,7 @@ import { PageLayout } from '../layout/PageLayout';
 import { Plus, Clock, Pencil, Trash2, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import type { RoutineBlock, RoutineDay } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, selectClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
@@ -13,7 +14,13 @@ const BLOCK_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3
 const EMPTY_FORM = { time: '07:00', title: '', duration: 60, category: 'Estudo', days: ['Seg','Ter','Qua','Qui','Sex'] as RoutineDay[], color: '#6366f1' };
 
 export function Rotina() {
-  const { routine, addRoutineBlock, updateRoutineBlock, deleteRoutineBlock, clearRoutine } = useStore();
+  const { routine, addRoutineBlock, updateRoutineBlock, deleteRoutineBlock, clearRoutine } = useStore(useShallow(state => ({
+    routine: state.routine,
+    addRoutineBlock: state.addRoutineBlock,
+    updateRoutineBlock: state.updateRoutineBlock,
+    deleteRoutineBlock: state.deleteRoutineBlock,
+    clearRoutine: state.clearRoutine
+  })));
   const [createOpen, setCreateOpen] = useState(false);
   const [editBlock, setEditBlock] = useState<RoutineBlock | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);

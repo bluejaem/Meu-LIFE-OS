@@ -3,12 +3,16 @@ import { PageLayout } from '../layout/PageLayout';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { cn, formatDateLocal } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import { ContextMenu } from '../ui/ContextMenu';
 
 const DAYS_OF_WEEK = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 export function Calendario() {
-  const { tasks, updateTask } = useStore();
+  const { tasks, updateTask } = useStore(useShallow(state => ({
+    tasks: state.tasks,
+    updateTask: state.updateTask
+  })));
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 

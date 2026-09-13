@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import type { DiaryEntry, Mood, LearningReflection } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, SubmitButton } from '../ui/Modal';
 
@@ -46,7 +47,11 @@ const EMPTY_FORM: DiaryFormData = {
 };
 
 export function Diario() {
-  const { diary, addDiaryEntry, deleteDiaryEntry } = useStore();
+  const { diary, addDiaryEntry, deleteDiaryEntry } = useStore(useShallow(state => ({
+    diary: state.diary,
+    addDiaryEntry: state.addDiaryEntry,
+    deleteDiaryEntry: state.deleteDiaryEntry
+  })));
   const [createOpen, setCreateOpen] = useState(false);
   const [viewEntry, setViewEntry] = useState<DiaryEntry | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);

@@ -4,11 +4,15 @@ import {
   BookOpen, Timer, Target, CalendarCheck, GraduationCap, Award, Settings2 
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export function CommandPalette({ isOpen, onClose, onNavigate }: { isOpen: boolean, onClose: () => void, onNavigate: (tab: string) => void }) {
   const [query, setQuery] = useState('');
-  const { tasks, projects } = useStore();
+  const { tasks, projects } = useStore(useShallow(state => ({
+    tasks: state.tasks,
+    projects: state.projects
+  })));
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

@@ -3,6 +3,7 @@ import { PageLayout } from '../layout/PageLayout';
 import { Plus, Award, Pencil, Trash2, ExternalLink, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import type { Certification, CertStatus } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, selectClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
@@ -16,7 +17,12 @@ const STATUS_CONFIG: Record<CertStatus, { text: string; bg: string }> = {
 const EMPTY_FORM = { title: '', platform: '', status: 'Planejado' as CertStatus, completedDate: '', expiresDate: '', url: '' };
 
 export function Certificacoes() {
-  const { certifications, addCertification, updateCertification, deleteCertification } = useStore();
+  const { certifications, addCertification, updateCertification, deleteCertification } = useStore(useShallow(state => ({
+    certifications: state.certifications,
+    addCertification: state.addCertification,
+    updateCertification: state.updateCertification,
+    deleteCertification: state.deleteCertification
+  })));
   const [createOpen, setCreateOpen] = useState(false);
   const [editCert, setEditCert] = useState<Certification | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);

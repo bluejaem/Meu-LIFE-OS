@@ -4,6 +4,7 @@ import {
   Plus, GraduationCap, Pencil, Trash2, Sparkles, Layers, Settings2, Check
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import type { College, AcademicSubject } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
@@ -19,7 +20,14 @@ const EMPTY_FORM = {
 };
 
 export function Faculdades() {
-  const { colleges, addCollege, updateCollege, deleteCollege, toggleSubjectReviewedToday, updateSubject } = useStore();
+  const { colleges, addCollege, updateCollege, deleteCollege, toggleSubjectReviewedToday, updateSubject } = useStore(useShallow(state => ({
+    colleges: state.colleges,
+    addCollege: state.addCollege,
+    updateCollege: state.updateCollege,
+    deleteCollege: state.deleteCollege,
+    toggleSubjectReviewedToday: state.toggleSubjectReviewedToday,
+    updateSubject: state.updateSubject
+  })));
   const [createOpen, setCreateOpen] = useState(false);
   const [editCollege, setEditCollege] = useState<College | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);

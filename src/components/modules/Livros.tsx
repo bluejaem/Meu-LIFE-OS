@@ -3,6 +3,7 @@ import { PageLayout } from '../layout/PageLayout';
 import { Plus, BookOpen, Pencil, Trash2, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import type { Book, BookStatus } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, selectClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
@@ -17,7 +18,12 @@ const STATUS_CONFIG: Record<BookStatus, { text: string; bg: string }> = {
 const EMPTY_FORM = { title: '', author: '', status: 'Quero ler' as BookStatus, currentPage: 0, totalPages: 0, notes: '' };
 
 export function Livros() {
-  const { books, addBook, updateBook, deleteBook } = useStore();
+  const { books, addBook, updateBook, deleteBook } = useStore(useShallow(state => ({
+    books: state.books,
+    addBook: state.addBook,
+    updateBook: state.updateBook,
+    deleteBook: state.deleteBook
+  })));
   const [createOpen, setCreateOpen] = useState(false);
   const [editBook, setEditBook] = useState<Book | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);

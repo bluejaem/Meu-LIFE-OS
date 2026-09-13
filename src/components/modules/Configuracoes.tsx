@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PageLayout } from '../layout/PageLayout';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import { User, Image, Bell, Upload } from 'lucide-react';
 import { FormField, inputClass } from '../ui/Modal';
 
@@ -15,7 +16,10 @@ const WALLPAPERS = [
 
 
 export function Configuracoes() {
-  const { settings, updateSettings } = useStore();
+  const { settings, updateSettings } = useStore(useShallow(state => ({
+    settings: state.settings,
+    updateSettings: state.updateSettings
+  })));
   const [customWallpaper, setCustomWallpaper] = useState(settings.wallpaperUrl);
 
   const applyWallpaper = (url: string) => {

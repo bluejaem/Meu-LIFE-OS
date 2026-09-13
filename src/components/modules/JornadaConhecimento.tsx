@@ -4,6 +4,7 @@ import {
   Compass, Flame, Heart, ShieldCheck, TreePine
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import { motion } from 'framer-motion';
 
 interface JornadaConhecimentoProps {
@@ -11,7 +12,11 @@ interface JornadaConhecimentoProps {
 }
 
 export function JornadaConhecimento({ variant = 'dashboard' }: JornadaConhecimentoProps) {
-  const { getKnowledgeJourney, checkAndUnlockMilestones, userMilestones } = useStore();
+  const { getKnowledgeJourney, checkAndUnlockMilestones, userMilestones } = useStore(useShallow(state => ({
+    getKnowledgeJourney: state.getKnowledgeJourney,
+    checkAndUnlockMilestones: state.checkAndUnlockMilestones,
+    userMilestones: state.userMilestones
+  })));
   const journey = getKnowledgeJourney();
 
   // Ao montar, verifica se novos marcos foram conquistados

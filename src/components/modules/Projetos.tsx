@@ -3,6 +3,7 @@ import { PageLayout } from '../layout/PageLayout';
 import { Plus, FolderKanban, CheckCircle2, Pencil, Trash2, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import type { Project, ProjectStatus } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, selectClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
@@ -19,7 +20,14 @@ const PROJECT_COLORS = ['bg-indigo-500', 'bg-emerald-500', 'bg-purple-500', 'bg-
 const EMPTY_FORM = { title: '', description: '', status: 'Planejamento' as ProjectStatus, color: 'bg-indigo-500' };
 
 export function Projetos() {
-  const { projects, addProject, updateProject, deleteProject, tasks, getProjectProgress } = useStore();
+  const { projects, addProject, updateProject, deleteProject, tasks, getProjectProgress } = useStore(useShallow(state => ({
+    projects: state.projects,
+    addProject: state.addProject,
+    updateProject: state.updateProject,
+    deleteProject: state.deleteProject,
+    tasks: state.tasks,
+    getProjectProgress: state.getProjectProgress
+  })));
   const [createOpen, setCreateOpen] = useState(false);
   const [editProject, setEditProject] = useState<Project | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);

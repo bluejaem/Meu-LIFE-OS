@@ -3,6 +3,7 @@ import { PageLayout } from '../layout/PageLayout';
 import { Plus, Target, Pencil, Trash2, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import { useShallow } from 'zustand/react/shallow';
 import type { Goal, GoalType } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, selectClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
@@ -18,7 +19,12 @@ const PROGRESS_COLORS = ['bg-sky-500', 'bg-indigo-500', 'bg-purple-500', 'bg-eme
 const EMPTY_FORM = { title: '', description: '', type: 'short' as GoalType, progress: 0, target: '', deadline: '' };
 
 export function Metas() {
-  const { goals, addGoal, updateGoal, deleteGoal } = useStore();
+  const { goals, addGoal, updateGoal, deleteGoal } = useStore(useShallow(state => ({
+    goals: state.goals,
+    addGoal: state.addGoal,
+    updateGoal: state.updateGoal,
+    deleteGoal: state.deleteGoal
+  })));
   const [createOpen, setCreateOpen] = useState(false);
   const [editGoal, setEditGoal] = useState<Goal | null>(null);
   const [updateGoalId, setUpdateGoalId] = useState<string | null>(null);

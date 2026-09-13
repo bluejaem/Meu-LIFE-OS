@@ -14,23 +14,29 @@ import { ModalAddStudy } from '@/components/modules/ModalAddStudy';
 import { JornadaConhecimento } from '@/components/modules/JornadaConhecimento';
 import { ActiveReviewWidget } from '@/components/modules/ActiveReviewWidget';
 import { MiniCalendar } from '@/components/modules/MiniCalendar';
+import { useShallow } from 'zustand/react/shallow';
 
 export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => void }) {
   const [isStudyModalOpen, setIsStudyModalOpen] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [isEditingTime, setIsEditingTime] = useState(false);
-  const [editMinutes, setEditMinutes] = useState('');
 
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
   const { 
     tasks, projects, pomodoroSessions, goals, getProductivityData, getUpcomingEvents,
-    pomodoroSecondsLeft, pomodoroIsRunning, pomodoroMode, pomodoroDurations, 
-    setPomodoroState, setPomodoroDurations, toggleTask, getWeeklyStudyProgress,
-    dashboardTimeRange, setDashboardTimeRange
-  } = useStore();
+    toggleTask, getWeeklyStudyProgress,
+    dashboardTimeRange, setDashboardTimeRange, settings
+  } = useStore(useShallow(state => ({
+    tasks: state.tasks,
+    projects: state.projects,
+    pomodoroSessions: state.pomodoroSessions,
+    goals: state.goals,
+    getProductivityData: state.getProductivityData,
+    getUpcomingEvents: state.getUpcomingEvents,
+    toggleTask: state.toggleTask,
+    getWeeklyStudyProgress: state.getWeeklyStudyProgress,
+    dashboardTimeRange: state.dashboardTimeRange,
+    setDashboardTimeRange: state.setDashboardTimeRange,
+    settings: state.settings
+  })));
+
   const chartData = getProductivityData(dashboardTimeRange);
   const upcomingEvents = getUpcomingEvents();
 
@@ -42,8 +48,6 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
 
   const completedProjects = projects.filter(p => p.status === 'Concluído');
   
-  const todaySessions = pomodoroSessions.filter(s => s.date === todayStr);
-  const todayMinutes = todaySessions.reduce((acc, s) => acc + s.duration, 0);
   const studyProgress = getWeeklyStudyProgress();
   const studyHours = Math.floor(studyProgress.totalMinutes / 60);
   const studyMinutes = studyProgress.totalMinutes % 60;
@@ -61,53 +65,6 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
   }
 
   const todayGoals = goals.slice(0, 3);
-  const greeting = currentTime.getHours() < 12 ? 'Bom dia' : currentTime.getHours() < 18 ? 'Boa tarde' : 'Boa noite';
-  const dayLabel = format(currentTime, "EEEE, d 'de' MMMM", { locale: ptBR });
-  const weekLabel = `Semana ${format(currentTime, 'w')}`;
-  const timeLabel = format(currentTime, 'HH:mm:ss');
-
-  const { settings } = useStore();
-  const firstName = settings.userName.split(' ')[0];
-
-  type PomodoroMode = 'focus' | 'shortBreak' | 'longBreak' | 'custom';
-  const MODE_CONFIG = {
-    focus: { minutes: pomodoroDurations.focus, label: 'Foco' },
-    shortBreak: { minutes: pomodoroDurations.shortBreak, label: 'Pausa Curta' },
-    longBreak: { minutes: pomodoroDurations.longBreak, label: 'Pausa Longa' },
-    custom: { minutes: pomodoroDurations.custom, label: 'Estudo Personalizado' },
-  };
-  const pomoConfig = MODE_CONFIG[pomodoroMode as PomodoroMode];
-
-  const switchMode = (m: PomodoroMode) => {
-    setPomodoroState({
-      pomodoroMode: m,
-      pomodoroSecondsLeft: MODE_CONFIG[m].minutes * 60,
-      pomodoroIsRunning: false
-    });
-    setIsEditingTime(false);
-  };
-
-  const resetPomo = () => setPomodoroState({ pomodoroSecondsLeft: pomoConfig.minutes * 60, pomodoroIsRunning: false });
-
-  const handleTimeClick = () => {
-    if (!pomodoroIsRunning && pomodoroMode === 'custom') {
-      setEditMinutes(formatSecondsToTime(pomoConfig.minutes * 60));
-      setIsEditingTime(true);
-    }
-  };
-  
-  const handleTimeSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const totalSecs = parseTimeToSeconds(editMinutes);
-    if (totalSecs > 0) {
-      const newMins = Math.round(totalSecs / 60);
-      setPomodoroDurations({ [pomodoroMode]: newMins });
-      setPomodoroState({ pomodoroSecondsLeft: totalSecs });
-    }
-    setIsEditingTime(false);
-  };
-
-  const displayTime = formatSecondsToTime(pomodoroSecondsLeft);
 
   return (
     <div className="flex flex-col xl:flex-row h-full w-full overflow-y-auto xl:overflow-hidden scrollbar-hide">
@@ -116,18 +73,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
       <div className="flex-1 flex flex-col px-5 xl:px-10 py-6 xl:py-8 overflow-y-visible xl:overflow-y-auto scrollbar-hide gap-6 xl:gap-8">
 
         {/* Header */}
-        <header className="flex flex-col gap-1.5 shrink-0">
-          <h2 className="text-[28px] font-bold text-slate-100 tracking-tight">
-            {greeting}, {firstName}!
-          </h2>
-          <div className="flex items-center gap-2 text-[13px] text-slate-400 font-medium capitalize">
-            <span>{dayLabel}</span>
-            <span className="w-1 h-1 rounded-full bg-slate-600" />
-            <span>{weekLabel}</span>
-            <span className="w-1 h-1 rounded-full bg-slate-600" />
-            <span className="text-slate-300 font-semibold">{timeLabel}</span>
-          </div>
-        </header>
+        <DashboardHeader />
 
         {/* KPIs */}
         <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 shrink-0">
@@ -250,76 +196,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
           </div>
 
           {/* Pomodoro Quick */}
-          <div className="glass-panel p-5 relative overflow-hidden group flex flex-col items-center justify-center">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative z-10 flex flex-col items-center w-full">
-              {/* Mode Tabs */}
-              <div className="flex gap-1 mb-4 bg-black/20 p-1 rounded-full">
-                {(Object.keys(MODE_CONFIG) as PomodoroMode[]).map(m => (
-                  <button
-                    key={m}
-                    onClick={() => switchMode(m)}
-                    className={cn(
-                      "px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-300",
-                      pomodoroMode === m ? "bg-white/20 text-white" : "text-slate-400 hover:text-slate-200"
-                    )}
-                  >
-                    {MODE_CONFIG[m].label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Timer */}
-              {isEditingTime ? (
-                <form onSubmit={handleTimeSubmit} className="flex flex-col items-center mb-1">
-                  <input
-                    type="text"
-                    autoFocus
-                    value={editMinutes}
-                    onChange={e => setEditMinutes(e.target.value)}
-                    onBlur={handleTimeSubmit}
-                    placeholder="00:00:00"
-                    className="w-36 bg-black/30 border border-white/20 rounded-lg text-center text-[42px] font-light text-white outline-none focus:border-indigo-500 py-0"
-                  />
-                  <span className="text-[9px] text-slate-400 mt-1 absolute -bottom-4 whitespace-nowrap">Enter para salvar (HH:MM:SS)</span>
-                </form>
-              ) : (
-                <div className="text-[52px] font-light text-white tracking-tighter leading-none mb-1">
-                  {displayTime}
-                </div>
-              )}
-              <p className="text-xs text-slate-500 mb-5 mt-2">{todaySessions.length} sessão{todaySessions.length !== 1 ? 'ões' : ''} hoje · {todayMinutes}min</p>
-              
-              {/* Controls */}
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={handleTimeClick} 
-                  disabled={pomodoroMode !== 'custom'}
-                  className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center transition-all",
-                    pomodoroMode === 'custom' ? "text-slate-400 hover:text-white hover:bg-white/10" : "text-slate-600 cursor-not-allowed opacity-50"
-                  )}
-                  title="Editar tempo personalizado"
-                >
-                  <Settings2 size={16} />
-                </button>
-                <button
-                  onClick={() => {
-                    if (!pomodoroIsRunning && 'Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-                      Notification.requestPermission();
-                    }
-                    setPomodoroState({ pomodoroIsRunning: !pomodoroIsRunning });
-                  }}
-                  className="h-12 w-12 rounded-full bg-white text-black flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all"
-                >
-                  {pomodoroIsRunning ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
-                </button>
-                <button onClick={resetPomo} className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all">
-                  <RotateCcw size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
+          <DashboardPomodoro />
         </div>
       </div>
 
@@ -395,6 +272,174 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
 }
 
 // Sub-components
+
+function DashboardHeader() {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const settings = useStore(state => state.settings);
+  const firstName = settings.userName.split(' ')[0];
+
+  const greeting = currentTime.getHours() < 12 ? 'Bom dia' : currentTime.getHours() < 18 ? 'Boa tarde' : 'Boa noite';
+  const dayLabel = format(currentTime, "EEEE, d 'de' MMMM", { locale: ptBR });
+  const weekLabel = `Semana ${format(currentTime, 'w')}`;
+  const timeLabel = format(currentTime, 'HH:mm:ss');
+
+  return (
+    <header className="flex flex-col gap-1.5 shrink-0">
+      <h2 className="text-[28px] font-bold text-slate-100 tracking-tight">
+        {greeting}, {firstName}!
+      </h2>
+      <div className="flex items-center gap-2 text-[13px] text-slate-400 font-medium capitalize">
+        <span>{dayLabel}</span>
+        <span className="w-1 h-1 rounded-full bg-slate-600" />
+        <span>{weekLabel}</span>
+        <span className="w-1 h-1 rounded-full bg-slate-600" />
+        <span className="text-slate-300 font-semibold">{timeLabel}</span>
+      </div>
+    </header>
+  );
+}
+
+type PomodoroMode = 'focus' | 'shortBreak' | 'longBreak' | 'custom';
+
+function DashboardPomodoro() {
+  const [isEditingTime, setIsEditingTime] = useState(false);
+  const [editMinutes, setEditMinutes] = useState('');
+
+  const {
+    pomodoroSecondsLeft, pomodoroIsRunning, pomodoroMode, pomodoroDurations,
+    setPomodoroState, setPomodoroDurations, pomodoroSessions
+  } = useStore(useShallow(state => ({
+    pomodoroSecondsLeft: state.pomodoroSecondsLeft,
+    pomodoroIsRunning: state.pomodoroIsRunning,
+    pomodoroMode: state.pomodoroMode,
+    pomodoroDurations: state.pomodoroDurations,
+    setPomodoroState: state.setPomodoroState,
+    setPomodoroDurations: state.setPomodoroDurations,
+    pomodoroSessions: state.pomodoroSessions
+  })));
+
+  const MODE_CONFIG = {
+    focus: { minutes: pomodoroDurations.focus, label: 'Foco' },
+    shortBreak: { minutes: pomodoroDurations.shortBreak, label: 'Pausa Curta' },
+    longBreak: { minutes: pomodoroDurations.longBreak, label: 'Pausa Longa' },
+    custom: { minutes: pomodoroDurations.custom, label: 'Estudo Personalizado' },
+  };
+  const pomoConfig = MODE_CONFIG[pomodoroMode as PomodoroMode];
+
+  const switchMode = (m: PomodoroMode) => {
+    setPomodoroState({
+      pomodoroMode: m,
+      pomodoroSecondsLeft: MODE_CONFIG[m].minutes * 60,
+      pomodoroIsRunning: false
+    });
+    setIsEditingTime(false);
+  };
+
+  const resetPomo = () => setPomodoroState({ pomodoroSecondsLeft: pomoConfig.minutes * 60, pomodoroIsRunning: false });
+
+  const handleTimeClick = () => {
+    if (!pomodoroIsRunning && pomodoroMode === 'custom') {
+      setEditMinutes(formatSecondsToTime(pomoConfig.minutes * 60));
+      setIsEditingTime(true);
+    }
+  };
+  
+  const handleTimeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const totalSecs = parseTimeToSeconds(editMinutes);
+    if (totalSecs > 0) {
+      const newMins = Math.round(totalSecs / 60);
+      setPomodoroDurations({ [pomodoroMode]: newMins });
+      setPomodoroState({ pomodoroSecondsLeft: totalSecs });
+    }
+    setIsEditingTime(false);
+  };
+
+  const displayTime = formatSecondsToTime(pomodoroSecondsLeft);
+  
+  const todayStr = formatDateLocal();
+  const todaySessions = pomodoroSessions.filter(s => s.date === todayStr);
+  const todayMinutes = todaySessions.reduce((acc, s) => acc + s.duration, 0);
+
+  return (
+    <div className="glass-panel p-5 relative overflow-hidden group flex flex-col items-center justify-center">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="relative z-10 flex flex-col items-center w-full">
+        {/* Mode Tabs */}
+        <div className="flex gap-1 mb-4 bg-black/20 p-1 rounded-full">
+          {(Object.keys(MODE_CONFIG) as PomodoroMode[]).map(m => (
+            <button
+              key={m}
+              onClick={() => switchMode(m)}
+              className={cn(
+                "px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-300",
+                pomodoroMode === m ? "bg-white/20 text-white" : "text-slate-400 hover:text-slate-200"
+              )}
+            >
+              {MODE_CONFIG[m].label}
+            </button>
+          ))}
+        </div>
+
+        {/* Timer */}
+        {isEditingTime ? (
+          <form onSubmit={handleTimeSubmit} className="flex flex-col items-center mb-1">
+            <input
+              type="text"
+              autoFocus
+              value={editMinutes}
+              onChange={e => setEditMinutes(e.target.value)}
+              onBlur={handleTimeSubmit}
+              placeholder="00:00:00"
+              className="w-36 bg-black/30 border border-white/20 rounded-lg text-center text-[42px] font-light text-white outline-none focus:border-indigo-500 py-0"
+            />
+            <span className="text-[9px] text-slate-400 mt-1 absolute -bottom-4 whitespace-nowrap">Enter para salvar (HH:MM:SS)</span>
+          </form>
+        ) : (
+          <div className="text-[52px] font-light text-white tracking-tighter leading-none mb-1">
+            {displayTime}
+          </div>
+        )}
+        <p className="text-xs text-slate-500 mb-5 mt-2">{todaySessions.length} sessão{todaySessions.length !== 1 ? 'ões' : ''} hoje · {todayMinutes}min</p>
+        
+        {/* Controls */}
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={handleTimeClick} 
+            disabled={pomodoroMode !== 'custom'}
+            className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center transition-all",
+              pomodoroMode === 'custom' ? "text-slate-400 hover:text-white hover:bg-white/10" : "text-slate-600 cursor-not-allowed opacity-50"
+            )}
+            title="Editar tempo personalizado"
+          >
+            <Settings2 size={16} />
+          </button>
+          <button
+            onClick={() => {
+              if (!pomodoroIsRunning && 'Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+                Notification.requestPermission();
+              }
+              setPomodoroState({ pomodoroIsRunning: !pomodoroIsRunning });
+            }}
+            className="h-12 w-12 rounded-full bg-white text-black flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all"
+          >
+            {pomodoroIsRunning ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
+          </button>
+          <button onClick={resetPomo} className="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+            <RotateCcw size={16} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MetricCard({ title, value, total, subtitle, icon, trend, onClick }: any) {
   return (
     <div 
