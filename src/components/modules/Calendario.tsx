@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { PageLayout } from '../layout/PageLayout';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { cn, formatDateLocal } from '@/lib/utils';
@@ -26,12 +26,24 @@ export function Calendario() {
   const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
   while (cells.length % 7 !== 0) cells.push(null);
 
-  const todayStr = formatDateLocal();
+  const todayStr = useMemo(() => formatDateLocal(), []);
 
   const dateStr = (day: number) => `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-  const tasksForDay = (day: number) => tasks.filter(t => t.date === dateStr(day) && !t.done);
   
-  const selectedDayTasks = selectedDay ? tasks.filter(t => t.date === selectedDay && !t.done) : [];
+  const tasksByDate = useMemo(() => {
+    const map = new Map<string, typeof tasks>();
+    for (const t of tasks) {
+      if (!t.done) {
+        if (!map.has(t.date)) map.set(t.date, []);
+        map.get(t.date)!.push(t);
+      }
+    }
+    return map;
+  }, [tasks]);
+
+  const tasksForDay = (day: number) => tasksByDate.get(dateStr(day)) || [];
+  
+  const selectedDayTasks = selectedDay ? (tasksByDate.get(selectedDay) || []) : [];
 
   return (
     <PageLayout title="Calendário" subtitle="Visão geral de seus eventos e prazos">

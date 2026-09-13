@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useTransition } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Dashboard } from '@/components/Dashboard';
 import { Tarefas } from '@/components/modules/Tarefas';
@@ -23,6 +23,7 @@ import { AuthScreen } from '@/components/AuthScreen';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isPending, startTransition] = useTransition();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   const { pomodoroIsRunning, settings, isTunnelMode, setQuickCaptureOpen } = useStore(
@@ -113,9 +114,15 @@ export default function App() {
   }, [pomodoroIsRunning]);
 
 
+  const handleTabChange = (tab: string) => {
+    startTransition(() => {
+      setActiveTab(tab);
+    });
+  };
+
   const renderModule = () => {
     switch (activeTab) {
-      case 'dashboard': return <Dashboard key="dashboard" setActiveTab={setActiveTab} />;
+      case 'dashboard': return <Dashboard key="dashboard" setActiveTab={handleTabChange} />;
       case 'tarefas': return <Tarefas key="tarefas" />;
       case 'projetos': return <Projetos key="projetos" />;
       case 'calendario': return <Calendario key="calendario" />;
@@ -129,7 +136,7 @@ export default function App() {
       case 'faculdades': 
         return <AcademicHubView key="academic-hub" />;
       case 'configuracoes': return <Configuracoes key="configuracoes" />;
-      default: return <Dashboard key="dashboard" setActiveTab={setActiveTab} />;
+      default: return <Dashboard key="dashboard" setActiveTab={handleTabChange} />;
     }
   };
 
@@ -158,7 +165,10 @@ export default function App() {
       {!isTunnelMode && (
         <Sidebar 
           activeTab={activeTab} 
-          setActiveTab={(t) => { setActiveTab(t); setIsSidebarOpen(false); }} 
+          setActiveTab={(t) => {
+            setIsSidebarOpen(false);
+            handleTabChange(t);
+          }} 
           isOpen={isSidebarOpen} 
         />
       )}
@@ -178,9 +188,7 @@ export default function App() {
         )}
 
         <div className="flex-1 overflow-hidden relative">
-          <AnimatePresence mode="wait">
-            {renderModule()}
-          </AnimatePresence>
+          {renderModule()}
         </div>
       </main>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   CheckSquare, FolderKanban, Clock, Flame, MoreHorizontal,
   Play, Pause, TrendingUp, RotateCcw, Settings2
@@ -37,34 +37,47 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
     settings: state.settings
   })));
 
-  const chartData = getProductivityData(dashboardTimeRange);
-  const upcomingEvents = getUpcomingEvents();
+  const chartData = useMemo(() => getProductivityData(dashboardTimeRange), [getProductivityData, dashboardTimeRange]);
+  const upcomingEvents = useMemo(() => getUpcomingEvents(), [getUpcomingEvents]);
 
-  const todayStr = formatDateLocal();
-  const todayTasks = tasks.filter(t => t.date === todayStr);
-  const doneTodayTasks = todayTasks.filter(t => t.done);
+  const todayStr = useMemo(() => formatDateLocal(), []);
   
-  const doneTasks = tasks.filter(t => t.done).length;
+  const { todayTasks, doneTodayTasks, doneTasks } = useMemo(() => {
+    const today = tasks.filter(t => t.date === todayStr);
+    const doneToday = today.filter(t => t.done);
+    const doneTotal = tasks.filter(t => t.done).length;
+    return { todayTasks: today, doneTodayTasks: doneToday, doneTasks: doneTotal };
+  }, [tasks, todayStr]);
 
-  const completedProjects = projects.filter(p => p.status === 'Concluído');
+  const completedProjects = useMemo(() => projects.filter(p => p.status === 'Concluído'), [projects]);
   
-  const studyProgress = getWeeklyStudyProgress();
+  const studyProgress = useMemo(() => getWeeklyStudyProgress(), [getWeeklyStudyProgress]);
   const studyHours = Math.floor(studyProgress.totalMinutes / 60);
   const studyMinutes = studyProgress.totalMinutes % 60;
-  const studyGoalHours = studyProgress.goalMinutes / 60;
+  const studyGoalHours = Math.floor(studyProgress.goalMinutes / 60);
 
   // Sequência de dias com pelo menos 1 tarefa concluída
-  let streak = 0;
-  for (let i = 0; i < 365; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const ds = d.toISOString().split('T')[0];
-    const hasActivity = tasks.some(t => t.done && t.createdAt.startsWith(ds)) || pomodoroSessions.some(p => p.date === ds);
-    if (hasActivity) streak++;
-    else if (i > 0) break;
-  }
+  const streak = useMemo(() => {
+    const activeDates = new Set<string>();
+    for (const t of tasks) {
+      if (t.done && t.createdAt) activeDates.add(t.createdAt.split('T')[0]);
+    }
+    for (const p of pomodoroSessions) {
+      if (p.date) activeDates.add(p.date);
+    }
 
-  const todayGoals = goals.slice(0, 3);
+    let s = 0;
+    for (let i = 0; i < 365; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const ds = d.toISOString().split('T')[0];
+      if (activeDates.has(ds)) s++;
+      else if (i > 0) break;
+    }
+    return s;
+  }, [tasks, pomodoroSessions]);
+
+  const todayGoals = useMemo(() => goals.slice(0, 3), [goals]);
 
   return (
     <div className="flex flex-col xl:flex-row h-full w-full overflow-y-auto xl:overflow-hidden scrollbar-hide">

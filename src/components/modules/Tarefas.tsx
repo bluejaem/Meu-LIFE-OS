@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { PageLayout } from '../layout/PageLayout';
 import { Plus, Tag, Calendar, Check, Pencil, Trash2, Copy, ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -50,10 +50,19 @@ export function Tarefas() {
   const [form, setForm] = useState(EMPTY_TASK);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const todayTasks = tasks.filter(t => t.date === todayStr && !t.done);
-  const upcomingTasks = tasks.filter(t => t.date > todayStr && !t.done);
-  const doneTasks = tasks.filter(t => t.done);
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+  
+  const { todayTasks, upcomingTasks, doneTasks } = useMemo(() => {
+    const today: typeof tasks = [];
+    const upcoming: typeof tasks = [];
+    const done: typeof tasks = [];
+    for (const t of tasks) {
+      if (t.done) done.push(t);
+      else if (t.date === todayStr) today.push(t);
+      else if (t.date > todayStr) upcoming.push(t);
+    }
+    return { todayTasks: today, upcomingTasks: upcoming, doneTasks: done };
+  }, [tasks, todayStr]);
 
   const openCreate = () => { setForm(EMPTY_TASK); setCreateOpen(true); };
   const openEdit = (task: Task) => { setEditTask(task); setForm({ ...EMPTY_TASK, ...task, description: task.description ?? '' }); };
