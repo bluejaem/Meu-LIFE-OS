@@ -11,6 +11,7 @@ import type { AcademicSubject } from '@/types';
 import { SubjectDetailsModal } from './SubjectDetailsModal';
 import { AcademicSubjectModal } from './AcademicSubjectModal';
 import { ConfirmModal } from '../ui/Modal';
+import { DocChatModal } from './DocChatModal';
 
 export function AcademicHubView() {
   const { 
@@ -30,6 +31,8 @@ export function AcademicHubView() {
   const [editingSubject, setEditingSubject] = useState<AcademicSubject | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const [isDocChatOpen, setIsDocChatOpen] = useState(false);
 
   // Filtros
   const filteredSubjects = subjects.filter(sub => {
@@ -51,12 +54,20 @@ export function AcademicHubView() {
       title="Hub Acadêmico"
       subtitle="Ecossistema central de estudos e acompanhamento"
       actions={
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20"
-        >
-          <Plus size={16} /> Nova Disciplina Inteligente
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsDocChatOpen(true)}
+            className="flex items-center gap-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-300 px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/10"
+          >
+            <Search size={16} /> Chat com PDF
+          </button>
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20"
+          >
+            <Plus size={16} /> Nova Disciplina Inteligente
+          </button>
+        </div>
       }
     >
       <div className="flex flex-col gap-6 pb-10 max-w-7xl">
@@ -376,6 +387,14 @@ export function AcademicHubView() {
         confirmLabel="Excluir"
         danger
       />
+
+      {/* RAG Modal */}
+      {isDocChatOpen && (
+        <DocChatModal
+          open={isDocChatOpen}
+          onClose={() => setIsDocChatOpen(false)}
+        />
+      )}
     </PageLayout>
   );
 }

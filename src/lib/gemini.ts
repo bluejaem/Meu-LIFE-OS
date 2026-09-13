@@ -50,3 +50,68 @@ Seja direto, gentil, e use o idioma português (PT-BR). Retorne a resposta em Ma
     return `Erro na API: ${error.message}`;
   }
 }
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+  const ai = getGeminiClient();
+  if (!ai) {
+    throw new Error("Chave da API do Gemini não configurada.");
+  }
+
+  try {
+    const response = await ai.models.embedContent({
+      model: 'text-embedding-004',
+      contents: text,
+    });
+    return response.embeddings?.[0]?.values || [];
+  } catch (error: any) {
+    console.error("Erro ao gerar embedding:", error);
+    return [];
+  }
+}
+
+export async function chatWithDocument(query: string, contextChunks: string[], chatHistory: { role: string; parts: { text: string }[] }[] = []): Promise<string> {
+  const ai = getGeminiClient();
+  if (!ai) {
+    return "Erro: Chave da API do Gemini não configurada.";
+  }
+
+  const systemInstruction = `
+Você é um assistente acadêmico ajudando o usuário a entender um documento em PDF que ele carregou.
+Responda APENAS com base nos trechos do documento fornecidos abaixo.
+Se a resposta não estiver nos trechos, diga educadamente que o documento não contém essa informação. Não invente dados.
+Seja claro, didático e cite partes do documento se for útil.
+
+TRECHOS DO DOCUMENTO:
+${contextChunks.map((chunk, index) => `[Trecho ${index + 1}]:\n${chunk}`).join('\n\n')}
+  `.trim();
+
+  try {
+    // Restaurar o histórico de mensagens, se houver
+    if (chatHistory.length > 0) {
+      // Nota: o SDK do @google/genai aceita um array de mensagens no history ao criar o chat, 
+      // ou podemos enviá-las individualmente. Vamos tentar enviar a query diretamente se o SDK não suportar init com history facilmente,
+      // mas o ideal seria inicializar o chat com o history.
+    }
+
+    // Por simplicidade na V2 do SDK, se precisarmos de histórico, podemos concatenar ou enviar tudo como contents.
+    // Como a API v2 mudou um pouco, o jeito mais seguro de manter contexto de RAG é enviar tudo na mensagem atual ou init.
+    // Vamos usar o método generateContent direto com as mensagens combinadas se não conseguirmos setar o history no create().
+    
+    // Na verdade, @google/genai ai.chats.create aceita history: Message[]
+    const chatWithHistory = ai.chats.create({
+      model: 'gemini-2.5-flash',
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.3,
+      },
+      history: chatHistory.length > 0 ? chatHistory : undefined
+    });
+
+    const response = await chatWithHistory.sendMessage({ message: query });
+    return response.text || "Sem resposta.";
+
+  } catch (error: any) {
+    console.error("Erro no RAG Gemini:", error);
+    return `Erro na API: ${error.message}`;
+  }
+}

@@ -109,7 +109,7 @@ export function MiniCalendar() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 glass-panel p-4 border border-white/10 shadow-2xl origin-top rounded-2xl"
+            className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-3xl p-4 border border-white/10 shadow-2xl origin-top rounded-2xl"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider">
