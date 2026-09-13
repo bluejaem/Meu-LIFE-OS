@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useTransition } from 'react';
+import React, { useState, useEffect, useRef, useTransition, useMemo, useCallback } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { Dashboard } from '@/components/Dashboard';
 import { Tarefas } from '@/components/modules/Tarefas';
@@ -13,7 +13,7 @@ import { Diario } from '@/components/modules/Diario';
 import { AcademicHubView } from '@/components/modules/AcademicHubView';
 import { Configuracoes } from '@/components/modules/Configuracoes';
 import { QuickCaptureModal } from '@/components/modules/QuickCaptureModal';
-import { AnimatePresence } from 'framer-motion';
+
 import { useStore } from '@/store/useStore';
 import { useShallow } from 'zustand/react/shallow';
 
@@ -23,7 +23,7 @@ import { AuthScreen } from '@/components/AuthScreen';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   const { pomodoroIsRunning, settings, isTunnelMode, setQuickCaptureOpen } = useStore(
@@ -114,31 +114,27 @@ export default function App() {
   }, [pomodoroIsRunning]);
 
 
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = useCallback((tab: string) => {
     startTransition(() => {
       setActiveTab(tab);
     });
-  };
+  }, []);
 
-  const renderModule = () => {
-    switch (activeTab) {
-      case 'dashboard': return <Dashboard key="dashboard" setActiveTab={handleTabChange} />;
-      case 'tarefas': return <Tarefas key="tarefas" />;
-      case 'projetos': return <Projetos key="projetos" />;
-      case 'calendario': return <Calendario key="calendario" />;
-      case 'pomodoro': return <Pomodoro key="pomodoro" />;
-      case 'metas': return <Metas key="metas" />;
-      case 'livros': return <Livros key="livros" />;
-      case 'certificacoes': return <Certificacoes key="certificacoes" />;
-      case 'rotina': return <Rotina key="rotina" />;
-      case 'diario': return <Diario key="diario" />;
-      case 'academic-hub':
-      case 'faculdades': 
-        return <AcademicHubView key="academic-hub" />;
-      case 'configuracoes': return <Configuracoes key="configuracoes" />;
-      default: return <Dashboard key="dashboard" setActiveTab={handleTabChange} />;
-    }
-  };
+  const MODULES = useMemo(() => [
+    { id: 'dashboard', component: <Dashboard setActiveTab={handleTabChange} /> },
+    { id: 'tarefas', component: <Tarefas /> },
+    { id: 'projetos', component: <Projetos /> },
+    { id: 'calendario', component: <Calendario /> },
+    { id: 'pomodoro', component: <Pomodoro /> },
+    { id: 'metas', component: <Metas /> },
+    { id: 'livros', component: <Livros /> },
+    { id: 'certificacoes', component: <Certificacoes /> },
+    { id: 'rotina', component: <Rotina /> },
+    { id: 'diario', component: <Diario /> },
+    { id: 'academic-hub', component: <AcademicHubView /> },
+    { id: 'faculdades', component: <AcademicHubView /> },
+    { id: 'configuracoes', component: <Configuracoes /> },
+  ], [handleTabChange]);
 
   if (loading) {
     return (
@@ -188,7 +184,11 @@ export default function App() {
         )}
 
         <div className="flex-1 overflow-hidden relative">
-          {renderModule()}
+          {MODULES.map(module => (
+            <KeepAliveTab key={module.id} isActive={activeTab === module.id}>
+              {module.component}
+            </KeepAliveTab>
+          ))}
         </div>
       </main>
 
@@ -197,3 +197,15 @@ export default function App() {
     </div>
   );
 }
+
+// Helper to keep tabs mounted in the DOM to avoid re-render cost
+const KeepAliveTab = React.memo(function KeepAliveTab({ isActive, children }: { isActive: boolean, children: React.ReactNode }) {
+  return (
+    <div
+      className={isActive ? "absolute inset-0 z-10 block" : "absolute inset-0 -z-10 hidden"}
+      aria-hidden={!isActive}
+    >
+      {children}
+    </div>
+  );
+});
