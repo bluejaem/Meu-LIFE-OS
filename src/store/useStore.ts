@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { formatDateLocal } from '@/lib/utils';
 import { firestoreStorage } from '@/lib/firestoreStorage';
 import { startOfWeek } from 'date-fns';
 import type {
@@ -17,7 +18,10 @@ const uid = () => {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 };
 const now = () => new Date().toISOString();
-const today = () => new Date().toISOString().split('T')[0];
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
 
 const initialCertifications: Certification[] = [];
 
@@ -304,7 +308,7 @@ export const useStore = create<AppStore>()(
         const { pomodoroSessions } = get();
         // date-fns startOfWeek considering Monday as start of week (weekStartsOn: 1)
         const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-        const weekStartStr = weekStart.toISOString().split('T')[0];
+        const weekStartStr = formatDateLocal(weekStart);
         
         const currentWeekSessions = pomodoroSessions.filter(p => p.date >= weekStartStr);
         const totalMinutes = currentWeekSessions.reduce((acc, s) => acc + s.duration, 0);
@@ -326,7 +330,7 @@ export const useStore = create<AppStore>()(
         colleges: s.colleges.filter(c => c.id !== id)
       })),
       toggleSubjectReviewedToday: (collegeId, subjectId) => set((s) => {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = formatDateLocal();
         return {
           colleges: s.colleges.map(col => {
             if (col.id !== collegeId) return col;
@@ -417,7 +421,7 @@ export const useStore = create<AppStore>()(
             for (let j = 0; j <= 6; j++) {
               const iterD = new Date(d);
               iterD.setDate(iterD.getDate() + j);
-              const dateStr = iterD.toISOString().split('T')[0];
+              const dateStr = formatDateLocal(iterD);
               tarefas += tasks.filter(t => t.done && t.createdAt.startsWith(dateStr)).length;
               const sessions = pomodoroSessions.filter(p => p.date === dateStr);
               horasStr += sessions.reduce((acc, s) => acc + s.duration, 0);
@@ -429,7 +433,7 @@ export const useStore = create<AppStore>()(
           for (let i = daysToIterate - 1; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
-            const dateStr = d.toISOString().split('T')[0];
+            const dateStr = formatDateLocal(d);
             const name = formatLabel(d);
             const tarefas = tasks.filter(t => t.done && t.createdAt.startsWith(dateStr)).length;
             const sessions = pomodoroSessions.filter(p => p.date === dateStr);
@@ -455,7 +459,7 @@ export const useStore = create<AppStore>()(
           const d = new Date();
           d.setDate(d.getDate() + i);
           return {
-            dateStr: d.toISOString().split('T')[0],
+            dateStr: formatDateLocal(d),
             weekDay: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][d.getDay()] as RoutineDay
           };
         });
@@ -510,7 +514,7 @@ export const useStore = create<AppStore>()(
         const totalXP = totalStudyMinutes + (totalCompletedTasks * 30);
         
         const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-        const weekStartStr = weekStart.toISOString().split('T')[0];
+        const weekStartStr = formatDateLocal(weekStart);
         
         const currentWeekSessions = pomodoroSessions.filter(p => p.date >= weekStartStr);
         const weeklyStudyMinutes = currentWeekSessions.reduce((acc, s) => acc + s.duration, 0);
@@ -558,7 +562,7 @@ export const useStore = create<AppStore>()(
         const totalTasksDone = tasks.filter(t => t.done).length;
         
         const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-        const weekStartStr = weekStart.toISOString().split('T')[0];
+        const weekStartStr = formatDateLocal(weekStart);
         const weeklyMinutes = pomodoroSessions
           .filter(p => p.date >= weekStartStr)
           .reduce((acc, s) => acc + s.duration, 0);

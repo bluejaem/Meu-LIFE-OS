@@ -6,7 +6,7 @@ import {
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
-import { cn, formatSecondsToTime, parseTimeToSeconds } from '@/lib/utils';
+import { cn, formatSecondsToTime, parseTimeToSeconds, formatDateLocal } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -34,7 +34,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
   const chartData = getProductivityData(dashboardTimeRange);
   const upcomingEvents = getUpcomingEvents();
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatDateLocal();
   const todayTasks = tasks.filter(t => t.date === todayStr);
   const doneTodayTasks = todayTasks.filter(t => t.done);
   

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PageLayout } from '../layout/PageLayout';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatDateLocal } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
 import { ContextMenu } from '../ui/ContextMenu';
 
@@ -22,7 +22,7 @@ export function Calendario() {
   const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
   while (cells.length % 7 !== 0) cells.push(null);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatDateLocal();
 
   const dateStr = (day: number) => `${year}-${String(month + 1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
   const tasksForDay = (day: number) => tasks.filter(t => t.date === dateStr(day) && !t.done);
