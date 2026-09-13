@@ -4,6 +4,9 @@ import { Modal } from '../ui/Modal';
 import { cn } from '@/lib/utils';
 import type { AcademicSubject } from '@/types';
 import { useStore } from '@/store/useStore';
+import { FeynmanModal } from './FeynmanModal';
+import { FlashcardInline } from './FlashcardInline';
+import { BrainCircuit } from 'lucide-react';
 
 interface SubjectDetailsModalProps {
   open: boolean;
@@ -26,6 +29,28 @@ export function SubjectDetailsModal({
   
   const [notes, setNotes] = useState(subject?.notes || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [viewMode, setViewMode] = useState<'edit' | 'flashcards'>('edit');
+  const [isFeynmanOpen, setIsFeynmanOpen] = useState(false);
+
+  const renderNotesWithFlashcards = (text: string) => {
+    if (!text) return <span className="text-slate-500 italic">Nenhuma anotação disponível.</span>;
+    
+    const regex = /\{\{(.*?)::(.*?)\}\}/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(<span key={lastIndex} className="whitespace-pre-wrap">{text.slice(lastIndex, match.index)}</span>);
+      }
+      parts.push(<FlashcardInline key={match.index} frente={match[1]} verso={match[2]} />);
+      lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < text.length) {
+      parts.push(<span key={lastIndex} className="whitespace-pre-wrap">{text.slice(lastIndex)}</span>);
+    }
+    return parts;
+  };
 
   // Sync notes when subject changes
   useEffect(() => {
@@ -73,21 +98,47 @@ export function SubjectDetailsModal({
             <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-2">
               <BookOpen size={14} /> Minhas Anotações
             </h4>
-            <button
-              onClick={handleSaveNotes}
-              disabled={isSaving || notes === subject.notes}
-              className="text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg transition-colors shadow-lg shadow-indigo-600/20 disabled:opacity-50"
-            >
-              {isSaving ? "Salvando..." : "Salvar Anotações"}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setViewMode('edit')}
+                className={cn(
+                  "text-[10px] font-bold px-2.5 py-1 rounded-md transition-all uppercase tracking-wider",
+                  viewMode === 'edit' ? "bg-white/10 text-white" : "text-slate-500 hover:bg-white/5"
+                )}
+              >
+                Editar
+              </button>
+              <button
+                onClick={() => setViewMode('flashcards')}
+                className={cn(
+                  "text-[10px] font-bold px-2.5 py-1 rounded-md transition-all uppercase tracking-wider",
+                  viewMode === 'flashcards' ? "bg-indigo-500/20 text-indigo-300" : "text-slate-500 hover:bg-white/5"
+                )}
+              >
+                Estudar (Flashcards)
+              </button>
+              <button
+                onClick={handleSaveNotes}
+                disabled={isSaving || notes === subject.notes}
+                className="text-[11px] font-semibold text-white bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-lg transition-colors shadow-lg shadow-indigo-600/20 disabled:opacity-50 ml-2"
+              >
+                {isSaving ? "Salvando..." : "Salvar Anotações"}
+              </button>
+            </div>
           </div>
           
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Escreva seus resumos, conceitos e lembretes importantes aqui..."
-            className="w-full h-64 px-4 py-3 text-sm bg-slate-900 border border-white/10 rounded-xl text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none shadow-inner"
-          />
+          {viewMode === 'edit' ? (
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Escreva seus resumos, use {{frente::verso}} para flashcards..."
+              className="w-full h-64 px-4 py-3 text-sm bg-slate-900 border border-white/10 rounded-xl text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none shadow-inner"
+            />
+          ) : (
+            <div className="w-full h-64 px-4 py-3 text-sm bg-slate-900/50 border border-white/10 rounded-xl text-slate-200 overflow-y-auto leading-relaxed">
+              {renderNotesWithFlashcards(notes)}
+            </div>
+          )}
         </div>
 
         {/* Ação de Conclusão / Revisão Ativa */}
@@ -102,23 +153,42 @@ export function SubjectDetailsModal({
             </span>
           </div>
 
-          {onMarkReviewed && (
+          <div className="flex items-center gap-2">
             <button
-              onClick={onMarkReviewed}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs transition-all shadow-lg",
-                isReviewedToday
-                  ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30"
-                  : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20"
-              )}
+              onClick={() => setIsFeynmanOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-[11px] bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-indigo-300 border border-indigo-500/30 hover:border-indigo-500/50 hover:from-indigo-500/30 hover:to-purple-500/30 transition-all shadow-lg"
             >
-              <CheckCircle2 size={14} />
-              {isReviewedToday ? "Revisado Hoje ✓" : "Marcar como Revisado Hoje"}
+              <BrainCircuit size={14} />
+              Técnica de Feynman
             </button>
-          )}
+
+            {onMarkReviewed && (
+              <button
+                onClick={onMarkReviewed}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-xs transition-all shadow-lg",
+                  isReviewedToday
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30"
+                    : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20"
+                )}
+              >
+                <CheckCircle2 size={14} />
+                {isReviewedToday ? "Revisado Hoje ✓" : "Marcar como Revisado Hoje"}
+              </button>
+            )}
+          </div>
         </div>
 
       </div>
+      
+      {/* Modal da Técnica de Feynman */}
+      {isFeynmanOpen && (
+        <FeynmanModal
+          open={isFeynmanOpen}
+          onClose={() => setIsFeynmanOpen(false)}
+          subjectName={subject.name}
+        />
+      )}
     </Modal>
   );
 }
