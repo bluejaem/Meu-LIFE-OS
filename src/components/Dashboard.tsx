@@ -160,10 +160,10 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
         </div>
 
         {/* Chart */}
-        <div className="glass-panel p-6 flex flex-col shrink-0 h-[300px]">
+        <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 flex flex-col shrink-0 h-[300px] shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-semibold text-[13px] text-slate-200 uppercase tracking-wider">Produtividade Semanal</h3>
-            <div className="flex gap-4 text-[12px] font-medium">
+            <h3 className="font-semibold text-xs text-slate-400 uppercase tracking-wider">Produtividade Semanal</h3>
+            <div className="flex gap-4 text-xs font-medium">
               <span className="flex items-center gap-1.5 text-slate-300">
                 <span className="w-2 h-2 rounded-full bg-indigo-500" /> Tarefas
               </span>
@@ -199,9 +199,9 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
         {/* Bottom row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 shrink-0 pb-10">
           {/* Goals */}
-          <div className="glass-panel p-5 flex flex-col">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 flex flex-col shadow-sm">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-semibold text-[13px] text-slate-200 uppercase tracking-wider">Metas</h3>
+              <h3 className="font-semibold text-xs text-slate-400 uppercase tracking-wider">Metas</h3>
               <button className="text-slate-500 hover:text-slate-300 transition-colors"><MoreHorizontal size={16} /></button>
             </div>
             {todayGoals.length === 0 ? (
@@ -219,18 +219,20 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
           </div>
 
           {/* Pomodoro Quick */}
-          <div className="glass-panel p-5 relative overflow-hidden group flex flex-col items-center justify-center">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden group flex flex-col items-center justify-center shadow-sm">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative z-10 flex flex-col items-center w-full">
               {/* Mode Tabs */}
-              <div className="flex gap-1 mb-4 bg-black/20 p-1 rounded-full">
+              <div className="flex gap-1 mb-4 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 text-xs font-medium">
                 {(Object.keys(MODE_CONFIG) as PomodoroMode[]).map(m => (
                   <button
                     key={m}
                     onClick={() => switchMode(m)}
                     className={cn(
-                      "px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-300",
-                      pomodoroMode === m ? "bg-white/20 text-white" : "text-slate-400 hover:text-slate-200"
+                      "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
+                      pomodoroMode === m
+                        ? "bg-slate-800/90 text-white shadow-sm border border-slate-700/60"
+                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent"
                     )}
                   >
                     {MODE_CONFIG[m].label}
@@ -310,7 +312,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
         {/* Today's Tasks */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Tarefas de Hoje</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Tarefas de Hoje</h3>
             <span className="text-xs text-slate-500">{doneTodayTasks.length}/{todayTasks.length}</span>
           </div>
           {todayTasks.length === 0 ? (
@@ -332,7 +334,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
         {/* Upcoming Events */}
         <div className="flex-1">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Próximos Eventos</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Próximos Eventos</h3>
           </div>
           {upcomingEvents.length === 0 ? (
             <p className="text-xs text-slate-600 text-center py-4">Nenhum evento próximo.</p>
@@ -347,7 +349,7 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
         </div>
 
         {/* Quote */}
-        <div className="glass-panel p-5 relative overflow-hidden border-white/10 bg-white/5">
+        <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-50" />
           <p className="text-[13px] font-medium text-slate-300 leading-relaxed italic mb-3">"Disciplina hoje, liberdade amanhã."</p>
           <div className="flex items-center gap-2 text-[10px] text-slate-500 uppercase tracking-widest font-semibold">
@@ -364,21 +366,24 @@ export function Dashboard({ setActiveTab }: { setActiveTab?: (tab: string) => vo
 function MetricCard({ title, value, total, subtitle, icon, trend, onClick }: any) {
   return (
     <div 
-      className={cn("glass-panel p-4 flex flex-col group transition-colors duration-300", onClick ? "cursor-pointer hover:bg-white/10" : "hover:bg-white/5")}
+      className={cn(
+        "bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 flex flex-col group transition-all duration-200 shadow-sm",
+        onClick ? "cursor-pointer hover:border-slate-700/80 hover:bg-slate-800/40" : "hover:border-slate-700/80 hover:bg-slate-800/40"
+      )}
       onClick={onClick}
     >
       <div className="flex items-center justify-between mb-4 text-slate-400">
-        <span className="text-[12px] font-medium tracking-wide">{title}</span>
+        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{title}</span>
         {icon}
       </div>
       <div className="flex items-end gap-2 mb-1">
-        <span className="text-[26px] font-semibold text-white leading-none tracking-tight">{value}</span>
-        {total && <span className="text-sm font-medium text-slate-500 mb-0.5">/ {total}</span>}
+        <span className="text-2xl font-bold text-white leading-none tracking-tight">{value}</span>
+        {total && <span className="text-xs font-medium text-slate-500 mb-0.5">/ {total}</span>}
       </div>
       <div className="flex items-center justify-between mt-auto pt-2">
-        <span className="text-[11px] text-slate-500 font-medium">{subtitle}</span>
+        <span className="text-xs text-slate-500">{subtitle}</span>
         {trend && (
-          <span className="flex items-center gap-0.5 text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded">
+          <span className="flex items-center gap-0.5 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
             <TrendingUp size={10} /> {trend}
           </span>
         )}
