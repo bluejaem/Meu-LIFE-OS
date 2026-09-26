@@ -8,6 +8,7 @@ import {
 import { Modal, FormField, inputClass, selectClass, SubmitButton, ConfirmModal } from '../ui/Modal';
 import { AcademicSubjectModal } from './AcademicSubjectModal';
 import type { College, AcademicSubject } from '@/types';
+import { cn } from '@/lib/utils';
 
 interface CollegeFormData {
   name: string;
@@ -196,7 +197,7 @@ export function Faculdades() {
       <div className="space-y-6 pb-12 max-w-7xl">
         {/* Seletor de Cursos / Faculdades */}
         {colleges.length === 0 ? (
-          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-8 text-center flex flex-col items-center justify-center gap-4 shadow-sm">
+          <div className="glass-panel p-8 text-center flex flex-col items-center justify-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
               <GraduationCap size={28} />
             </div>
@@ -222,24 +223,28 @@ export function Faculdades() {
                 <div
                   key={college.id}
                   onClick={() => setSelectedCollegeId(college.id)}
-                  className={`p-4 rounded-xl border backdrop-blur-md text-left transition-all duration-200 cursor-pointer relative group shadow-sm ${
+                  className={cn(
+                    "glass-panel p-4 text-left transition-colors duration-300 cursor-pointer relative group",
                     isSelected
-                      ? 'border-indigo-500/50 bg-indigo-950/20 shadow-lg shadow-indigo-500/5'
-                      : 'bg-slate-900/60 border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-800/40'
-                  }`}
+                      ? "border-indigo-500/50 bg-indigo-950/20 shadow-lg shadow-indigo-500/10"
+                      : "hover:bg-white/5"
+                  )}
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`p-2 rounded-lg transition-colors ${
-                          isSelected ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-800/80 text-slate-400 border border-slate-700/60'
-                        }`}
+                        className={cn(
+                          "p-2 rounded-xl transition-colors",
+                          isSelected
+                            ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                            : "bg-white/5 text-slate-400 border border-white/10"
+                        )}
                       >
                         <GraduationCap className="w-5 h-5" />
                       </div>
                       <div>
                         <h3 className="font-semibold text-slate-100 text-sm leading-tight">{college.name}</h3>
-                        <p className="text-xs text-slate-500 mt-0.5">{college.degree || 'Técnico'}</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">{college.degree || 'Técnico'}</p>
                       </div>
                     </div>
 
@@ -271,7 +276,7 @@ export function Faculdades() {
                     {college.course}
                   </p>
 
-                  <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
+                  <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-xs text-slate-500">
                     <span>Semestre: {college.currentSemester || 1}º</span>
                     <span className="text-indigo-400 font-medium">
                       {count} {count === 1 ? 'matéria' : 'matérias'}
@@ -285,9 +290,9 @@ export function Faculdades() {
 
         {/* Informações e Métricas do Curso Selecionado */}
         {activeCollege && (
-          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 space-y-6 shadow-sm">
+          <div className="glass-panel p-6 space-y-6">
             {/* Header da Faculdade Selecionada */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/5">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
@@ -297,25 +302,25 @@ export function Faculdades() {
                     {activeCollege.degree || 'Técnico'} · {activeCollege.period || 'EAD'}
                   </span>
                 </div>
-                <h2 className="text-2xl font-bold text-white">{activeCollege.course}</h2>
+                <h2 className="text-2xl font-bold text-white tracking-tight">{activeCollege.course}</h2>
               </div>
 
               <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
                 {averageGrade && (
                   <div className="text-right">
-                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <Award size={12} className="text-amber-400" /> Média Geral
+                    <span className="text-[12px] font-medium text-slate-400 flex items-center gap-1">
+                      <Award size={13} className="text-amber-400" /> Média Geral
                     </span>
-                    <p className="text-2xl font-bold text-amber-300">{averageGrade}</p>
+                    <p className="text-[26px] font-semibold text-amber-300 leading-tight">{averageGrade}</p>
                   </div>
                 )}
 
                 <div className="text-right">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Progresso Geral</span>
-                  <p className="text-2xl font-bold text-white">{progressPercent}%</p>
+                  <span className="text-[12px] font-medium text-slate-400">Progresso Geral</span>
+                  <p className="text-[26px] font-semibold text-white leading-tight">{progressPercent}%</p>
                 </div>
 
-                <div className="w-28 h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-28 h-2 bg-white/5 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-indigo-500 rounded-full transition-all duration-500"
                     style={{ width: `${progressPercent}%` }}
@@ -324,46 +329,103 @@ export function Faculdades() {
               </div>
             </div>
 
+            {/* KPIs no mesmo design de MetricCard do Dashboard */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="glass-panel p-4 flex flex-col group transition-colors duration-300 hover:bg-white/5">
+                <div className="flex items-center justify-between mb-4 text-slate-400">
+                  <span className="text-[12px] font-medium tracking-wide">Disciplinas</span>
+                  <BookOpen size={14} className="text-indigo-400" />
+                </div>
+                <div className="flex items-end gap-2 mb-1">
+                  <span className="text-[26px] font-semibold text-white leading-none tracking-tight">{collegeSubjects.length}</span>
+                </div>
+                <div className="flex items-center justify-between mt-auto pt-2">
+                  <span className="text-[11px] text-slate-500 font-medium">Matérias cadastradas</span>
+                </div>
+              </div>
+
+              <div className="glass-panel p-4 flex flex-col group transition-colors duration-300 hover:bg-white/5">
+                <div className="flex items-center justify-between mb-4 text-slate-400">
+                  <span className="text-[12px] font-medium tracking-wide">Concluídas</span>
+                  <CheckCircle2 size={14} className="text-emerald-400" />
+                </div>
+                <div className="flex items-end gap-2 mb-1">
+                  <span className="text-[26px] font-semibold text-white leading-none tracking-tight">{completedCount}</span>
+                  <span className="text-sm font-medium text-slate-500 mb-0.5">/ {collegeSubjects.length}</span>
+                </div>
+                <div className="flex items-center justify-between mt-auto pt-2">
+                  <span className="text-[11px] text-slate-500 font-medium">Aproveitamento</span>
+                  {collegeSubjects.length > 0 && (
+                    <span className="flex items-center gap-0.5 text-[10px] font-bold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded">
+                      {progressPercent}%
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="glass-panel p-4 flex flex-col group transition-colors duration-300 hover:bg-white/5">
+                <div className="flex items-center justify-between mb-4 text-slate-400">
+                  <span className="text-[12px] font-medium tracking-wide">Em Curso</span>
+                  <Clock size={14} className="text-amber-400" />
+                </div>
+                <div className="flex items-end gap-2 mb-1">
+                  <span className="text-[26px] font-semibold text-white leading-none tracking-tight">{inProgressCount}</span>
+                </div>
+                <div className="flex items-center justify-between mt-auto pt-2">
+                  <span className="text-[11px] text-slate-500 font-medium">Cursando agora</span>
+                </div>
+              </div>
+
+              <div className="glass-panel p-4 flex flex-col group transition-colors duration-300 hover:bg-white/5">
+                <div className="flex items-center justify-between mb-4 text-slate-400">
+                  <span className="text-[12px] font-medium tracking-wide">{averageGrade ? 'Média Geral' : 'Semestre Atual'}</span>
+                  <Award size={14} className="text-purple-400" />
+                </div>
+                <div className="flex items-end gap-2 mb-1">
+                  <span className="text-[26px] font-semibold text-white leading-none tracking-tight">{averageGrade || `${activeCollege.currentSemester || 1}º`}</span>
+                </div>
+                <div className="flex items-center justify-between mt-auto pt-2">
+                  <span className="text-[11px] text-slate-500 font-medium">{averageGrade ? 'Desempenho' : 'Período atual'}</span>
+                </div>
+              </div>
+            </div>
+
             {/* Barra de Filtros e Adicionar Matéria */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 text-xs font-semibold overflow-x-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+              <div className="flex items-center gap-1 bg-black/20 p-1 rounded-full text-xs font-semibold overflow-x-auto">
                 <button
                   onClick={() => setStatusFilter('all')}
-                  className={`rounded-lg text-xs font-medium px-3 py-1.5 transition-all duration-200 whitespace-nowrap ${
-                    statusFilter === 'all'
-                      ? 'bg-slate-800/90 text-white shadow-sm border border-slate-700/60'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent'
-                  }`}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-300 whitespace-nowrap",
+                    statusFilter === 'all' ? "bg-white/20 text-white" : "text-slate-400 hover:text-slate-200"
+                  )}
                 >
                   Todas ({collegeSubjects.length})
                 </button>
                 <button
                   onClick={() => setStatusFilter('in_progress')}
-                  className={`rounded-lg text-xs font-medium px-3 py-1.5 transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 ${
-                    statusFilter === 'in_progress'
-                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent'
-                  }`}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-300 whitespace-nowrap flex items-center gap-1.5",
+                    statusFilter === 'in_progress' ? "bg-white/20 text-amber-300" : "text-slate-400 hover:text-slate-200"
+                  )}
                 >
-                  <Clock size={12} className="text-amber-400" /> Em Curso ({inProgressCount})
+                  <Clock size={11} className="text-amber-400" /> Em Curso ({inProgressCount})
                 </button>
                 <button
                   onClick={() => setStatusFilter('completed')}
-                  className={`rounded-lg text-xs font-medium px-3 py-1.5 transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 ${
-                    statusFilter === 'completed'
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent'
-                  }`}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-300 whitespace-nowrap flex items-center gap-1.5",
+                    statusFilter === 'completed' ? "bg-white/20 text-emerald-300" : "text-slate-400 hover:text-slate-200"
+                  )}
                 >
-                  <CheckCircle2 size={12} className="text-emerald-400" /> Concluídas ({completedCount})
+                  <CheckCircle2 size={11} className="text-emerald-400" /> Concluídas ({completedCount})
                 </button>
                 <button
                   onClick={() => setStatusFilter('pending')}
-                  className={`rounded-lg text-xs font-medium px-3 py-1.5 transition-all duration-200 whitespace-nowrap ${
-                    statusFilter === 'pending'
-                      ? 'bg-slate-800/90 text-white shadow-sm border border-slate-700/60'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent'
-                  }`}
+                  className={cn(
+                    "px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-300 whitespace-nowrap",
+                    statusFilter === 'pending' ? "bg-white/20 text-white" : "text-slate-400 hover:text-slate-200"
+                  )}
                 >
                   Pendentes ({pendingCount})
                 </button>
@@ -382,8 +444,8 @@ export function Faculdades() {
 
             {/* Lista de Disciplinas */}
             {filteredSubjects.length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-slate-800/80 rounded-xl bg-slate-900/40 flex flex-col items-center justify-center gap-3">
-                <BookOpen className="w-8 h-8 text-slate-600" />
+              <div className="text-center py-12 border border-dashed border-white/10 rounded-xl bg-white/5 flex flex-col items-center justify-center gap-3">
+                <BookOpen className="w-8 h-8 text-slate-500" />
                 <p className="text-sm text-slate-400">Nenhuma disciplina encontrada com o filtro selecionado.</p>
                 <button
                   onClick={() => {
@@ -405,17 +467,17 @@ export function Faculdades() {
                   return (
                     <div
                       key={subject.id}
-                      className="p-4 rounded-xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-800/40 transition-all duration-200 flex flex-col justify-between gap-3 group relative shadow-sm"
+                      className="glass-panel p-4 flex flex-col justify-between gap-3 group relative transition-colors duration-300 hover:bg-white/5"
                     >
                       <div className="space-y-2">
                         <div className="flex items-start justify-between gap-3">
                           <div className="space-y-1">
-                            <h4 className="text-sm font-semibold text-slate-100 leading-snug">
+                            <h4 className="text-sm font-semibold text-slate-200 leading-snug group-hover:text-white transition-colors">
                               {subject.name}
                             </h4>
                             <div className="flex items-center gap-2.5 text-xs text-slate-500">
                               {subject.code && (
-                                <span className="font-mono bg-slate-800/60 border border-slate-700/50 px-1.5 py-0.5 rounded text-[11px] text-slate-400">
+                                <span className="font-mono bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-[11px] text-slate-400">
                                   {subject.code}
                                 </span>
                               )}
@@ -427,13 +489,14 @@ export function Faculdades() {
                           <div className="flex items-center gap-2 shrink-0">
                             <button
                               onClick={() => handleToggleSubjectStatus(subject)}
-                              className={`px-2 py-0.5 rounded text-[11px] font-medium border cursor-pointer transition-colors ${
+                              className={cn(
+                                "px-2 py-0.5 rounded text-[11px] font-medium border cursor-pointer transition-colors",
                                 isCompleted
-                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
+                                  ? "bg-emerald-400/10 text-emerald-400 border-emerald-400/20 hover:bg-emerald-400/20"
                                   : isInProgress
-                                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20'
-                                    : 'bg-slate-800/80 text-slate-400 border-slate-700/60 hover:bg-slate-700/80'
-                              }`}
+                                    ? "bg-amber-400/10 text-amber-400 border-amber-400/20 hover:bg-amber-400/20"
+                                    : "bg-white/5 text-slate-400 border-white/10 hover:bg-white/10"
+                              )}
                               title="Clique para alternar status"
                             >
                               {isCompleted ? 'Concluída' : isInProgress ? 'Em Curso' : 'Pendente'}
@@ -445,14 +508,14 @@ export function Faculdades() {
                                   setEditingSubject(subject);
                                   setIsSubjectModalOpen(true);
                                 }}
-                                className="p-1 text-slate-400 hover:text-white rounded"
+                                className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded transition-colors"
                                 title="Editar"
                               >
                                 <Settings2 size={13} />
                               </button>
                               <button
                                 onClick={() => setDeleteSubjectId(subject.id)}
-                                className="p-1 text-slate-500 hover:text-rose-400 rounded"
+                                className="p-1 text-slate-500 hover:text-rose-400 hover:bg-white/10 rounded transition-colors"
                                 title="Excluir"
                               >
                                 <Trash2 size={13} />
@@ -462,15 +525,15 @@ export function Faculdades() {
                         </div>
 
                         {subject.notes && (
-                          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
                             {subject.notes}
                           </p>
                         )}
                       </div>
 
                       {/* Progresso, Nota e Links de IA */}
-                      <div className="pt-2 border-t border-slate-800/80 flex flex-col gap-2">
-                        <div className="flex items-center justify-between text-xs text-slate-500">
+                      <div className="pt-2 border-t border-white/5 flex flex-col gap-2">
+                        <div className="flex items-center justify-between text-xs text-slate-400">
                           <span>Progresso: {subject.progress || 0}%</span>
                           {subject.grade !== undefined && (
                             <span className="font-semibold text-slate-200">
@@ -479,11 +542,12 @@ export function Faculdades() {
                           )}
                         </div>
 
-                        <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
                           <div
-                            className={`h-full rounded-full transition-all duration-300 ${
+                            className={cn(
+                              "h-full rounded-full transition-all duration-700",
                               isCompleted ? 'bg-emerald-500' : 'bg-indigo-500'
-                            }`}
+                            )}
                             style={{ width: `${subject.progress || 0}%` }}
                           />
                         </div>
@@ -496,7 +560,7 @@ export function Faculdades() {
                                 href={subject.notebookUrl || artifacts?.notebookUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 transition-colors"
+                                className="inline-flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 bg-white/5 px-2 py-0.5 rounded border border-white/10 hover:bg-white/10 transition-colors"
                               >
                                 <Sparkles size={11} className="text-amber-400" />
                                 <span>NotebookLM</span>
@@ -509,7 +573,7 @@ export function Faculdades() {
                                 href={artifacts.slidesUrl}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 transition-colors"
+                                className="inline-flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 bg-white/5 px-2 py-0.5 rounded border border-white/10 hover:bg-white/10 transition-colors"
                               >
                                 <Layers size={11} />
                                 <span>Slides</span>
