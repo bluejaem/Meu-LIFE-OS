@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { PageLayout } from '../layout/PageLayout';
 import { 
-  Plus, GraduationCap, Sparkles, BookOpen, Layers, 
+  Plus, GraduationCap, Sparkles, BookOpen, 
   Presentation, Video, Image as ImageIcon, Flame, Check, 
   Settings2, Trash2, Search, RotateCcw
 } from 'lucide-react';
 import { useAcademicStore } from '@/store/useAcademicStore';
 import { cn } from '@/lib/utils';
 import type { AcademicSubject } from '@/types';
-import { FlashcardsStudyModal } from './FlashcardsStudyModal';
 import { AcademicSubjectModal } from './AcademicSubjectModal';
 import { ConfirmModal } from '../ui/Modal';
 
@@ -26,7 +25,6 @@ export function AcademicHubView() {
   const [selectedReviewFilter, setSelectedReviewFilter] = useState<'all' | 'pending' | 'completed'>('all');
 
   // Modais
-  const [studySubject, setStudySubject] = useState<AcademicSubject | null>(null);
   const [editingSubject, setEditingSubject] = useState<AcademicSubject | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -107,17 +105,17 @@ export function AcademicHubView() {
           </div>
 
           <div className="glass-panel p-4 rounded-2xl border border-white/10 flex flex-col justify-between">
-            <span className="text-[11px] font-bold text-purple-400 uppercase tracking-wider flex items-center gap-1">
-              <Layers size={12} /> Flashcards de IA
+            <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+              <Check size={12} /> Disciplinas Concluídas
             </span>
             <div className="flex items-baseline gap-2 mt-2">
-              <span className="text-2xl font-bold text-purple-300 leading-none">
-                {subjects.reduce((acc, s) => acc + (s.flashcardsCount || 0), 0)}
+              <span className="text-2xl font-bold text-emerald-300 leading-none">
+                {subjects.filter(s => !s.activeReviewPending || s.progress === 100).length}
               </span>
-              <span className="text-xs text-slate-500">cards ativos</span>
+              <span className="text-xs text-slate-500">concluídas</span>
             </div>
             <span className="text-[10px] text-slate-400 mt-2">
-              Estudo com repetição espaçada
+              Progresso e revisões em dia
             </span>
           </div>
         </div>
@@ -328,16 +326,6 @@ export function AcademicHubView() {
                         <span className="text-[11px] text-slate-500 italic">Sem Notebook</span>
                       )}
 
-                      {/* Flashcards */}
-                      <button
-                        onClick={() => setStudySubject(sub)}
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-purple-500/15 text-purple-300 hover:bg-purple-500/25 border border-purple-500/30 transition-colors"
-                        title="Praticar Flashcards Ativos"
-                      >
-                        <Layers size={13} />
-                        <span>Flashcards</span>
-                      </button>
-
                       {/* Slides */}
                       {artifacts?.slidesUrl && (
                         <a
@@ -409,22 +397,6 @@ export function AcademicHubView() {
         </div>
 
       </div>
-
-      {/* Modal de Flashcards Interativos */}
-      {studySubject && (
-        <FlashcardsStudyModal
-          open={!!studySubject}
-          onClose={() => setStudySubject(null)}
-          subject={studySubject}
-          isReviewedToday={!studySubject.activeReviewPending}
-          onMarkReviewed={() => {
-            if (studySubject.activeReviewPending) {
-              toggleReviewStatus(studySubject.id);
-            }
-            setStudySubject(null);
-          }}
-        />
-      )}
 
       {/* Modal de Adicionar/Editar Disciplina */}
       {(isCreateModalOpen || editingSubject) && (

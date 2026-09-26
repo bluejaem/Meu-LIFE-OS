@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { 
-  GraduationCap, Sparkles, BookOpen, Layers, CheckCircle2, 
+  GraduationCap, Sparkles, BookOpen, CheckCircle2, 
   ArrowRight, Presentation, Video, Image as ImageIcon,
   Flame, Check, RotateCcw
 } from 'lucide-react';
 import { useAcademicStore } from '@/store/useAcademicStore';
 import { cn } from '@/lib/utils';
-import type { AcademicSubject } from '@/types';
-import { FlashcardsStudyModal } from './FlashcardsStudyModal';
 
 interface ActiveReviewWidgetProps {
   setActiveTab?: (tab: string) => void;
@@ -15,7 +13,6 @@ interface ActiveReviewWidgetProps {
 
 export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
   const { subjects, toggleReviewStatus } = useAcademicStore();
-  const [selectedSubject, setSelectedSubject] = useState<AcademicSubject | null>(null);
   const [viewMode, setViewMode] = useState<'pending' | 'all'>('pending');
 
   const pendingSubjects = subjects.filter(s => s.activeReviewPending);
@@ -44,7 +41,7 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-slate-100 flex items-center gap-1.5">
-                Revisão Ativa & Flashcards IA
+                Revisão Ativa & Estudos IA
                 <span className="flex items-center gap-1 text-[10px] font-semibold text-indigo-300 bg-indigo-500/15 border border-indigo-500/30 px-2 py-0.5 rounded-full">
                   <Sparkles size={10} className="text-amber-400" /> Gemini Pro
                 </span>
@@ -234,16 +231,6 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
                     </a>
                   )}
 
-                  {/* Flashcards */}
-                  <button
-                    onClick={() => setSelectedSubject(sub)}
-                    className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-purple-500/15 text-purple-300 border border-purple-500/30 hover:bg-purple-500/25 transition-all"
-                    title="Praticar Flashcards Ativos"
-                  >
-                    <Layers size={13} />
-                    <span>Flashcards</span>
-                  </button>
-
                   {/* Slides */}
                   {artifacts?.slidesUrl && (
                     <a
@@ -313,22 +300,6 @@ export function ActiveReviewWidget({ setActiveTab }: ActiveReviewWidgetProps) {
           })
         )}
       </div>
-
-      {/* Modal Interativo de Flashcards */}
-      {selectedSubject && (
-        <FlashcardsStudyModal
-          open={!!selectedSubject}
-          onClose={() => setSelectedSubject(null)}
-          subject={selectedSubject}
-          isReviewedToday={!selectedSubject.activeReviewPending}
-          onMarkReviewed={() => {
-            if (selectedSubject.activeReviewPending) {
-              toggleReviewStatus(selectedSubject.id);
-            }
-            setSelectedSubject(null);
-          }}
-        />
-      )}
     </div>
   );
 }

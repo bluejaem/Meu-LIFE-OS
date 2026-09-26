@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { 
-  GraduationCap, Sparkles, BookOpen, Layers, CheckCircle2, 
+  GraduationCap, Sparkles, BookOpen, CheckCircle2, 
   ArrowRight, Presentation, Video, Image as ImageIcon,
   Flame, Check
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { cn } from '@/lib/utils';
-import type { AcademicSubject } from '@/types';
-import { FlashcardsStudyModal } from './FlashcardsStudyModal';
 
 interface RevisaoAcademicaWidgetProps {
   setActiveTab?: (tab: string) => void;
@@ -17,10 +15,6 @@ interface RevisaoAcademicaWidgetProps {
 export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: RevisaoAcademicaWidgetProps) {
   const { colleges, toggleSubjectReviewedToday } = useStore();
   const [filter, setFilter] = useState<'all' | 'pending' | 'reviewed'>('all');
-  const [selectedSubject, setSelectedSubject] = useState<{
-    subject: AcademicSubject;
-    collegeId: string;
-  } | null>(null);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -169,7 +163,6 @@ export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: 
           </div>
         ) : (
           filteredSubjects.map(subj => {
-            const hasFlashcards = !!subj.aiArtifacts?.flashcardsSummary;
             const hasNotebook = !!subj.notebookUrl;
             const hasSlides = !!subj.aiArtifacts?.slidesUrl;
             const hasVideo = !!subj.aiArtifacts?.videoScriptUrl;
@@ -234,21 +227,6 @@ export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: 
                       <BookOpen size={14} />
                     </a>
                   )}
-
-                  {/* Botão Flashcards IA */}
-                  <button
-                    onClick={() => setSelectedSubject({ subject: subj, collegeId: subj.collegeId })}
-                    className={cn(
-                      "flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg border transition-all",
-                      hasFlashcards
-                        ? "bg-purple-500/15 text-purple-300 border-purple-500/30 hover:bg-purple-500/25"
-                        : "bg-white/5 text-slate-400 border-white/10 hover:text-white"
-                    )}
-                    title="Estudar Flashcards & Resumo de IA"
-                  >
-                    <Layers size={13} />
-                    <span>Flashcards</span>
-                  </button>
 
                   {/* Slides */}
                   {hasSlides && (
@@ -319,21 +297,6 @@ export function RevisaoAcademicaWidget({ setActiveTab, variant = 'dashboard' }: 
           })
         )}
       </div>
-
-      {/* Modal Interativo de Flashcards */}
-      {selectedSubject && (
-        <FlashcardsStudyModal
-          open={!!selectedSubject}
-          onClose={() => setSelectedSubject(null)}
-          subject={selectedSubject.subject}
-          collegeId={selectedSubject.collegeId}
-          isReviewedToday={selectedSubject.subject.lastReviewedDate === todayStr}
-          onMarkReviewed={() => {
-            toggleSubjectReviewedToday(selectedSubject.collegeId, selectedSubject.subject.id);
-            setSelectedSubject(null);
-          }}
-        />
-      )}
     </div>
   );
 }

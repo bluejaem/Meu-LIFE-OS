@@ -4,7 +4,6 @@ import { Play, Pause, RotateCcw, Settings2, Check, Trash2, Sparkles } from 'luci
 import { cn, formatSecondsToTime, parseTimeToSeconds } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
 import { AmbientSoundPlayer } from './AmbientSoundPlayer';
-import { JornadaConhecimento } from './JornadaConhecimento';
 import { AnimatePresence, motion } from 'framer-motion';
 
 type PomodoroMode = 'focus' | 'shortBreak' | 'longBreak' | 'custom';
@@ -229,11 +228,8 @@ export function Pomodoro() {
           </div>
         </div>
 
-        {/* Right Column: Jornada do Conhecimento & History */}
+        {/* Right Column: History */}
         <div className="w-full lg:w-80 flex flex-col gap-4 overflow-y-auto scrollbar-hide shrink-0 pb-12">
-          {/* Jornada do Conhecimento Compacta */}
-          <JornadaConhecimento variant="compact" />
-
           <div className="glass-panel p-5 flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <h3 className="text-sm font-bold text-slate-200">Histórico de Hoje</h3>
