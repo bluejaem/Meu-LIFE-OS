@@ -112,10 +112,13 @@ export function ConfirmModal({ open, onClose, onConfirm, title, description, con
 }
 
 // ─── Form field helpers ────────────────────────────────────────────────────────
-export function FormField({ label, children }: { label: string; children: ReactNode }) {
+export function FormField({ label, children, required }: { label: string; children: ReactNode; required?: boolean }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{label}</label>
+      <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+        {label}
+        {required && <span className="text-rose-400 font-bold">*</span>}
+      </label>
       {children}
     </div>
   );

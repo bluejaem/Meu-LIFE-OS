@@ -13,7 +13,8 @@ import {
   Timer,
   Settings,
   Search,
-  LogOut
+  LogOut,
+  Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -27,7 +28,8 @@ const menuItems = [
   { id: 'projetos', icon: FolderKanban, label: 'Projetos' },
   { id: 'calendario', icon: Calendar, label: 'Calendário' },
   { section: 'Conhecimento' },
-  { id: 'academic-hub', icon: GraduationCap, label: 'Hub Acadêmico' },
+  { id: 'academic-hub', icon: Sparkles, label: 'Hub Acadêmico IA' },
+  { id: 'faculdades', icon: GraduationCap, label: 'Faculdades & Cursos' },
   { id: 'diario', icon: BookHeart, label: 'Diário' },
   { id: 'livros', icon: BookOpen, label: 'Livros' },
   { section: 'Tracking' },

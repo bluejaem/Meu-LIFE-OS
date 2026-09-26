@@ -440,18 +440,21 @@ export function AcademicHubView() {
               updateSubject(editingSubject.id, {
                 ...data,
                 institution: data.institution || 'Desconhecida',
-                artifacts: data.aiArtifacts || data.artifacts
+                artifacts: data.artifacts || data.aiArtifacts
               });
             } else {
               addSubject({
                 name: data.name,
                 institution: data.institution || 'Desconhecida',
                 semester: data.semester || '2026.1',
-                activeReviewPending: true,
+                activeReviewPending: data.activeReviewPending ?? true,
                 progress: data.progress || 0,
                 grade: data.grade,
                 notes: data.notes,
-                artifacts: data.aiArtifacts || {
+                status: data.status || 'in_progress',
+                code: data.code,
+                credits: data.credits,
+                artifacts: data.artifacts || data.aiArtifacts || {
                   notebookUrl: data.notebookUrl,
                   slidesUrl: '',
                   videoScriptUrl: '',

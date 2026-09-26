@@ -11,6 +11,7 @@ import { Certificacoes } from '@/components/modules/Certificacoes';
 import { Rotina } from '@/components/modules/Rotina';
 import { Diario } from '@/components/modules/Diario';
 import { AcademicHubView } from '@/components/modules/AcademicHubView';
+import { Faculdades } from '@/components/modules/Faculdades';
 import { Configuracoes } from '@/components/modules/Configuracoes';
 import { AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
@@ -54,9 +55,8 @@ export default function App() {
       case 'certificacoes': return <Certificacoes key="certificacoes" />;
       case 'rotina': return <Rotina key="rotina" />;
       case 'diario': return <Diario key="diario" />;
-      case 'academic-hub':
-      case 'faculdades': 
-        return <AcademicHubView key="academic-hub" />;
+      case 'academic-hub': return <AcademicHubView key="academic-hub" />;
+      case 'faculdades': return <Faculdades key="faculdades" />;
       case 'configuracoes': return <Configuracoes key="configuracoes" />;
       default: return <Dashboard key="dashboard" setActiveTab={setActiveTab} />;
     }

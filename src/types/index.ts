@@ -159,6 +159,9 @@ export interface AcademicSubject {
   aiArtifacts?: AiArtifacts;   // Atalho para artifacts
   lastReviewedDate?: string;   // Data da última revisão ativa (YYYY-MM-DD)
   flashcardsCount?: number;    // Quantidade estimada de cartões de revisão
+  status?: 'completed' | 'in_progress' | 'pending';
+  code?: string;
+  credits?: number;
 }
 
 export type Subject = AcademicSubject;
@@ -170,6 +173,8 @@ export interface College {
   period: string;
   subjects: AcademicSubject[];
   createdAt: string;
+  degree?: string;
+  currentSemester?: number | string;
 }
 
 // ─── CONFIGURAÇÕES ─────────────────────────────────────────────────────────────
