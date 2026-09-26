@@ -44,8 +44,10 @@ export function AcademicSubjectModal({
 }: AcademicSubjectModalProps) {
   const [formData, setFormData] = useState<AcademicSubject>(EMPTY_SUBJECT);
   const [showAiSection, setShowAiSection] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    setIsSubmitting(false);
     if (initialData) {
       const art = initialData.artifacts || initialData.aiArtifacts || {};
       const nbUrl = initialData.notebookUrl || art.notebookUrl || '';
@@ -96,45 +98,52 @@ export function AcademicSubjectModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!formData.name.trim()) return;
 
-    const trimmedInst = formData.institution ? formData.institution.trim() : (defaultInstitution || 'Geral');
-    const nbUrl = formData.notebookUrl?.trim() || formData.artifacts?.notebookUrl?.trim() || '';
+    setIsSubmitting(true);
+    try {
+      const trimmedInst = formData.institution ? formData.institution.trim() : (defaultInstitution || 'Geral');
+      const nbUrl = formData.notebookUrl?.trim() || formData.artifacts?.notebookUrl?.trim() || '';
 
-    // Calcula quantidade de cartões baseado no resumo se preenchido
-    const summaryLines = formData.artifacts?.flashcardsSummary
-      ? formData.artifacts.flashcardsSummary.split('\n').filter((l) => l.trim().length > 0).length
-      : 0;
+      // Calcula quantidade de cartões baseado no resumo se preenchido
+      const summaryLines = formData.artifacts?.flashcardsSummary
+        ? formData.artifacts.flashcardsSummary.split('\n').filter((l) => l.trim().length > 0).length
+        : 0;
 
-    const finalArtifacts: AiArtifacts = {
-      notebookUrl: nbUrl,
-      slidesUrl: formData.artifacts?.slidesUrl?.trim() || '',
-      videoScriptUrl: formData.artifacts?.videoScriptUrl?.trim() || '',
-      flashcardsSummary: formData.artifacts?.flashcardsSummary || '',
-      infographicUrl: formData.artifacts?.infographicUrl?.trim() || ''
-    };
+      const finalArtifacts: AiArtifacts = {
+        notebookUrl: nbUrl,
+        slidesUrl: formData.artifacts?.slidesUrl?.trim() || '',
+        videoScriptUrl: formData.artifacts?.videoScriptUrl?.trim() || '',
+        flashcardsSummary: formData.artifacts?.flashcardsSummary || '',
+        infographicUrl: formData.artifacts?.infographicUrl?.trim() || ''
+      };
 
-    // Ajusta status conforme progresso se aplicável
-    let computedStatus = formData.status || 'in_progress';
-    if (formData.progress !== undefined) {
-      if (formData.progress >= 100) computedStatus = 'completed';
-      else if (formData.progress > 0 && computedStatus === 'pending') computedStatus = 'in_progress';
+      // Ajusta status conforme progresso se aplicável
+      let computedStatus = formData.status || 'in_progress';
+      if (formData.progress !== undefined) {
+        if (formData.progress >= 100) computedStatus = 'completed';
+        else if (formData.progress > 0 && computedStatus === 'pending') computedStatus = 'in_progress';
+      }
+
+      const finalSubject: AcademicSubject = {
+        ...formData,
+        id: formData.id || crypto.randomUUID(),
+        name: formData.name.trim(),
+        institution: trimmedInst,
+        status: computedStatus,
+        notebookUrl: nbUrl,
+        artifacts: finalArtifacts,
+        aiArtifacts: finalArtifacts,
+        flashcardsCount: summaryLines > 0 ? summaryLines : (formData.flashcardsCount || 10),
+        updatedAt: new Date().toISOString()
+      };
+
+      onSave(finalSubject);
+      onClose();
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const finalSubject: AcademicSubject = {
-      ...formData,
-      name: formData.name.trim(),
-      institution: trimmedInst,
-      status: computedStatus,
-      notebookUrl: nbUrl,
-      artifacts: finalArtifacts,
-      aiArtifacts: finalArtifacts,
-      flashcardsCount: summaryLines > 0 ? summaryLines : (formData.flashcardsCount || 10),
-      updatedAt: new Date().toISOString()
-    };
-
-    onSave(finalSubject);
-    onClose();
   };
 
   return (
@@ -366,12 +375,15 @@ export function AcademicSubjectModal({
         <div className="pt-2 flex justify-end gap-3">
           <button
             type="button"
+            disabled={isSubmitting}
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>
-          <SubmitButton>{initialData ? 'Salvar Alterações' : 'Cadastrar Disciplina'}</SubmitButton>
+          <SubmitButton disabled={isSubmitting}>
+            {isSubmitting ? 'Salvando...' : initialData ? 'Salvar Alterações' : 'Cadastrar Disciplina'}
+          </SubmitButton>
         </div>
       </form>
     </Modal>

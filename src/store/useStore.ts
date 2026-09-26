@@ -97,12 +97,14 @@ interface AppStore {
   addManualStudySession: (minutes: number, dateStr: string) => void;
   getWeeklyStudyProgress: () => { totalMinutes: number, goalMinutes: number, percentage: number };
 
-  // ── Colleges CRUD
+  // ── Colleges & Subjects CRUD
   addCollege: (data: Omit<College, 'id' | 'createdAt'>) => void;
   updateCollege: (id: string, data: Partial<College>) => void;
   deleteCollege: (id: string) => void;
-  toggleSubjectReviewedToday: (collegeId: string, subjectId: string) => void;
+  addSubject: (collegeId: string, subject: AcademicSubject) => void;
   updateSubject: (collegeId: string, subjectId: string, data: Partial<AcademicSubject>) => void;
+  deleteSubject: (collegeId: string, subjectId: string) => void;
+  toggleSubjectReviewedToday: (collegeId: string, subjectId: string) => void;
 
   // ── Settings
   updateSettings: (data: Partial<AppSettings>) => void;
@@ -335,26 +337,68 @@ export const useStore = create<AppStore>()(
         colleges: [...s.colleges, { ...data, id: uid(), createdAt: now() }]
       })),
       updateCollege: (id, data) => set((s) => ({
-        colleges: s.colleges.map(c => c.id === id ? { ...c, ...data } : c)
+        colleges: s.colleges.map(c => {
+          if (c.id !== id) return c;
+          let newSubjects = data.subjects !== undefined ? data.subjects : c.subjects;
+          if (newSubjects && Array.isArray(newSubjects)) {
+            newSubjects = Array.from(new Map(newSubjects.map(sub => [sub.id, sub])).values());
+          }
+          return {
+            ...c,
+            ...data,
+            ...(data.subjects !== undefined ? { subjects: newSubjects } : {})
+          };
+        })
       })),
       deleteCollege: (id) => set((s) => ({
         colleges: s.colleges.filter(c => c.id !== id)
       })),
-      toggleSubjectReviewedToday: (collegeId, subjectId) => set((s) => {
-        const todayStr = new Date().toISOString().split('T')[0];
+      addSubject: (collegeId, subject) => set((s) => {
+        const finalId = subject.id || crypto.randomUUID();
+        const normalizedName = (subject.name || '').trim().toLowerCase();
+
         return {
-          colleges: s.colleges.map(col => {
+          colleges: s.colleges.map((col) => {
             if (col.id !== collegeId) return col;
+
+            const currentSubjects = col.subjects || [];
+
+            // Trava para impedir duplicatas: verifica se já existe disciplina com o mesmo ID ou mesmo nome normalizado vinculado ao collegeId
+            const existingIndex = currentSubjects.findIndex(
+              (subj) =>
+                subj.id === finalId ||
+                (normalizedName.length > 0 && (subj.name || '').trim().toLowerCase() === normalizedName)
+            );
+
+            const subjectToAdd: AcademicSubject = {
+              ...subject,
+              id: finalId,
+              updatedAt: now()
+            };
+
+            let updatedSubjects: AcademicSubject[];
+
+            if (existingIndex >= 0) {
+              // Se já existir, atualiza em vez de duplicar no array
+              const existingItem = currentSubjects[existingIndex];
+              updatedSubjects = [...currentSubjects];
+              updatedSubjects[existingIndex] = {
+                ...existingItem,
+                ...subjectToAdd,
+                id: existingItem.id || finalId
+              };
+            } else {
+              updatedSubjects = [...currentSubjects, subjectToAdd];
+            }
+
+            // Deduplica por id usando Map garantindo unicidade total
+            const deduplicated = Array.from(
+              new Map(updatedSubjects.map((sItem) => [sItem.id, sItem])).values()
+            );
+
             return {
               ...col,
-              subjects: col.subjects.map(subj => {
-                if (subj.id !== subjectId) return subj;
-                const isReviewedToday = subj.lastReviewedDate === todayStr;
-                return {
-                  ...subj,
-                  lastReviewedDate: isReviewedToday ? undefined : todayStr
-                };
-              })
+              subjects: deduplicated
             };
           })
         };
@@ -362,12 +406,44 @@ export const useStore = create<AppStore>()(
       updateSubject: (collegeId, subjectId, data) => set((s) => ({
         colleges: s.colleges.map(col => {
           if (col.id !== collegeId) return col;
+          const updated = (col.subjects || []).map(subj => 
+            subj.id === subjectId ? { ...subj, ...data, updatedAt: now() } : subj
+          );
           return {
             ...col,
-            subjects: col.subjects.map(subj => subj.id === subjectId ? { ...subj, ...data } : subj)
+            subjects: Array.from(new Map(updated.map(subj => [subj.id, subj])).values())
           };
         })
       })),
+      deleteSubject: (collegeId, subjectId) => set((s) => ({
+        colleges: s.colleges.map(col => {
+          if (col.id !== collegeId) return col;
+          return {
+            ...col,
+            subjects: (col.subjects || []).filter(subj => subj.id !== subjectId)
+          };
+        })
+      })),
+      toggleSubjectReviewedToday: (collegeId, subjectId) => set((s) => {
+        const todayStr = new Date().toISOString().split('T')[0];
+        return {
+          colleges: s.colleges.map(col => {
+            if (col.id !== collegeId) return col;
+            const updated = (col.subjects || []).map(subj => {
+              if (subj.id !== subjectId) return subj;
+              const isReviewedToday = subj.lastReviewedDate === todayStr;
+              return {
+                ...subj,
+                lastReviewedDate: isReviewedToday ? undefined : todayStr
+              };
+            });
+            return {
+              ...col,
+              subjects: Array.from(new Map(updated.map(subj => [subj.id, subj])).values())
+            };
+          })
+        };
+      }),
 
       // ── Settings ───────────────────────────────────────────────────────────
       updateSettings: (data) => set((s) => ({
@@ -567,7 +643,21 @@ export const useStore = create<AppStore>()(
         if (version === 0) {
           persistedState.certifications = initialCertifications;
         }
+        if (persistedState?.colleges && Array.isArray(persistedState.colleges)) {
+          persistedState.colleges = persistedState.colleges.map((col: any) => ({
+            ...col,
+            subjects: Array.from(new Map((col.subjects || []).map((s: any) => [s.id, s])).values())
+          }));
+        }
         return persistedState;
+      },
+      onRehydrateStorage: () => (state) => {
+        if (state?.colleges && Array.isArray(state.colleges)) {
+          state.colleges = state.colleges.map((col: College) => ({
+            ...col,
+            subjects: Array.from(new Map((col.subjects || []).map((s: AcademicSubject) => [s.id, s])).values())
+          }));
+        }
       },
     }
   )
@@ -587,6 +677,12 @@ onAuthStateChanged(auth, (user) => {
         if (remoteDataStr) {
           try {
             const remoteData = JSON.parse(remoteDataStr);
+            if (remoteData?.state?.colleges && Array.isArray(remoteData.state.colleges)) {
+              remoteData.state.colleges = remoteData.state.colleges.map((col: any) => ({
+                ...col,
+                subjects: Array.from(new Map((col.subjects || []).map((s: any) => [s.id, s])).values())
+              }));
+            }
             const currentState = useStore.getState();
             
             // Comparamos pra não causar loops

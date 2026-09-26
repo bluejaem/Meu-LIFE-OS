@@ -7,14 +7,14 @@ import type { Task, TaskTag, Priority } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, selectClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
 
-const TAG_COLORS: Record<TaskTag, { bg: string; text: string }> = {
-  Projeto: { bg: 'bg-indigo-500/15', text: 'text-indigo-400' },
-  Faculdade: { bg: 'bg-emerald-500/15', text: 'text-emerald-400' },
-  Pessoal: { bg: 'bg-sky-500/15', text: 'text-sky-400' },
-  Leitura: { bg: 'bg-purple-500/15', text: 'text-purple-400' },
-  Trabalho: { bg: 'bg-amber-500/15', text: 'text-amber-400' },
-  Saúde: { bg: 'bg-rose-500/15', text: 'text-rose-400' },
-  Outro: { bg: 'bg-slate-500/15', text: 'text-slate-400' },
+const TAG_COLORS: Record<TaskTag, { bg: string; text: string; border: string }> = {
+  Projeto: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20' },
+  Faculdade: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+  Pessoal: { bg: 'bg-sky-500/10', text: 'text-sky-400', border: 'border-sky-500/20' },
+  Leitura: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
+  Trabalho: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
+  Saúde: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' },
+  Outro: { bg: 'bg-slate-800/80', text: 'text-slate-400', border: 'border-slate-700/60' },
 };
 
 const PRIORITY_DOT: Record<Priority, string> = {
@@ -107,16 +107,16 @@ export function Tarefas() {
 function TaskSection({ title, tasks, onToggle, onEdit, onDelete, onDuplicate, expandedId, setExpandedId, muted = false }: any) {
   if (tasks.length === 0) return (
     <div className="flex flex-col gap-2">
-      <h3 className={cn("text-xs font-bold tracking-wider uppercase pl-1", muted ? "text-slate-600" : "text-slate-400")}>{title}</h3>
-      <div className="glass-panel py-8 text-center text-slate-500 text-sm">Nenhuma tarefa aqui.</div>
+      <h3 className={cn("text-xs font-semibold tracking-wider uppercase pl-1", muted ? "text-slate-600" : "text-slate-400")}>{title}</h3>
+      <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl py-8 text-center text-slate-500 text-sm shadow-sm">Nenhuma tarefa aqui.</div>
     </div>
   );
   return (
     <div className="flex flex-col gap-2">
-      <h3 className={cn("text-xs font-bold tracking-wider uppercase pl-1 flex items-center gap-2", muted ? "text-slate-600" : "text-slate-400")}>
-        {title} <span className="font-normal text-slate-600">{tasks.length}</span>
+      <h3 className={cn("text-xs font-semibold tracking-wider uppercase pl-1 flex items-center gap-2", muted ? "text-slate-600" : "text-slate-400")}>
+        {title} <span className="font-normal text-slate-500">{tasks.length}</span>
       </h3>
-      <div className="glass-panel overflow-hidden divide-y divide-white/5">
+      <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl shadow-sm overflow-hidden divide-y divide-slate-800/60">
         {tasks.map((task: Task) => (
           <TaskRow
             key={task.id}
@@ -141,7 +141,7 @@ function TaskRow({ task, onToggle, onEdit, onDelete, onDuplicate, expanded, onEx
 
   return (
     <div className="group">
-      <div className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors">
+      <div className="flex items-center justify-between px-4 py-3 hover:bg-slate-800/40 transition-all duration-200">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Priority dot */}
           <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", PRIORITY_DOT[task.priority as Priority])} />
@@ -161,8 +161,8 @@ function TaskRow({ task, onToggle, onEdit, onDelete, onDuplicate, expanded, onEx
           <span
             onClick={onExpand}
             className={cn(
-              "text-sm font-medium truncate cursor-pointer transition-colors",
-              task.done ? "line-through text-slate-500" : muted ? "text-slate-400" : "text-slate-200 hover:text-white"
+              "text-sm font-semibold truncate cursor-pointer transition-colors",
+              task.done ? "line-through text-slate-500" : muted ? "text-slate-400" : "text-slate-100 hover:text-white"
             )}
           >
             {task.title}
@@ -176,7 +176,7 @@ function TaskRow({ task, onToggle, onEdit, onDelete, onDuplicate, expanded, onEx
         </div>
 
         <div className="flex items-center gap-3 flex-shrink-0">
-          <span className={cn("hidden sm:flex items-center gap-1.5 text-[11px] font-bold px-2 py-1 rounded-md", colors.bg, colors.text)}>
+          <span className={cn("hidden sm:flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full border", colors.bg, colors.text, colors.border)}>
             <Tag size={10} /> {task.tag}
           </span>
           <span className="hidden md:flex items-center gap-1 text-xs text-slate-500">

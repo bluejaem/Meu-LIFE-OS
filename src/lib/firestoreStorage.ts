@@ -21,6 +21,26 @@ const waitForAuth = () => new Promise<string | null>((resolve) => {
   });
 });
 
+function deduplicateSubjectsInStorageString(rawStr: string | null): string | null {
+  if (!rawStr) return rawStr;
+  try {
+    const parsed = JSON.parse(rawStr);
+    if (parsed?.state?.colleges && Array.isArray(parsed.state.colleges)) {
+      parsed.state.colleges = parsed.state.colleges.map((col: any) => {
+        if (col?.subjects && Array.isArray(col.subjects)) {
+          return {
+            ...col,
+            subjects: Array.from(new Map(col.subjects.map((s: any) => [s.id, s])).values())
+          };
+        }
+        return col;
+      });
+      return JSON.stringify(parsed);
+    }
+  } catch {}
+  return rawStr;
+}
+
 export const firestoreStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
     try {
@@ -30,9 +50,11 @@ export const firestoreStorage: StateStorage = {
         const snap = await getDoc(docRef);
         
         if (snap.exists() && snap.data()[name]) {
-          const remoteData = snap.data()[name];
+          const remoteData = deduplicateSubjectsInStorageString(snap.data()[name]);
           // Atualiza cache local
-          try { localStorage.setItem(name, remoteData); } catch {}
+          try { 
+            if (remoteData) localStorage.setItem(name, remoteData); 
+          } catch {}
           return remoteData;
         }
       }
@@ -42,16 +64,17 @@ export const firestoreStorage: StateStorage = {
     
     // Fallback garantido para o cache local
     try {
-      return localStorage.getItem(name);
+      return deduplicateSubjectsInStorageString(localStorage.getItem(name));
     } catch {
       return null;
     }
   },
 
   setItem: async (name: string, value: string): Promise<void> => {
+    const cleanValue = deduplicateSubjectsInStorageString(value) || value;
     // 1. Sempre salva localmente primeiro (ultra-rápido, Local-First)
     try {
-      localStorage.setItem(name, value);
+      localStorage.setItem(name, cleanValue);
     } catch {}
 
     // 2. Sincroniza em segundo plano com o Firestore
@@ -60,7 +83,7 @@ export const firestoreStorage: StateStorage = {
       if (!uid) return;
 
       const docRef = doc(db, 'userState', uid);
-      await setDoc(docRef, { [name]: value }, { merge: true });
+      await setDoc(docRef, { [name]: cleanValue }, { merge: true });
     } catch (err) {
       console.warn('Aviso: Falha ao sincronizar alteração com o Firestore:', err);
     }

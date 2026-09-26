@@ -7,10 +7,10 @@ import type { Certification, CertStatus } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, selectClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
 
-const STATUS_CONFIG: Record<CertStatus, { text: string; bg: string }> = {
-  'Planejado': { text: 'text-slate-400', bg: 'bg-slate-500/10' },
-  'Em andamento': { text: 'text-blue-400', bg: 'bg-blue-500/10' },
-  'Concluído': { text: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+const STATUS_CONFIG: Record<CertStatus, { text: string; bg: string; border: string }> = {
+  'Planejado': { text: 'text-slate-400', bg: 'bg-slate-800/80', border: 'border-slate-700/60' },
+  'Em andamento': { text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+  'Concluído': { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
 };
 
 const EMPTY_FORM = { title: '', platform: '', status: 'Planejado' as CertStatus, completedDate: '', expiresDate: '', url: '' };
@@ -53,28 +53,28 @@ export function Certificacoes() {
     >
       <div className="flex flex-col gap-4 pb-8">
         {certifications.length === 0 ? (
-          <div className="glass-panel flex flex-col items-center justify-center py-20 text-center gap-4">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl flex flex-col items-center justify-center py-20 text-center gap-4 shadow-sm">
             <Award size={40} className="text-slate-600" />
             <p className="text-slate-400">Nenhuma certificação registrada ainda.</p>
           </div>
         ) : (
-          <div className="glass-panel overflow-hidden divide-y divide-white/5">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl shadow-sm overflow-hidden divide-y divide-slate-800/60">
             {certifications.map(cert => {
               const cfg = STATUS_CONFIG[cert.status];
               return (
-                <div key={cert.id} className="group flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors">
+                <div key={cert.id} className="group flex items-center justify-between px-5 py-4 hover:bg-slate-800/40 transition-all duration-200">
                   <div className="flex items-center gap-4">
-                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0", cert.status === 'Concluído' ? "bg-emerald-500/15" : "bg-white/5 border border-white/10")}>
+                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors", cert.status === 'Concluído' ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-slate-800/60 border border-slate-700/60 text-slate-400")}>
                       {cert.status === 'Concluído' ? <Check size={16} className="text-emerald-400" /> : <Award size={16} className="text-slate-400" />}
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-200 leading-snug">{cert.title}</p>
+                      <p className="text-sm font-semibold text-slate-100 leading-snug">{cert.title}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{cert.platform}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <span className={cn("text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full", cfg.bg, cfg.text)}>
+                    <span className={cn("text-xs font-medium px-2.5 py-0.5 rounded-full border", cfg.bg, cfg.text, cfg.border)}>
                       {cert.status}
                     </span>
                     {cert.completedDate && <span className="text-xs text-slate-500 hidden md:block">{new Date(cert.completedDate + 'T12:00:00').toLocaleDateString('pt-BR')}</span>}

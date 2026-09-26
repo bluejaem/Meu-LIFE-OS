@@ -195,14 +195,16 @@ export function Rotina() {
     >
       <div className="flex flex-col gap-6 pb-8">
         {/* Day Selector */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 text-xs font-medium w-fit overflow-x-auto">
           {ALL_DAYS.map(d => (
             <button
               key={d}
               onClick={() => setActiveDay(d)}
               className={cn(
-                "px-4 py-2 rounded-xl text-sm font-bold transition-all",
-                activeDay === d ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"
+                "px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
+                activeDay === d
+                  ? "bg-slate-800/90 text-white shadow-sm border border-slate-700/60"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent"
               )}
             >
               {d}
@@ -212,19 +214,19 @@ export function Rotina() {
 
         {/* Timeline */}
         {todayBlocks.length === 0 ? (
-          <div className="glass-panel flex flex-col items-center justify-center py-20 text-center gap-4">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl flex flex-col items-center justify-center py-20 text-center gap-4 shadow-sm">
             <Clock size={36} className="text-slate-600" />
             <p className="text-slate-400">Nenhuma atividade para {activeDay}.</p>
             <button onClick={openCreate} className="text-indigo-400 text-sm font-semibold hover:text-indigo-300">+ Adicionar atividade</button>
           </div>
         ) : (
-          <div className="glass-panel overflow-hidden divide-y divide-white/5">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl shadow-sm overflow-hidden divide-y divide-slate-800/60">
             {todayBlocks.map(block => (
-              <div key={block.id} className="group flex items-center gap-4 px-5 py-4 hover:bg-white/5 transition-colors">
+              <div key={block.id} className="group flex items-center gap-4 px-5 py-4 hover:bg-slate-800/40 transition-all duration-200">
                 {/* Time */}
                 <div className="flex flex-col items-end w-14 flex-shrink-0">
-                  <span className="text-sm font-bold text-slate-200">{block.time}</span>
-                  <span className="text-[11px] text-slate-500">{block.duration}min</span>
+                  <span className="text-sm font-semibold text-slate-100">{block.time}</span>
+                  <span className="text-xs text-slate-500">{block.duration}min</span>
                 </div>
 
                 {/* Color stripe */}
@@ -232,14 +234,14 @@ export function Rotina() {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-200">{block.title}</p>
+                  <p className="text-sm font-semibold text-slate-100">{block.title}</p>
                   <p className="text-xs text-slate-500">{block.category}</p>
                 </div>
 
                 {/* Days chips */}
                 <div className="hidden lg:flex items-center gap-1">
                   {block.days.map(d => (
-                    <span key={d} className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white/10 text-slate-400">{d}</span>
+                    <span key={d} className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-800/60 border border-slate-700/50 text-slate-400">{d}</span>
                   ))}
                 </div>
 

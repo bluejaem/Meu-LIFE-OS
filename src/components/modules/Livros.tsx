@@ -7,11 +7,11 @@ import type { Book, BookStatus } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, selectClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
 
-const STATUS_CONFIG: Record<BookStatus, { text: string; bg: string }> = {
-  'Quero ler': { text: 'text-slate-400', bg: 'bg-slate-500/10' },
-  'Lendo': { text: 'text-blue-400', bg: 'bg-blue-500/10' },
-  'Concluído': { text: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-  'Abandonado': { text: 'text-rose-400', bg: 'bg-rose-500/10' },
+const STATUS_CONFIG: Record<BookStatus, { text: string; bg: string; border: string }> = {
+  'Quero ler': { text: 'text-slate-400', bg: 'bg-slate-800/80', border: 'border-slate-700/60' },
+  'Lendo': { text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+  'Concluído': { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+  'Abandonado': { text: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
 };
 
 const EMPTY_FORM = { title: '', author: '', status: 'Quero ler' as BookStatus, currentPage: 0, totalPages: 0, notes: '' };
@@ -57,14 +57,16 @@ export function Livros() {
     >
       <div className="flex flex-col gap-6 pb-8">
         {/* Filter Bar */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 text-xs font-medium w-fit overflow-x-auto">
           {(['Todos', 'Lendo', 'Quero ler', 'Concluído', 'Abandonado'] as const).map(s => (
             <button
               key={s}
               onClick={() => setFilterStatus(s)}
               className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-bold transition-colors",
-                filterStatus === s ? "bg-indigo-600 text-white" : "bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200"
+                "rounded-lg text-xs font-medium px-3 py-1.5 transition-all duration-200 whitespace-nowrap",
+                filterStatus === s
+                  ? "bg-slate-800/90 text-white shadow-sm border border-slate-700/60"
+                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent"
               )}
             >
               {s}
@@ -73,7 +75,7 @@ export function Livros() {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="glass-panel flex flex-col items-center justify-center py-20 text-center gap-4">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl flex flex-col items-center justify-center py-20 text-center gap-4 shadow-sm">
             <BookOpen size={40} className="text-slate-600" />
             <p className="text-slate-400">Nenhum livro nesta lista.</p>
           </div>
@@ -83,13 +85,13 @@ export function Livros() {
               const cfg = STATUS_CONFIG[book.status];
               const progress = book.totalPages > 0 ? Math.round((book.currentPage / book.totalPages) * 100) : 0;
               return (
-                <div key={book.id} className="glass-panel p-5 flex flex-col group hover:bg-white/5 transition-colors">
+                <div key={book.id} className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 flex flex-col group hover:border-slate-700/80 hover:bg-slate-800/40 transition-all duration-200 shadow-sm">
                   <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-center justify-center">
                       <BookOpen size={18} className="text-slate-400" />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full", cfg.bg, cfg.text)}>
+                      <span className={cn("text-xs font-medium px-2.5 py-0.5 rounded-full border", cfg.bg, cfg.text, cfg.border)}>
                         {book.status}
                       </span>
                       <ContextMenu
@@ -102,8 +104,8 @@ export function Livros() {
                     </div>
                   </div>
 
-                  <h3 className="text-base font-bold text-slate-100 leading-snug mb-1">{book.title}</h3>
-                  <p className="text-sm text-slate-400 mb-4">{book.author}</p>
+                  <h3 className="text-sm font-semibold text-slate-100 leading-snug mb-1">{book.title}</h3>
+                  <p className="text-xs text-slate-500 mb-4">{book.author}</p>
 
                   {book.rating && (
                     <div className="flex items-center gap-0.5 mb-4">
@@ -116,10 +118,10 @@ export function Livros() {
                   {book.totalPages > 0 && (
                     <div className="mt-auto">
                       <div className="flex items-center justify-between text-xs font-medium mb-2">
-                        <span className="text-slate-500">{book.currentPage} / {book.totalPages} págs</span>
-                        <span className="text-white">{progress}%</span>
+                        <span className="text-xs text-slate-500">{book.currentPage} / {book.totalPages} págs</span>
+                        <span className="text-xs font-bold text-slate-100">{progress}%</span>
                       </div>
-                      <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                         <div className="h-full bg-blue-500 rounded-full transition-all duration-700" style={{ width: `${progress}%` }} />
                       </div>
                     </div>

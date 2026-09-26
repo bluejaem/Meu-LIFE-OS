@@ -93,11 +93,11 @@ export function Calendario() {
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col bg-white/5 border border-white/10 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl">
+          <div className="flex-1 flex flex-col bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl overflow-hidden shadow-sm">
             {/* Headers */}
-            <div className="grid grid-cols-7 border-b border-white/10 bg-black/40">
+            <div className="grid grid-cols-7 border-b border-slate-800/80 bg-slate-950/40">
               {DAYS_OF_WEEK.map(d => (
-                <div key={d} className="py-3 text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest">{d}</div>
+                <div key={d} className="py-3 text-center text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{d}</div>
               ))}
             </div>
             
@@ -117,10 +117,10 @@ export function Calendario() {
                     key={i}
                     onClick={() => day && setSelectedDay(ds === selectedDay ? null : ds!)}
                     className={cn(
-                      "border-r border-b border-white/5 p-1.5 flex flex-col gap-1 min-h-[80px]",
-                      day && "cursor-pointer hover:bg-white/5 transition-colors",
+                      "border-r border-b border-slate-800/60 p-1.5 flex flex-col gap-1 min-h-[80px]",
+                      day && "cursor-pointer hover:bg-slate-800/40 transition-colors",
                       !day && "opacity-20",
-                      isSelected && "bg-indigo-500/5 border-indigo-500/20",
+                      isSelected && "bg-indigo-950/20 border-indigo-500/30",
                       i % 7 === 6 && "border-r-0"
                     )}
                   >
@@ -180,9 +180,9 @@ export function Calendario() {
 
       {/* Side panel: events for selected day */}
         {selectedDay && (
-          <div className="w-72 glass-panel p-5 flex flex-col gap-4 overflow-y-auto scrollbar-hide">
+          <div className="w-72 bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4 overflow-y-auto scrollbar-hide shadow-sm">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-slate-200">
+              <h3 className="text-sm font-semibold text-slate-100">
                 {new Date(selectedDay + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </h3>
               <button onClick={() => openCreate(parseInt(selectedDay.split('-')[2]))} className="p-1.5 rounded-lg bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600/40 transition-colors">
@@ -195,13 +195,13 @@ export function Calendario() {
             ) : (
               <div className="flex flex-col gap-3">
                 {selectedDayEvents.sort((a, b) => a.time.localeCompare(b.time)).map(ev => (
-                  <div key={ev.id} className="group flex gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/8 transition-colors">
+                  <div key={ev.id} className="group flex gap-3 p-3 bg-slate-800/40 rounded-xl border border-slate-800/60 hover:border-slate-700/80 hover:bg-slate-800/70 transition-all duration-200">
                     <div className="w-1 rounded-full self-stretch" style={{ backgroundColor: ev.color }} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1 text-[11px] text-slate-400 mb-1">
                         <Clock size={10} /> {ev.time}
                       </div>
-                      <p className="text-sm font-semibold text-slate-200 leading-snug">{ev.title}</p>
+                      <p className="text-sm font-semibold text-slate-100 leading-snug">{ev.title}</p>
                       {ev.subtitle && <p className="text-xs text-slate-500 mt-0.5">{ev.subtitle}</p>}
                     </div>
                     <ContextMenu
@@ -214,23 +214,23 @@ export function Calendario() {
                 ))}
                 
                 {selectedDayRoutines.sort((a, b) => a.time.localeCompare(b.time)).map(r => (
-                  <div key={r.id} className="group flex gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/8 transition-colors">
+                  <div key={r.id} className="group flex gap-3 p-3 bg-slate-800/40 rounded-xl border border-slate-800/60 hover:border-slate-700/80 hover:bg-slate-800/70 transition-all duration-200">
                     <div className="w-1 rounded-full self-stretch" style={{ backgroundColor: r.color || '#8b5cf6' }} />
                     <div className="flex-1 min-w-0 flex flex-col justify-center">
                       <div className="flex items-center gap-1 text-[11px] text-slate-400 mb-1">
                         <Clock size={10} /> {r.time}
                       </div>
-                      <p className="text-sm font-semibold text-slate-200 leading-snug">{r.title}</p>
+                      <p className="text-sm font-semibold text-slate-100 leading-snug">{r.title}</p>
                       <p className="text-xs text-slate-500 mt-0.5">Rotina • {r.category}</p>
                     </div>
                   </div>
                 ))}
 
                 {selectedDayTasks.map(task => (
-                  <div key={task.id} className={cn("group flex gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/8 transition-colors", task.done ? "opacity-50" : "")}>
+                  <div key={task.id} className={cn("group flex gap-3 p-3 bg-slate-800/40 rounded-xl border border-slate-800/60 hover:border-slate-700/80 hover:bg-slate-800/70 transition-all duration-200", task.done ? "opacity-50" : "")}>
                     <div className="w-1 rounded-full self-stretch bg-indigo-500" />
                     <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <p className={cn("text-sm font-semibold text-slate-200 leading-snug", task.done ? "line-through" : "")}>{task.title}</p>
+                      <p className={cn("text-sm font-semibold text-slate-100 leading-snug", task.done ? "line-through" : "")}>{task.title}</p>
                       <p className="text-xs text-slate-500 mt-0.5">Tarefa • {task.tag}</p>
                     </div>
                   </div>

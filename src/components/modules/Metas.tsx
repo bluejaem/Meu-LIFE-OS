@@ -7,10 +7,10 @@ import type { Goal, GoalType } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, selectClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
 
-const TYPE_CONFIG: Record<GoalType, { label: string; color: string; bg: string }> = {
-  short: { label: 'Curto Prazo', color: 'text-sky-400', bg: 'bg-sky-400/10' },
-  medium: { label: 'Médio Prazo', color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
-  long: { label: 'Longo Prazo', color: 'text-purple-400', bg: 'bg-purple-400/10' },
+const TYPE_CONFIG: Record<GoalType, { label: string; color: string; bg: string; border: string }> = {
+  short: { label: 'Curto Prazo', color: 'text-sky-400', bg: 'bg-sky-500/10', border: 'border-sky-500/20' },
+  medium: { label: 'Médio Prazo', color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20' },
+  long: { label: 'Longo Prazo', color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/20' },
 };
 
 const PROGRESS_COLORS = ['bg-sky-500', 'bg-indigo-500', 'bg-purple-500', 'bg-emerald-500', 'bg-rose-500'];
@@ -62,19 +62,19 @@ export function Metas() {
           return (
             <div key={type}>
               <div className="flex items-center gap-3 mb-4">
-                <span className={cn("text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full", cfg.bg, cfg.color)}>{cfg.label}</span>
-                <div className="flex-1 h-px bg-white/5" />
+                <span className={cn("text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full border", cfg.bg, cfg.color, cfg.border)}>{cfg.label}</span>
+                <div className="flex-1 h-px bg-slate-800/80" />
               </div>
               {typeGoals.length === 0 ? (
-                <button onClick={openCreate} className="w-full glass-panel py-6 text-center text-slate-500 text-sm hover:bg-white/5 transition-colors border-dashed border-white/10">
+                <button onClick={openCreate} className="w-full bg-slate-900/60 backdrop-blur-md py-6 text-center text-slate-500 text-sm hover:border-slate-700/80 hover:bg-slate-800/40 hover:text-slate-400 transition-all duration-200 border border-dashed border-slate-800/80 rounded-2xl shadow-sm">
                   + Adicionar meta de {cfg.label.toLowerCase()}
                 </button>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {typeGoals.map((goal, idx) => (
-                    <div key={goal.id} className="glass-panel p-5 flex flex-col group hover:bg-white/5 transition-colors">
+                    <div key={goal.id} className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 flex flex-col group hover:border-slate-700/80 hover:bg-slate-800/40 transition-all duration-200 shadow-sm">
                       <div className="flex items-start justify-between mb-3">
-                        <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center", cfg.bg)}>
+                        <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center border", cfg.bg, cfg.border)}>
                           <Target size={16} className={cfg.color} />
                         </div>
                         <ContextMenu
@@ -85,17 +85,17 @@ export function Metas() {
                           ]}
                         />
                       </div>
-                      <h3 className="text-base font-bold text-slate-100 mb-1 leading-snug">{goal.title}</h3>
+                      <h3 className="text-sm font-semibold text-slate-100 mb-1 leading-snug">{goal.title}</h3>
                       {goal.description && <p className="text-xs text-slate-500 mb-3 line-clamp-2">{goal.description}</p>}
                       {goal.target && <p className="text-xs text-slate-400 mb-4 font-medium">Alvo: {goal.target}</p>}
                       {goal.deadline && <p className="text-xs text-slate-500 mb-4">Prazo: {new Date(goal.deadline + 'T12:00:00').toLocaleDateString('pt-BR')}</p>}
 
                       <div className="mt-auto">
                         <div className="flex items-center justify-between text-xs font-medium mb-2">
-                          <span className="text-slate-400">Progresso</span>
-                          <span className={cn("font-bold", goal.progress === 100 ? "text-emerald-400" : "text-white")}>{goal.progress}%</span>
+                          <span className="text-xs text-slate-400 font-medium">Progresso</span>
+                          <span className={cn("text-xs font-bold", goal.progress === 100 ? "text-emerald-400" : "text-slate-100")}>{goal.progress}%</span>
                         </div>
-                        <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                        <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                           <div
                             className={cn("h-full rounded-full transition-all duration-700", PROGRESS_COLORS[idx % PROGRESS_COLORS.length])}
                             style={{ width: `${goal.progress}%` }}

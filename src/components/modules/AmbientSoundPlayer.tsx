@@ -92,18 +92,18 @@ export function AmbientSoundPlayer({ isPomodoroRunning }: AmbientSoundPlayerProp
   };
 
   return (
-    <div className="w-full max-w-md glass-panel p-4 rounded-2xl border border-white/10 bg-black/20 backdrop-blur-xl flex flex-col gap-3 shadow-xl transition-all duration-300">
+    <div className="w-full max-w-md bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-4 flex flex-col gap-3 shadow-sm transition-all duration-300">
       {/* Header com título e status */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className={cn(
             "w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-500",
-            isPlaying ? "bg-emerald-500/20 text-emerald-400 shadow-md shadow-emerald-500/20" : "bg-white/5 text-slate-400"
+            isPlaying ? "bg-emerald-500/20 text-emerald-400 shadow-md shadow-emerald-500/20" : "bg-slate-800/60 text-slate-400"
           )}>
             <Headphones size={15} className={isPlaying ? "animate-pulse" : ""} />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
               Modo Foco Gentil
               {isPlaying && (
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.2 rounded-full normal-case">
@@ -112,13 +112,13 @@ export function AmbientSoundPlayer({ isPomodoroRunning }: AmbientSoundPlayerProp
                 </span>
               )}
             </h4>
-            <p className="text-[11px] text-slate-400">Sons relaxantes para ancorar sua atenção</p>
+            <p className="text-xs text-slate-500">Sons relaxantes para ancorar sua atenção</p>
           </div>
         </div>
 
         {/* Equalizer Visual sutil quando ativo */}
         {isPlaying && (
-          <div className="flex items-end gap-0.5 h-4 px-2 py-1 bg-white/5 rounded-md">
+          <div className="flex items-end gap-0.5 h-4 px-2 py-1 bg-slate-800/60 rounded-md">
             <span className="w-0.5 h-full bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
             <span className="w-0.5 h-2/3 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.1s]" />
             <span className="w-0.5 h-4/5 bg-emerald-400 rounded-full animate-bounce [animation-delay:-0.4s]" />
@@ -138,8 +138,8 @@ export function AmbientSoundPlayer({ isPomodoroRunning }: AmbientSoundPlayerProp
               className={cn(
                 "flex flex-col items-center justify-center p-2 rounded-xl text-center border transition-all duration-200 group relative",
                 isSelected
-                  ? "bg-indigo-600/20 border-indigo-500/40 text-white shadow-sm"
-                  : "bg-white/5 border-transparent text-slate-400 hover:bg-white/10 hover:text-slate-200"
+                  ? "border-indigo-500/50 bg-indigo-950/20 text-white shadow-sm"
+                  : "bg-slate-800/40 border-slate-800/60 text-slate-400 hover:border-slate-700/80 hover:bg-slate-800/70 hover:text-slate-200"
               )}
             >
               <div className={cn(

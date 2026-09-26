@@ -7,11 +7,11 @@ import type { Project, ProjectStatus } from '@/types';
 import { Modal, ConfirmModal, FormField, inputClass, selectClass, SubmitButton } from '../ui/Modal';
 import { ContextMenu } from '../ui/ContextMenu';
 
-const STATUS_COLORS: Record<ProjectStatus, { text: string; bg: string }> = {
-  'Planejamento': { text: 'text-sky-400', bg: 'bg-sky-400/10' },
-  'Em progresso': { text: 'text-indigo-400', bg: 'bg-indigo-400/10' },
-  'Pausado': { text: 'text-amber-400', bg: 'bg-amber-400/10' },
-  'Concluído': { text: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+const STATUS_COLORS: Record<ProjectStatus, { text: string; bg: string; border: string }> = {
+  'Planejamento': { text: 'text-sky-400', bg: 'bg-sky-500/10', border: 'border-sky-500/20' },
+  'Em progresso': { text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+  'Pausado': { text: 'text-slate-400', bg: 'bg-slate-800/80', border: 'border-slate-700/60' },
+  'Concluído': { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
 };
 
 const PROJECT_COLORS = ['bg-indigo-500', 'bg-emerald-500', 'bg-purple-500', 'bg-rose-500', 'bg-amber-500', 'bg-sky-500'];
@@ -53,7 +53,7 @@ export function Projetos() {
       }
     >
       {projects.length === 0 ? (
-        <div className="glass-panel flex flex-col items-center justify-center py-20 text-center gap-4">
+        <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl flex flex-col items-center justify-center py-20 text-center gap-4 shadow-sm">
           <FolderKanban size={40} className="text-slate-600" />
           <p className="text-slate-400 font-medium">Nenhum projeto criado ainda.</p>
           <button onClick={openCreate} className="text-indigo-400 text-sm font-semibold hover:text-indigo-300">+ Criar primeiro projeto</button>
@@ -67,13 +67,13 @@ export function Projetos() {
             const colors = STATUS_COLORS[p.status];
 
             return (
-              <div key={p.id} className="glass-panel p-5 flex flex-col group hover:bg-white/5 transition-colors">
+              <div key={p.id} className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 flex flex-col group hover:border-slate-700/80 hover:bg-slate-800/40 transition-all duration-200 shadow-sm">
                 <div className="flex items-start justify-between mb-4">
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 text-white")}>
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-slate-800/60 border border-slate-700/60 text-slate-300")}>
                     <FolderKanban size={18} />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={cn("text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full", colors.bg, colors.text)}>
+                    <span className={cn("text-xs font-medium px-2.5 py-0.5 rounded-full border", colors.bg, colors.text, colors.border)}>
                       {p.status}
                     </span>
                     <ContextMenu
@@ -86,20 +86,20 @@ export function Projetos() {
                   </div>
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-100 mb-1 leading-snug">{p.title}</h3>
-                {p.description && <p className="text-sm text-slate-500 mb-4 line-clamp-2">{p.description}</p>}
+                <h3 className="text-sm font-semibold text-slate-100 mb-1 leading-snug">{p.title}</h3>
+                {p.description && <p className="text-xs text-slate-500 mb-4 line-clamp-2">{p.description}</p>}
 
-                <div className="flex items-center gap-1.5 text-sm text-slate-500 mb-6">
+                <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-6">
                   <CheckCircle2 size={14} className="text-indigo-400" />
                   <span>{doneTasks.length} / {projectTasks.length} tarefas</span>
                 </div>
 
                 <div className="mt-auto">
                   <div className="flex items-center justify-between text-xs font-medium mb-2">
-                    <span className="text-slate-400">Progresso</span>
-                    <span className="text-white">{progress}%</span>
+                    <span className="text-xs text-slate-400 font-medium">Progresso</span>
+                    <span className="text-xs font-bold text-slate-100">{progress}%</span>
                   </div>
-                  <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                     <div className={cn("h-full rounded-full transition-all duration-700", p.color)} style={{ width: `${progress}%` }} />
                   </div>
                 </div>

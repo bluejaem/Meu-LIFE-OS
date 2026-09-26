@@ -128,12 +128,21 @@ export const inputClass = "w-full bg-white/5 border border-white/10 rounded-lg p
 
 export const selectClass = "w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 focus:border-indigo-500/30 transition-all appearance-none cursor-pointer [&>option]:bg-[#0c0e16]";
 
-export function SubmitButton({ children, onClick }: { children: ReactNode; onClick?: () => void }) {
+export function SubmitButton({ 
+  children, 
+  onClick, 
+  disabled 
+}: { 
+  children: ReactNode; 
+  onClick?: () => void; 
+  disabled?: boolean; 
+}) {
   return (
     <button
       onClick={onClick}
       type="submit"
-      className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-lg transition-colors shadow-lg shadow-indigo-600/20 mt-2"
+      disabled={disabled}
+      className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none text-white font-semibold text-sm rounded-lg transition-colors shadow-lg shadow-indigo-600/20 mt-2"
     >
       {children}
     </button>

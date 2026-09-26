@@ -96,7 +96,7 @@ export function Diario() {
     >
       <div className="flex flex-col gap-4 max-w-3xl pb-8">
         {sorted.length === 0 ? (
-          <div className="glass-panel flex flex-col items-center justify-center py-20 text-center gap-4">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl flex flex-col items-center justify-center py-20 text-center gap-4 shadow-sm">
             <BookHeart size={40} className="text-slate-600" />
             <p className="text-slate-400">Seu diário está em branco. Registre seu primeiro dia ou reflexão!</p>
           </div>
@@ -104,14 +104,14 @@ export function Diario() {
           sorted.map(entry => (
             <div
               key={entry.id}
-              className="glass-panel p-5 cursor-pointer hover:bg-white/5 transition-colors group relative rounded-2xl border border-white/10"
+              className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 cursor-pointer hover:border-slate-700/80 hover:bg-slate-800/40 transition-all duration-200 group relative shadow-sm"
               onClick={() => setViewEntry(entry)}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{entry.mood}</span>
                   <div>
-                    <p className="text-sm font-bold text-slate-200">
+                    <p className="text-sm font-semibold text-slate-100">
                       {new Date(entry.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </p>
                     <p className="text-xs text-slate-500">{MOOD_LABEL[entry.mood]}</p>
@@ -119,13 +119,13 @@ export function Diario() {
                 </div>
                 <div className="flex items-center gap-2">
                   {entry.reflection && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 rounded-full">
                       <Sparkles size={11} /> Reflexão de Aprendizado
                     </span>
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); setDeleteId(entry.id); }}
-                    className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all p-1.5 rounded-lg hover:bg-white/10"
+                    className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 transition-all p-1.5 rounded-lg hover:bg-white/10"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -134,12 +134,12 @@ export function Diario() {
 
               {/* Destaque do Conceito Aprendido se houver reflexão */}
               {entry.reflection?.conceptLearned && (
-                <div className="mb-3 p-3 rounded-xl bg-indigo-500/[0.07] border border-indigo-500/15">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5 mb-1">
+                <div className="mb-3 p-3 rounded-xl bg-slate-800/40 border border-slate-800/60">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5 mb-1">
                     <Lightbulb size={12} className="text-amber-400" />
                     Conceito Mais Interessante
                   </span>
-                  <p className="text-xs text-slate-200 font-medium leading-relaxed italic line-clamp-2">
+                  <p className="text-xs text-slate-300 font-medium leading-relaxed italic line-clamp-2">
                     "{entry.reflection.conceptLearned}"
                   </p>
                 </div>

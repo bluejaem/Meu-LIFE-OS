@@ -95,14 +95,14 @@ export function Pomodoro() {
         {/* Timer Column */}
         <div className="flex-1 flex flex-col items-center justify-start pt-2 overflow-y-auto scrollbar-hide pb-12">
           {/* Mode Tabs */}
-          <div className="glass-panel flex p-1 mb-6 rounded-full shrink-0">
+          <div className="flex p-1 mb-6 rounded-xl shrink-0 bg-slate-950/60 border border-slate-800/80 text-xs font-medium">
             {(Object.keys(MODE_CONFIG) as PomodoroMode[]).map(m => (
               <button
                 key={m}
                 onClick={() => switchMode(m)}
                 className={cn(
-                  "px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-bold transition-all duration-300",
-                  mode === m ? "bg-white/15 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
+                  "px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200",
+                  mode === m ? "bg-slate-800/90 text-white shadow-sm border border-slate-700/60" : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent"
                 )}
               >
                 {MODE_CONFIG[m].label}
@@ -230,9 +230,9 @@ export function Pomodoro() {
 
         {/* Right Column: History */}
         <div className="w-full lg:w-80 flex flex-col gap-4 overflow-y-auto scrollbar-hide shrink-0 pb-12">
-          <div className="glass-panel p-5 flex flex-col gap-4">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
             <div className="flex flex-col gap-1">
-              <h3 className="text-sm font-bold text-slate-200">Histórico de Hoje</h3>
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Histórico de Hoje</h3>
               <p className="text-xs text-slate-500">{todayMinutes}min registradas</p>
             </div>
 
@@ -243,17 +243,17 @@ export function Pomodoro() {
           ) : (
             <div className="flex flex-col gap-2">
               {todaySessions.map(s => (
-                <div key={s.id} className="group flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/8 transition-colors">
+                <div key={s.id} className="group flex items-center justify-between p-3 bg-slate-800/40 border border-slate-800/60 rounded-xl hover:border-slate-700/80 hover:bg-slate-800/70 transition-all duration-200">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
                       <Check size={14} className="text-indigo-400" />
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-slate-200 max-w-[130px] truncate">{s.label || 'Sessão'}</p>
-                      <p className="text-[11px] text-slate-500">{s.duration}min</p>
+                      <p className="text-xs text-slate-500">{s.duration}min</p>
                     </div>
                   </div>
-                  <button onClick={() => deletePomodoroSession(s.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-rose-400 transition-all">
+                  <button onClick={() => deletePomodoroSession(s.id)} className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 transition-all">
                     <Trash2 size={14} />
                   </button>
                 </div>

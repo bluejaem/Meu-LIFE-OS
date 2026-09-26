@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { PageLayout } from '../layout/PageLayout';
 import { useStore } from '@/store/useStore';
-import { useAcademicStore } from '@/store/useAcademicStore';
 import { 
   GraduationCap, BookOpen, Plus, Settings2, Trash2, CheckCircle2, 
   Clock, Sparkles, ExternalLink, Award, Layers
@@ -32,15 +31,10 @@ export function Faculdades() {
     addCollege, 
     updateCollege, 
     deleteCollege, 
-    updateSubject: updateStoreSubject 
+    addSubject,
+    updateSubject: updateStoreSubject,
+    deleteSubject: deleteStoreSubject
   } = useStore();
-
-  const { 
-    subjects: globalAcademicSubjects = [],
-    addSubject: addGlobalSubject, 
-    updateSubject: updateGlobalSubject, 
-    deleteSubject: deleteGlobalSubject 
-  } = useAcademicStore();
 
   const [selectedCollegeId, setSelectedCollegeId] = useState<string>(colleges[0]?.id || '');
 
@@ -59,24 +53,9 @@ export function Faculdades() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'in_progress' | 'completed' | 'pending'>('all');
 
   const activeCollege = colleges.find((c) => c.id === selectedCollegeId) || colleges[0];
-
-  // Combina disciplinas locais da faculdade e disciplinas globais pelo nome da instituição
-  const collegeSubjects: AcademicSubject[] = (() => {
-    if (!activeCollege) return [];
-    const local = activeCollege.subjects || [];
-    const matchingGlobals = globalAcademicSubjects.filter(
-      (s) => s.institution?.trim().toLowerCase() === activeCollege.name?.trim().toLowerCase()
-    );
-
-    // Mescla garantindo que itens com mesmo ID não dupliquem
-    const map = new Map<string, AcademicSubject>();
-    local.forEach((s) => map.set(s.id, s));
-    matchingGlobals.forEach((s) => {
-      if (!map.has(s.id)) map.set(s.id, s);
-    });
-
-    return Array.from(map.values());
-  })();
+  const collegeSubjects: AcademicSubject[] = Array.from(
+    new Map((activeCollege?.subjects || []).map((s) => [s.id, s])).values()
+  );
 
   const completedCount = collegeSubjects.filter(
     (s) => s.status === 'completed' || s.progress === 100
@@ -168,31 +147,9 @@ export function Faculdades() {
     if (!activeCollege) return;
 
     if (editingSubject) {
-      // Atualiza local na faculdade
       updateStoreSubject(activeCollege.id, savedSubject.id, savedSubject);
-      // Atualiza global no Hub
-      updateGlobalSubject(savedSubject.id, savedSubject);
     } else {
-      // Adiciona localmente na faculdade
-      const currentLocal = activeCollege.subjects || [];
-      updateCollege(activeCollege.id, {
-        subjects: [...currentLocal, savedSubject]
-      });
-      // Adiciona no Hub global de IA
-      addGlobalSubject({
-        name: savedSubject.name,
-        institution: activeCollege.name,
-        semester: savedSubject.semester || `${activeCollege.currentSemester || 1}º Semestre`,
-        activeReviewPending: savedSubject.activeReviewPending ?? true,
-        progress: savedSubject.progress || 0,
-        grade: savedSubject.grade,
-        notes: savedSubject.notes,
-        status: savedSubject.status || 'in_progress',
-        code: savedSubject.code,
-        credits: savedSubject.credits,
-        artifacts: savedSubject.artifacts,
-        flashcardsCount: savedSubject.flashcardsCount || 10
-      });
+      addSubject(activeCollege.id, savedSubject);
     }
 
     setIsSubjectModalOpen(false);
@@ -215,23 +172,18 @@ export function Faculdades() {
     };
 
     updateStoreSubject(activeCollege.id, subject.id, updated);
-    updateGlobalSubject(subject.id, updated);
   };
 
   const handleConfirmDeleteSubject = () => {
     if (!deleteSubjectId || !activeCollege) return;
-    const currentLocal = activeCollege.subjects || [];
-    updateCollege(activeCollege.id, {
-      subjects: currentLocal.filter((s) => s.id !== deleteSubjectId)
-    });
-    deleteGlobalSubject(deleteSubjectId);
+    deleteStoreSubject(activeCollege.id, deleteSubjectId);
     setDeleteSubjectId(null);
   };
 
   return (
     <PageLayout
-      title="Hub de Faculdades & Cursos"
-      subtitle="Gerenciamento de cursos superiores, matrizes curriculares e evolução acadêmica"
+      title="Faculdades & Cursos"
+      subtitle="Gerenciamento de cursos, matrizes curriculares e evolução acadêmica"
       actions={
         <button
           onClick={handleOpenCreateCollege}
@@ -244,7 +196,7 @@ export function Faculdades() {
       <div className="space-y-6 pb-12 max-w-7xl">
         {/* Seletor de Cursos / Faculdades */}
         {colleges.length === 0 ? (
-          <div className="glass-panel p-8 rounded-2xl border border-white/10 text-center flex flex-col items-center justify-center gap-4">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-8 text-center flex flex-col items-center justify-center gap-4 shadow-sm">
             <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
               <GraduationCap size={28} />
             </div>
@@ -270,24 +222,24 @@ export function Faculdades() {
                 <div
                   key={college.id}
                   onClick={() => setSelectedCollegeId(college.id)}
-                  className={`p-4 rounded-xl border text-left transition-all duration-200 cursor-pointer relative group ${
+                  className={`p-4 rounded-xl border backdrop-blur-md text-left transition-all duration-200 cursor-pointer relative group shadow-sm ${
                     isSelected
-                      ? 'bg-indigo-600/10 border-indigo-500/50 shadow-lg shadow-indigo-500/10'
-                      : 'bg-slate-900/40 border-slate-800 hover:border-slate-700 hover:bg-slate-800/30'
+                      ? 'border-indigo-500/50 bg-indigo-950/20 shadow-lg shadow-indigo-500/5'
+                      : 'bg-slate-900/60 border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-800/40'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`p-2 rounded-lg ${
-                          isSelected ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'
+                        className={`p-2 rounded-lg transition-colors ${
+                          isSelected ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'bg-slate-800/80 text-slate-400 border border-slate-700/60'
                         }`}
                       >
                         <GraduationCap className="w-5 h-5" />
                       </div>
                       <div>
                         <h3 className="font-semibold text-slate-100 text-sm leading-tight">{college.name}</h3>
-                        <p className="text-xs text-slate-400">{college.degree || 'Técnico'}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{college.degree || 'Técnico'}</p>
                       </div>
                     </div>
 
@@ -315,11 +267,11 @@ export function Faculdades() {
                     </div>
                   </div>
 
-                  <p className="text-xs font-medium text-slate-300 line-clamp-1 mb-2">
+                  <p className="text-xs font-medium text-slate-400 line-clamp-1 mb-2">
                     {college.course}
                   </p>
 
-                  <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+                  <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
                     <span>Semestre: {college.currentSemester || 1}º</span>
                     <span className="text-indigo-400 font-medium">
                       {count} {count === 1 ? 'matéria' : 'matérias'}
@@ -333,15 +285,15 @@ export function Faculdades() {
 
         {/* Informações e Métricas do Curso Selecionado */}
         {activeCollege && (
-          <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 space-y-6">
+          <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 space-y-6 shadow-sm">
             {/* Header da Faculdade Selecionada */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                     {activeCollege.name}
                   </span>
-                  <span className="text-xs text-slate-400 font-medium">
+                  <span className="text-xs text-slate-500 font-medium">
                     {activeCollege.degree || 'Técnico'} · {activeCollege.period || 'EAD'}
                   </span>
                 </div>
@@ -351,7 +303,7 @@ export function Faculdades() {
               <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
                 {averageGrade && (
                   <div className="text-right">
-                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                       <Award size={12} className="text-amber-400" /> Média Geral
                     </span>
                     <p className="text-2xl font-bold text-amber-300">{averageGrade}</p>
@@ -359,7 +311,7 @@ export function Faculdades() {
                 )}
 
                 <div className="text-right">
-                  <span className="text-xs text-slate-400">Progresso Geral</span>
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Progresso Geral</span>
                   <p className="text-2xl font-bold text-white">{progressPercent}%</p>
                 </div>
 
@@ -374,35 +326,43 @@ export function Faculdades() {
 
             {/* Barra de Filtros e Adicionar Matéria */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              <div className="flex items-center gap-1 bg-black/25 p-1 rounded-xl border border-white/10 text-xs font-semibold overflow-x-auto">
+              <div className="flex items-center gap-1 bg-slate-950/60 p-1 rounded-xl border border-slate-800/80 text-xs font-semibold overflow-x-auto">
                 <button
                   onClick={() => setStatusFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
-                    statusFilter === 'all' ? 'bg-white/15 text-white' : 'text-slate-400 hover:text-white'
+                  className={`rounded-lg text-xs font-medium px-3 py-1.5 transition-all duration-200 whitespace-nowrap ${
+                    statusFilter === 'all'
+                      ? 'bg-slate-800/90 text-white shadow-sm border border-slate-700/60'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent'
                   }`}
                 >
                   Todas ({collegeSubjects.length})
                 </button>
                 <button
                   onClick={() => setStatusFilter('in_progress')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-                    statusFilter === 'in_progress' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'text-slate-400 hover:text-white'
+                  className={`rounded-lg text-xs font-medium px-3 py-1.5 transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 ${
+                    statusFilter === 'in_progress'
+                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent'
                   }`}
                 >
                   <Clock size={12} className="text-amber-400" /> Em Curso ({inProgressCount})
                 </button>
                 <button
                   onClick={() => setStatusFilter('completed')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 ${
-                    statusFilter === 'completed' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'text-slate-400 hover:text-white'
+                  className={`rounded-lg text-xs font-medium px-3 py-1.5 transition-all duration-200 whitespace-nowrap flex items-center gap-1.5 ${
+                    statusFilter === 'completed'
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent'
                   }`}
                 >
                   <CheckCircle2 size={12} className="text-emerald-400" /> Concluídas ({completedCount})
                 </button>
                 <button
                   onClick={() => setStatusFilter('pending')}
-                  className={`px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap ${
-                    statusFilter === 'pending' ? 'bg-white/15 text-white' : 'text-slate-400 hover:text-white'
+                  className={`rounded-lg text-xs font-medium px-3 py-1.5 transition-all duration-200 whitespace-nowrap ${
+                    statusFilter === 'pending'
+                      ? 'bg-slate-800/90 text-white shadow-sm border border-slate-700/60'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent'
                   }`}
                 >
                   Pendentes ({pendingCount})
@@ -414,7 +374,7 @@ export function Faculdades() {
                   setEditingSubject(null);
                   setIsSubjectModalOpen(true);
                 }}
-                className="flex items-center justify-center gap-2 bg-indigo-600/90 hover:bg-indigo-600 text-white px-3.5 py-1.5 rounded-lg font-semibold text-xs transition-colors shadow-md"
+                className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-1.5 rounded-lg font-semibold text-xs transition-colors shadow-md shadow-indigo-600/20"
               >
                 <Plus size={14} /> Adicionar Disciplina
               </button>
@@ -422,7 +382,7 @@ export function Faculdades() {
 
             {/* Lista de Disciplinas */}
             {filteredSubjects.length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-slate-800 rounded-xl flex flex-col items-center justify-center gap-3">
+              <div className="text-center py-12 border border-dashed border-slate-800/80 rounded-xl bg-slate-900/40 flex flex-col items-center justify-center gap-3">
                 <BookOpen className="w-8 h-8 text-slate-600" />
                 <p className="text-sm text-slate-400">Nenhuma disciplina encontrada com o filtro selecionado.</p>
                 <button
@@ -445,17 +405,17 @@ export function Faculdades() {
                   return (
                     <div
                       key={subject.id}
-                      className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/80 hover:border-slate-700 transition-colors flex flex-col justify-between gap-3 group relative"
+                      className="p-4 rounded-xl bg-slate-900/60 backdrop-blur-md border border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-800/40 transition-all duration-200 flex flex-col justify-between gap-3 group relative shadow-sm"
                     >
                       <div className="space-y-2">
                         <div className="flex items-start justify-between gap-3">
                           <div className="space-y-1">
-                            <h4 className="text-sm font-semibold text-slate-200 leading-snug">
+                            <h4 className="text-sm font-semibold text-slate-100 leading-snug">
                               {subject.name}
                             </h4>
-                            <div className="flex items-center gap-2.5 text-xs text-slate-400">
+                            <div className="flex items-center gap-2.5 text-xs text-slate-500">
                               {subject.code && (
-                                <span className="font-mono bg-white/5 px-1.5 py-0.5 rounded text-[11px]">
+                                <span className="font-mono bg-slate-800/60 border border-slate-700/50 px-1.5 py-0.5 rounded text-[11px] text-slate-400">
                                   {subject.code}
                                 </span>
                               )}
@@ -472,7 +432,7 @@ export function Faculdades() {
                                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
                                   : isInProgress
                                     ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20'
-                                    : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'
+                                    : 'bg-slate-800/80 text-slate-400 border-slate-700/60 hover:bg-slate-700/80'
                               }`}
                               title="Clique para alternar status"
                             >
@@ -502,15 +462,15 @@ export function Faculdades() {
                         </div>
 
                         {subject.notes && (
-                          <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
                             {subject.notes}
                           </p>
                         )}
                       </div>
 
                       {/* Progresso, Nota e Links de IA */}
-                      <div className="pt-2 border-t border-white/5 flex flex-col gap-2">
-                        <div className="flex items-center justify-between text-xs text-slate-400">
+                      <div className="pt-2 border-t border-slate-800/80 flex flex-col gap-2">
+                        <div className="flex items-center justify-between text-xs text-slate-500">
                           <span>Progresso: {subject.progress || 0}%</span>
                           {subject.grade !== undefined && (
                             <span className="font-semibold text-slate-200">
@@ -683,7 +643,7 @@ export function Faculdades() {
         onClose={() => setDeleteSubjectId(null)}
         onConfirm={handleConfirmDeleteSubject}
         title="Excluir Disciplina"
-        description="Esta matéria será removida do curso selecionado e do Hub Acadêmico."
+        description="Esta matéria será removida do curso selecionado."
         confirmLabel="Excluir"
         danger
       />

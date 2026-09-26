@@ -63,10 +63,10 @@ export function Configuracoes() {
       <div className="flex flex-col gap-6 max-w-2xl pb-8">
 
         {/* Profile Section */}
-        <div className="glass-panel p-6 flex flex-col gap-5">
+        <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 flex flex-col gap-5 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <User size={18} className="text-indigo-400" />
-            <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Perfil</h2>
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Perfil</h2>
           </div>
           <FormField label="Seu nome">
             <input
@@ -85,13 +85,13 @@ export function Configuracoes() {
                 className="w-16 h-16 rounded-full object-cover object-top border border-white/10" 
               />
               <div className="flex flex-col gap-2 items-start">
-                <label className="cursor-pointer px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-lg text-[13px] font-semibold text-indigo-300 transition-colors flex items-center gap-2">
+                <label className="cursor-pointer px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 rounded-lg text-xs font-semibold text-indigo-300 transition-colors flex items-center gap-2">
                   <Upload size={14} />
                   Carregar Foto
                   <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                 </label>
                 {settings.avatarUrl && (
-                  <button onClick={() => updateSettings({ avatarUrl: '' })} className="text-xs text-red-400 hover:text-red-300 font-medium px-1 transition-colors">
+                  <button onClick={() => updateSettings({ avatarUrl: '' })} className="text-xs text-rose-400 hover:text-rose-300 font-medium px-1 transition-colors">
                     Remover foto
                   </button>
                 )}
@@ -102,10 +102,10 @@ export function Configuracoes() {
         </div>
 
         {/* Wallpaper Section */}
-        <div className="glass-panel p-6 flex flex-col gap-5">
+        <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 flex flex-col gap-5 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <Image size={18} className="text-indigo-400" />
-            <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Wallpaper</h2>
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Wallpaper</h2>
           </div>
           <div className="grid grid-cols-3 gap-3">
             {WALLPAPERS.map(wp => (
@@ -134,7 +134,7 @@ export function Configuracoes() {
           <div className="flex justify-end mt-2">
             <button 
               onClick={() => customWallpaper && applyWallpaper(customWallpaper)} 
-              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm rounded-lg transition-colors flex-shrink-0 shadow-lg shadow-indigo-600/20"
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-lg transition-colors flex-shrink-0 shadow-lg shadow-indigo-600/20"
             >
               Salvar Plano de Fundo
             </button>
@@ -142,19 +142,19 @@ export function Configuracoes() {
         </div>
 
         {/* Notifications Section */}
-        <div className="glass-panel p-6 flex flex-col gap-5">
+        <div className="bg-slate-900/60 backdrop-blur-md border border-slate-800/80 rounded-2xl p-6 flex flex-col gap-5 shadow-sm">
           <div className="flex items-center gap-3 mb-2">
             <Bell size={18} className="text-indigo-400" />
-            <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wider">Notificações</h2>
+            <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Notificações</h2>
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-200">Notificações do sistema</p>
+              <p className="text-sm font-semibold text-slate-100">Notificações do sistema</p>
               <p className="text-xs text-slate-500 mt-0.5">Alertas de tarefas e eventos</p>
             </div>
             <button
               onClick={() => updateSettings({ notifications: !settings.notifications })}
-              className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${settings.notifications ? 'bg-indigo-600' : 'bg-white/10'}`}
+              className={`relative w-12 h-6 rounded-full transition-colors duration-300 ${settings.notifications ? 'bg-indigo-600' : 'bg-slate-800'}`}
             >
               <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform duration-300 ${settings.notifications ? 'translate-x-7' : 'translate-x-1'}`} />
             </button>
