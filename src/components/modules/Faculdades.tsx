@@ -1,466 +1,131 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { PageLayout } from '../layout/PageLayout';
-import { 
-  Plus, GraduationCap, Pencil, Trash2, Sparkles, BookOpen, 
-  Layers, Presentation, Video, Image as ImageIcon, Check,
-  Settings2
+import { useLifeOSStore } from '../../store/useLifeOSStore';
+import {
+  GraduationCap,
+  BookOpen
 } from 'lucide-react';
-import { useStore } from '@/store/useStore';
-import type { College, AcademicSubject } from '@/types';
-import { Modal, ConfirmModal, FormField, inputClass, SubmitButton } from '../ui/Modal';
-import { ContextMenu } from '../ui/ContextMenu';
-import { cn } from '@/lib/utils';
-import { FlashcardsStudyModal } from './FlashcardsStudyModal';
-import { AcademicSubjectModal } from './AcademicSubjectModal';
-
-const EMPTY_FORM = { 
-  name: '', 
-  course: '', 
-  period: '', 
-  subjects: [] as AcademicSubject[] 
-};
 
 export function Faculdades() {
-  const { colleges, addCollege, updateCollege, deleteCollege, toggleSubjectReviewedToday, updateSubject } = useStore();
-  const [createOpen, setCreateOpen] = useState(false);
-  const [editCollege, setEditCollege] = useState<College | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState<any>(EMPTY_FORM);
+  const { colleges, subjects } = useLifeOSStore();
+  const [selectedCollegeId, setSelectedCollegeId] = useState<string>(colleges[0]?.id || '');
 
-  // Modais de IA e Flashcards
-  const [studySubject, setStudySubject] = useState<{ subject: AcademicSubject; collegeId: string } | null>(null);
-  const [editingSubject, setEditingSubject] = useState<{ subject: AcademicSubject | null; collegeId: string } | null>(null);
+  const activeCollege = colleges.find(c => c.id === selectedCollegeId) || colleges[0];
+  const collegeSubjects = subjects.filter(s => s.collegeId === activeCollege?.id);
 
-  const todayStr = new Date().toISOString().split('T')[0];
-
-  const openCreate = () => { setForm(EMPTY_FORM); setCreateOpen(true); };
-  const openEdit = (c: College) => { setEditCollege(c); setForm({ ...c }); };
-
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name.trim()) return;
-    addCollege(form);
-    setCreateOpen(false);
-  };
-
-  const handleEdit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editCollege) return;
-    updateCollege(editCollege.id, form);
-    setEditCollege(null);
-  };
-
-  const handleSaveSubject = (savedSubject: AcademicSubject) => {
-    if (!editingSubject) return;
-    const { collegeId, subject } = editingSubject;
-    const targetCollege = colleges.find(c => c.id === collegeId);
-    if (!targetCollege) return;
-
-    if (subject) {
-      // Atualizar matéria existente
-      updateSubject(collegeId, savedSubject.id, savedSubject);
-    } else {
-      // Adicionar nova matéria ao curso
-      const newSubjects = [...targetCollege.subjects, savedSubject];
-      updateCollege(collegeId, { subjects: newSubjects });
-    }
-  };
+  const completedCount = collegeSubjects.filter(s => s.status === 'completed').length;
+  const progressPercent = collegeSubjects.length > 0
+    ? Math.round((completedCount / collegeSubjects.length) * 100)
+    : 0;
 
   return (
     <PageLayout
-      title="Hub Acadêmico & Gestão de IA"
-      subtitle="Integre o seu ecossistema de estudos com artefatos do Gemini Notebook"
-      actions={
-        <button 
-          onClick={openCreate} 
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20"
-        >
-          <Plus size={16} /> Adicionar Instituição / Curso
-        </button>
-      }
+      title="Hub Acadêmico"
+      description="Gerenciamento de cursos superiores, matrizes curriculares e evolução acadêmica."
     >
-      <div className="flex flex-col gap-6 pb-8">
-        {colleges.length === 0 ? (
-          <div className="glass-panel flex flex-col items-center justify-center py-20 text-center gap-4">
-            <GraduationCap size={40} className="text-slate-600" />
-            <p className="text-slate-400">Nenhuma instituição ou curso registrado ainda.</p>
-            <button
-              onClick={openCreate}
-              className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
-            >
-              Começar adicionando seu primeiro curso
-            </button>
-          </div>
-        ) : (
-          colleges.map(college => {
-            const avgProgress = college.subjects.length > 0
-              ? Math.round(college.subjects.reduce((acc, s) => acc + (s.progress || 0), 0) / college.subjects.length)
-              : 0;
-
-
+      <div className="space-y-6">
+        {/* Seletor de Cursos / Faculdades */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {colleges.map((college) => {
+            const isSelected = college.id === activeCollege?.id;
             return (
-              <div key={college.id} className="glass-panel p-6 group rounded-2xl border border-white/10 relative overflow-hidden">
-                {/* Header do Curso */}
-                <div className="flex items-start justify-between mb-5">
-                  <div className="flex items-center gap-3.5">
-                    <div className={cn(
-                      "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-105 bg-indigo-500/15 border-indigo-500/30 text-indigo-400"
-                    )}>
-                      <GraduationCap size={24} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-0.5">
-                          "text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
-                        )}>
-                          {college.name}
-                        </span>
-                        <span className="text-xs text-slate-400">{college.period}</span>
-                      </div>
-                      <h3 className="text-lg font-bold text-slate-100">{college.course}</h3>
-                    </div>
+              <button
+                key={college.id}
+                onClick={() => setSelectedCollegeId(college.id)}
+                className={`p-4 rounded-xl border text-left transition-all duration-200 ${isSelected
+                  ? 'bg-indigo-600/10 border-indigo-500/50 shadow-lg shadow-indigo-500/10'
+                  : 'bg-slate-900/40 border-slate-800 hover:border-slate-700 hover:bg-slate-800/30'
+                  }`}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`p-2 rounded-lg ${isSelected ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                    <GraduationCap className="w-5 h-5" />
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <span className="text-sm font-bold text-white block">{avgProgress}%</span>
-                      <span className="text-[10px] text-slate-500">Progresso Geral</span>
-                    </div>
-                    <ContextMenu
-                      items={[
-                        { label: 'Editar Curso', icon: <Pencil size={14} />, onClick: () => openEdit(college) },
-                        { label: 'Excluir Curso', icon: <Trash2 size={14} />, onClick: () => setDeleteId(college.id), danger: true },
-                      ]}
-                    />
+                  <div>
+                    <h3 className="font-semibold text-slate-100 text-sm">{college.name}</h3>
+                    <p className="text-xs text-slate-400">{college.degree || 'Graduação'}</p>
                   </div>
                 </div>
+                <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
+                  <span>Semestre atual: {college.currentSemester || 1}º</span>
+                  <span className="text-indigo-400 font-medium">{college.period || 'Em andamento'}</span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
 
-                {/* Disciplinas e Artefatos de IA */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-white/5">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                      <Sparkles size={13} className="text-amber-400" />
-                      Disciplinas & Ecossistema de IA ({college.subjects.length})
-                    </span>
-                    <button
-                      onClick={() => setEditingSubject({ subject: null, collegeId: college.id })}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 hover:underline"
-                    >
-                      <Plus size={12} /> Adicionar Disciplina
-                    </button>
-                  </div>
+        {/* Informações e Métricas do Curso Selecionado */}
+        {activeCollege && (
+          <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+              <div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-2">
+                  {activeCollege.name}
+                </span>
+                <h2 className="text-xl font-bold text-white">{activeCollege.course}</h2>
+              </div>
 
-                  {college.subjects.length === 0 ? (
-                    <div className="py-6 text-center text-xs text-slate-500 italic">
-                      Nenhuma disciplina cadastrada neste curso. Clique em "Adicionar Disciplina" acima.
-                    </div>
-                  ) : (
-                    college.subjects.map(subj => {
-                      const isReviewedToday = subj.lastReviewedDate === todayStr;
-                      const hasFlashcards = !!subj.aiArtifacts?.flashcardsSummary;
-                      const hasNotebook = !!subj.notebookUrl;
-                      const hasSlides = !!subj.aiArtifacts?.slidesUrl;
-                      const hasVideo = !!subj.aiArtifacts?.videoScriptUrl;
-                      const hasInfographic = !!subj.aiArtifacts?.infographicUrl;
-
-                      return (
-                        <div
-                          key={subj.id}
-                          className={cn(
-                            "p-4 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-3.5",
-                            isReviewedToday 
-                              ? "bg-emerald-500/[0.04] border-emerald-500/20" 
-                              : "bg-white/[0.02] border-white/5 hover:border-white/15"
-                          )}
-                        >
-                          {/* Info da Disciplina */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between text-xs mb-1.5">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-bold text-slate-200">{subj.name}</span>
-                                {subj.grade !== undefined && (
-                                  <span className="text-[11px] font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded">
-                                    Nota: {subj.grade}
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-xs text-slate-400 font-semibold">{subj.progress}%</span>
-                            </div>
-
-                            {/* Barra de Progresso */}
-                            <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden mb-2">
-                              <div
-                                className={cn(
-                                  "h-full rounded-full transition-all duration-700",
-                                  isReviewedToday ? "bg-emerald-500" : "bg-indigo-500"
-                                )}
-                                style={{ width: `${subj.progress}%` }}
-                              />
-                            </div>
-
-                            {subj.notes && (
-                              <p className="text-[11px] text-slate-400 italic line-clamp-1">
-                                {subj.notes}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Barra de Ações e Artefatos IA */}
-                          <div className="flex items-center gap-2 flex-wrap shrink-0">
-                            
-                            {/* Gemini Notebook */}
-                            {hasNotebook ? (
-                              <a
-                                href={subj.notebookUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-indigo-500/15 text-indigo-300 hover:bg-indigo-500/25 border border-indigo-500/30 transition-colors"
-                                title="Abrir Gemini Notebook da Matéria"
-                              >
-                                <BookOpen size={13} />
-                                <span>Notebook</span>
-                              </a>
-                            ) : null}
-
-                            {/* Flashcards Modal */}
-                            <button
-                              onClick={() => setStudySubject({ subject: subj, collegeId: college.id })}
-                              className={cn(
-                                "inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg border transition-all",
-                                hasFlashcards
-                                  ? "bg-purple-500/15 text-purple-300 border-purple-500/30 hover:bg-purple-500/25"
-                                  : "bg-white/5 text-slate-400 border-white/10 hover:text-white"
-                              )}
-                              title="Estudar Flashcards IA"
-                            >
-                              <Layers size={13} />
-                              <span>Flashcards</span>
-                            </button>
-
-                            {/* Slides */}
-                            {hasSlides && (
-                              <a
-                                href={subj.aiArtifacts?.slidesUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 transition-colors"
-                                title="Ver Slides"
-                              >
-                                <Presentation size={14} />
-                              </a>
-                            )}
-
-                            {/* Roteiro */}
-                            {hasVideo && (
-                              <a
-                                href={subj.aiArtifacts?.videoScriptUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-colors"
-                                title="Ver Roteiro de Vídeo"
-                              >
-                                <Video size={14} />
-                              </a>
-                            )}
-
-                            {/* Infográfico */}
-                            {hasInfographic && (
-                              <a
-                                href={subj.aiArtifacts?.infographicUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="p-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 border border-sky-500/20 transition-colors"
-                                title="Ver Infográfico"
-                              >
-                                <ImageIcon size={14} />
-                              </a>
-                            )}
-
-                            {/* Botão Gerenciar Artefatos */}
-                            <button
-                              onClick={() => setEditingSubject({ subject: subj, collegeId: college.id })}
-                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-colors"
-                              title="Editar Matéria & Links de IA"
-                            >
-                              <Settings2 size={14} />
-                            </button>
-
-                            {/* Toggle Revisado Hoje */}
-                            <button
-                              onClick={() => toggleSubjectReviewedToday(college.id, subj.id)}
-                              className={cn(
-                                "flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all duration-300",
-                                isReviewedToday
-                                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
-                                  : "bg-white/5 text-slate-300 border-white/10 hover:bg-indigo-600 hover:text-white"
-                              )}
-                              title={isReviewedToday ? "Desmarcar revisão" : "Marcar como revisado hoje"}
-                            >
-                              {isReviewedToday ? (
-                                <>
-                                  <Check size={12} className="text-emerald-400" />
-                                  <span>Revisado</span>
-                                </>
-                              ) : (
-                                <span>Revisar Hoje</span>
-                              )}
-                            </button>
-
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
+              <div className="flex items-center gap-6">
+                <div className="text-right">
+                  <span className="text-xs text-slate-400">Progresso Geral</span>
+                  <p className="text-2xl font-bold text-white">{progressPercent}%</p>
+                </div>
+                <div className="w-24 h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                    style={{ width: `${progressPercent}%` }}
+                  />
                 </div>
               </div>
-            );
-          })
+            </div>
+
+            {/* Disciplinas */}
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-slate-200 uppercase tracking-wider">
+                  Disciplinas ({collegeSubjects.length})
+                </h3>
+              </div>
+
+              {collegeSubjects.length === 0 ? (
+                <div className="text-center py-12 border border-dashed border-slate-800 rounded-xl">
+                  <BookOpen className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                  <p className="text-sm text-slate-400">Nenhuma disciplina cadastrada neste curso.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {collegeSubjects.map((subject) => (
+                    <div
+                      key={subject.id}
+                      className="p-4 rounded-xl bg-slate-950/40 border border-slate-800/80 hover:border-slate-700 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-medium text-slate-200">{subject.name}</h4>
+                          <div className="flex items-center gap-3 text-xs text-slate-400">
+                            {subject.code && <span>{subject.code}</span>}
+                            {subject.credits && <span>{subject.credits} créditos</span>}
+                          </div>
+                        </div>
+
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-medium border ${subject.status === 'completed'
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          : subject.status === 'in_progress'
+                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            : 'bg-slate-800 text-slate-400 border-slate-700'
+                          }`}>
+                          {subject.status === 'completed' ? 'Concluída' : subject.status === 'in_progress' ? 'Em Curso' : 'Pendente'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
-
-      {/* Modal Criar Curso */}
-      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Adicionar Instituição / Curso" size="lg">
-        <CollegeForm form={form} setForm={setForm} onSubmit={handleCreate} label="Adicionar Curso" />
-      </Modal>
-
-      {/* Modal Editar Curso */}
-      <Modal open={!!editCollege} onClose={() => setEditCollege(null)} title="Editar Instituição / Curso" size="lg">
-        <CollegeForm form={form} setForm={setForm} onSubmit={handleEdit} label="Salvar Alterações" />
-      </Modal>
-
-      {/* Modal de Excluir */}
-      <ConfirmModal 
-        open={!!deleteId} 
-        onClose={() => setDeleteId(null)} 
-        onConfirm={() => deleteId && deleteCollege(deleteId)} 
-        title="Excluir Instituição / Curso" 
-        confirmLabel="Excluir" 
-        danger 
-      />
-
-      {/* Modal de Flashcards / Estudo Ativo */}
-      {studySubject && (
-        <FlashcardsStudyModal
-          open={!!studySubject}
-          onClose={() => setStudySubject(null)}
-          subject={studySubject.subject}
-          collegeId={studySubject.collegeId}
-          isReviewedToday={studySubject.subject.lastReviewedDate === todayStr}
-          onMarkReviewed={() => {
-            toggleSubjectReviewedToday(studySubject.collegeId, studySubject.subject.id);
-            setStudySubject(null);
-          }}
-        />
-      )}
-
-      {/* Modal de Edição de Disciplina & Artefatos de IA */}
-      {editingSubject && (
-        <AcademicSubjectModal
-          open={!!editingSubject}
-          onClose={() => setEditingSubject(null)}
-          onSave={handleSaveSubject}
-          initialData={editingSubject.subject}
-          defaultInstitution={colleges.find(c => c.id === editingSubject.collegeId)?.name}
-        />
-      )}
     </PageLayout>
-  );
-}
-
-function CollegeForm({ form, setForm, onSubmit, label }: any) {
-  const addSubject = () => setForm({ 
-    ...form, 
-    subjects: [
-      ...form.subjects, 
-      { 
-        id: crypto.randomUUID(), 
-        name: '', 
-        progress: 0, 
-        institution: form.name || '',
-        aiArtifacts: {} 
-      }
-    ] 
-  });
-  
-  const updateSubj = (id: string, data: Partial<AcademicSubject>) => setForm({ 
-    ...form, 
-    subjects: form.subjects.map((s: AcademicSubject) => s.id === id ? { ...s, ...data } : s) 
-  });
-
-  const removeSubject = (id: string) => setForm({ 
-    ...form, 
-    subjects: form.subjects.filter((s: AcademicSubject) => s.id !== id) 
-  });
-
-  return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3">
-        <FormField label="Instituição">
-          <input 
-            className={inputClass} 
-            placeholder="Ex: USP, Estácio, etc." 
-            value={form.name} 
-            onChange={e => setForm({ ...form, name: e.target.value })} 
-            autoFocus 
-            required 
-          />
-        </FormField>
-        <FormField label="Nome do Curso">
-          <input 
-            className={inputClass} 
-            placeholder="Análise e Desenv. de Sistemas..." 
-            value={form.course} 
-            onChange={e => setForm({ ...form, course: e.target.value })} 
-            required
-          />
-        </FormField>
-      </div>
-
-      <FormField label="Período / Fase">
-        <input 
-          className={inputClass} 
-          placeholder="Ex: Fase 1 / 2026.1" 
-          value={form.period} 
-          onChange={e => setForm({ ...form, period: e.target.value })} 
-        />
-      </FormField>
-
-      {/* Lista de Disciplinas no Cadastro Rápido */}
-      <div className="flex flex-col gap-3 max-h-64 overflow-y-auto scrollbar-hide">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Disciplinas Iniciais</span>
-          <button type="button" onClick={addSubject} className="text-xs text-indigo-400 font-semibold hover:text-indigo-300 flex items-center gap-1">
-            <Plus size={12} /> Adicionar Disciplina
-          </button>
-        </div>
-        {form.subjects.map((subj: AcademicSubject) => (
-          <div key={subj.id} className="flex items-center gap-2 bg-white/5 rounded-xl p-2.5 border border-white/5">
-            <input
-              className="flex-1 bg-transparent text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none"
-              placeholder="Nome da disciplina"
-              value={subj.name}
-              onChange={e => updateSubj(subj.id, { name: e.target.value })}
-            />
-            <input
-              type="number" 
-              min={0} 
-              max={100}
-              className="w-16 bg-transparent text-sm text-slate-200 text-center focus:outline-none"
-              placeholder="0%"
-              value={subj.progress}
-              onChange={e => updateSubj(subj.id, { progress: Number(e.target.value) })}
-            />
-            <button 
-              type="button" 
-              onClick={() => removeSubject(subj.id)} 
-              className="text-slate-600 hover:text-rose-400 transition-colors p-1"
-            >
-              <Trash2 size={14} />
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <SubmitButton>{label}</SubmitButton>
-    </form>
   );
 }
