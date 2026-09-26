@@ -22,7 +22,7 @@ const EMPTY_COLLEGE_FORM: CollegeFormData = {
   name: '',
   course: '',
   period: 'EAD',
-  degree: 'Graduação',
+  degree: 'Técnico',
   currentSemester: '1'
 };
 
@@ -121,7 +121,7 @@ export function Faculdades() {
       name: college.name,
       course: college.course,
       period: college.period || 'EAD',
-      degree: college.degree || 'Graduação',
+      degree: college.degree || 'Técnico',
       currentSemester: String(college.currentSemester || '1')
     });
     setIsCollegeModalOpen(true);
@@ -287,7 +287,7 @@ export function Faculdades() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-slate-100 text-sm leading-tight">{college.name}</h3>
-                        <p className="text-xs text-slate-400">{college.degree || 'Graduação'}</p>
+                        <p className="text-xs text-slate-400">{college.degree || 'Técnico'}</p>
                       </div>
                     </div>
 
@@ -342,7 +342,7 @@ export function Faculdades() {
                     {activeCollege.name}
                   </span>
                   <span className="text-xs text-slate-400 font-medium">
-                    {activeCollege.degree || 'Graduação'} · {activeCollege.period || 'EAD'}
+                    {activeCollege.degree || 'Técnico'} · {activeCollege.period || 'EAD'}
                   </span>
                 </div>
                 <h2 className="text-2xl font-bold text-white">{activeCollege.course}</h2>
@@ -607,12 +607,13 @@ export function Faculdades() {
                 value={collegeForm.degree}
                 onChange={(e) => setCollegeForm({ ...collegeForm, degree: e.target.value })}
               >
-                <option value="Graduação">Graduação</option>
-                <option value="Bacharelado">Bacharelado</option>
+                <option value="Técnico">Técnico</option>
                 <option value="Tecnólogo">Tecnólogo</option>
+                <option value="Bacharelado">Bacharelado</option>
                 <option value="Licenciatura">Licenciatura</option>
-                <option value="Pós-Graduação">Pós-Graduação</option>
                 <option value="Mestrado">Mestrado</option>
+                <option value="Doutorado">Doutorado</option>
+                <option value="Pós-Graduação">Pós-Graduação</option>
                 <option value="Certificação">Certificação</option>
               </select>
             </FormField>
